@@ -1,0 +1,35 @@
+html,
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+.navButton {
+  border: 2px solid transparent;
+  border-radius: 2px;
+  transition: border-color 0.5s ease;
+  font-weight: 400;
+  width: 150px;
+  padding: 5px;
+
+  &:hover {
+    cursor: pointer;
+    border: 2px white solid;
+    border-radius: 10px;
+    /* font-weight: 600; */
+  }
+}
+
+/* .node__root > circle {
+    fill: red;
+  }
+  
+  .node__branch > circle {
+    fill: yellow;
+  }
+  
+  .node__leaf > circle {
+    fill: green;
+    font-weight: 80;
+    /* Let's also make the radius of leaf nodes larger */
+/* r: 10; */
+/* } */
