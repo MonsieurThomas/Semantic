@@ -3,16 +3,13 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObject";
 import TotalItemsCounting from "./MapLogic/TotalItemsCounting";
-// import countNestedObjectLevels from "./MapLogic/NestedObjectItemCounting";
-// import AddCoordinates from "./AddCoordinates";
-import exploreObject from "./MapLogic/Explore";
 
 interface NestedObject {
   [key: string]: any;
 }
 
 const CanvasDrawing = () => {
-  ///////////////////////////////  ADDCoordinate   /////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////  ADDCoordinate   /////////////////////////////////////////////////////
   let count = 0;
 
   function processNestedObject(
@@ -30,17 +27,17 @@ const CanvasDrawing = () => {
           depth + 1
         );
         newObj[key] = processedObj;
-        localCount += subCount;  // Inclure le compte des niveaux inférieurs
-        localSum += subSum;      
+        localCount += subCount; // Inclure le compte des niveaux inférieurs
+        localSum += subSum;
       } else {
         count++;
         localCount++;
         localSum += count;
-        newObj[key] = { x: count, y: depth, isParsed: true };
+        newObj[key] = { x: count, y: depth };
       }
     }
-    if (localSum)
-      newObj["pos"] = { x: localSum / localCount, y: depth, isParsed: true };
+    if (localSum && depth - 1 > 0)
+      newObj["pos"] = { x: localSum / localCount, y: depth - 1 };
     console.log(
       "This is localSum = ",
       localSum,
@@ -93,6 +90,7 @@ const CanvasDrawing = () => {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
 
@@ -101,70 +99,65 @@ const CanvasDrawing = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
 
-  exploreObject(nestedObjectData);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  const drawLevel = (
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  const drawSquare = (
     ctx: CanvasRenderingContext2D,
-    length: number,
     x: number,
     y: number,
-    width: number,
-    height: number
+    label: string
   ) => {
-    for (let i = 0; i < length; i++) {
-      // dessin case
-      const rectY = y + (height + 20) * i; // Allignement case meme niveau
-      ctx.strokeRect(x, rectY, width, height);
-      ctx.fillText(`Length: ${length}`, x, rectY + 5 + 15);
-    }
+    ctx.fillStyle = "blue"; // Couleur des carrés
+    ctx.fillRect(x + x * 100, y + y * 50, 200, 100);
+    ctx.fillStyle = "white"; // Couleur du texte pour le contraste
+    ctx.font = "20px Arial"; // Taille et type de police pour le label
+    ctx.fillText(label, x + x * 100 + 10, y + y * 50 + 30);
   };
 
-  const drawRectangles = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      obj: NestedObject,
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      depth: number
-    ) => {
-      if ("length" in obj) {
-        drawLevel(ctx, obj.length, x, y, width, height);
-        x += height + 20; // Decalage Niveau suivant
-      }
-
-      for (const key in obj) {
-        if (key !== "length" && typeof obj[key] === "object") {
-          drawRectangles(
-            ctx,
-            obj[key],
-            x + (width + 40), // ecartement entre niveaux
-            y,
-            width,
-            height,
-            depth + 1
-          );
+  const traverseAndDraw = (obj: any, ctx: CanvasRenderingContext2D) => {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const val = obj[key];
+        if (typeof val === "object" && val !== null) {
+          if ("x" in val && "y" in val) {
+            const label = `x: ${val.x}, y: ${val.y}`;
+            drawSquare(ctx, val.y * 2, val.x * 2, label); // inverser
+          }
+          traverseAndDraw(val, ctx);
         }
       }
-    },
-    []
-  );
+    }
+  };
 
   useEffect(() => {
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
+        // Nettoyer le canvas avant de dessiner
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        drawRectangles(ctx, nestedObject, 20, 20, 180, 80, 0);
+
+        // Parcourir l'objet imbriqué et dessiner des carrés
+        traverseAndDraw(objectWithCoordinate, ctx);
       }
     }
-  }, [drawRectangles, nestedObject]); // data
+  }, []);
 
   return (
     <div>
-      <canvas ref={canvasRef} width="3000" height="500" />;
-      <h1>This is input {JSON.stringify(nestedObjectData)}</h1>
+      <canvas
+        ref={canvasRef}
+        // width={total[0] * (200 + 100)}
+        // height={total[1] * (100 + 20)}
+        width="3000"
+        height="3000"
+      />
+      ;<h1>This is input {JSON.stringify(nestedObjectData)}</h1>
       <div style={{ padding: "30px" }} />
       <h1>This is countNestedObjectLevels {JSON.stringify(nestedObject)}</h1>
       <div style={{ padding: "30px" }} />
