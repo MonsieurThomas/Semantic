@@ -57,47 +57,46 @@ const nestedObjectData = {
 
   //////////////////////////////// Choix2 //////////////////////////////////////////////////
 
-  // const nestedObjectData = {
-  //     niveau1: {
-  //       valeur1: "Valeur au niveau 1",
-  //       valeur2: "Valeur au niveau 1",
-  //       valeur3: "Valeur au niveau 1",
-  //       valeur4: "Valeur au niveau 1",//4
-  //       niveau2: {
-  //         valeur1: "Valeur au niveau 2",
-  //         valeur2: "Valeur au niveau 2",
-  //         valeur3: "Valeur au niveau 2",
-  //         valeur4: "Valeur au niveau 2",//4
-  //         niveau3: {
-  //           valeur1: "Valeur au niveau 3",
-  //           valeur2: "Valeur au niveau 3",
-  //           valeur3: "Valeur au niveau 3",
-  //           valeur4: "Valeur au niveau 3", //4
-  //           niveau4: {
-  //             valeur1: "Valeur au niveau 4",
-  //             valeur2: "Valeur au niveau 4",
-  //             valeur3: "Valeur au niveau 4",
-  //             valeur4: "Valeur au niveau 4", //4
-  //           }
-  //         }
-  //       }
-  //     }
-  //   };
+      niveau1: {
+        valeur1: "Valeur au niveau 1",
+        valeur2: "Valeur au niveau 1",
+        valeur3: "Valeur au niveau 1",
+        valeur4: "Valeur au niveau 1",//4
+        niveau2: {
+          valeur1: "Valeur au niveau 2",
+          valeur2: "Valeur au niveau 2",
+          valeur3: "Valeur au niveau 2",
+          valeur4: "Valeur au niveau 2",//4
+          niveau3: {
+            valeur1: "Valeur au niveau 3",
+            valeur2: "Valeur au niveau 3",
+            valeur3: "Valeur au niveau 3",
+            valeur4: "Valeur au niveau 3", //4
+            niveau4: {
+              valeur1: "Valeur au niveau 4",
+              valeur2: "Valeur au niveau 4",
+              valeur3: "Valeur au niveau 4",
+              valeur4: "Valeur au niveau 4", //4
+            }
+          }
+        }
+      }
 
   //////////////////////////////// Choix3 //////////////////////////////////////////////////
 
-  category1: {
-    subcategory1: {
-      item1: "valeur1",
-      item2: "valeur2",
-      item3: "valeur3",
-    },
-    subcategory2: {
-      item4: "valeur4",
-      item5: "valeur5",
-      item6: "valeur6",
-    },
-  },
+  // category1: {
+  //   subcategory1: {
+  //     item1: "valeur1",
+  //     item2: "valeur2",
+  //     item3: "valeur3",
+  //   },
+  //   subcategory3: "test",
+  //   subcategory2: {
+  //     item4: "valeur4",
+  //     item5: "valeur5",
+  //     item6: "valeur6",
+  //   },
+  // },
 };
 
 export default nestedObjectData;

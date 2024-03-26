@@ -12,36 +12,64 @@ interface NestedObject {
 }
 
 const CanvasDrawing = () => {
+  ///////////////////////////////  ADDCoordinate   /////////////////////////////////////////////////////////////////////////////
+  let count = 0;
 
-///////////////////////////////  ADDCoordinate   /////////////////////////////////////////////////////////////////////////////
-  const AddCoordinates = (obj: NestedObject): NestedObject => {
+  function processNestedObject(
+    obj: NestedObject,
+    depth = 0
+  ): [NestedObject, number, number] {
+    let localCount = 0;
+    let localSum = 0;
     const newObj: NestedObject = {};
 
     for (const key in obj) {
       if (typeof obj[key] === "object" && obj[key] !== null) {
-        newObj[key] = AddCoordinates(obj[key] as NestedObject);
+        const [processedObj, subCount, subSum] = processNestedObject(
+          obj[key] as NestedObject,
+          depth + 1
+        );
+        newObj[key] = processedObj;
+        localCount += subCount;  // Inclure le compte des niveaux inférieurs
+        localSum += subSum;      
       } else {
-        newObj[key] = obj[key];
+        count++;
+        localCount++;
+        localSum += count;
+        newObj[key] = { x: count, y: depth, isParsed: true };
       }
     }
-    newObj.x = 0;
-    newObj.y = 0;
-    newObj.isParsed = false;
-  
+    if (localSum)
+      newObj["pos"] = { x: localSum / localCount, y: depth, isParsed: true };
+    console.log(
+      "This is localSum = ",
+      localSum,
+      "and localCount = ",
+      localCount,
+      "and depth = ",
+      depth
+    );
+    localSum += localSum / localCount;
+    localCount++;
+    return [newObj, localCount, localSum];
+  }
+
+  const AddCoordinates = (obj: NestedObject): NestedObject => {
+    const [newObj, ,] = processNestedObject(obj, 1); // Commencer à la profondeur 1
     return newObj;
   };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
+  ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   function countNestedObjectLevels(obj: NestedObject) {
     const count = (currentObj: any, depth: number = 0) => {
       if (typeof currentObj !== "object" || currentObj === null) {
         return { value: currentObj, depth }; // For non-objects, return the value and depth directly
       }
-  
+
       let structure: NestedObject = {};
       let length = 0; // Initialize length count for this level
-  
+
       for (const key in currentObj) {
         if (Object.prototype.hasOwnProperty.call(currentObj, key)) {
           const item = currentObj[key];
@@ -53,26 +81,25 @@ const CanvasDrawing = () => {
           length += 1; // Count each item at this level
         }
       }
-  
+
       // Attach a length property and the nested structure or value
       return { structure: { ...structure, length }, depth };
       // return { structure: { ...structure, length }, depth };
     };
-  
+
     const { structure: resultStructure } = count(obj);
     return resultStructure;
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  
-  let nestedDummy = (nestedObjectData: NestedObject): NestedObject =>
-    JSON.parse(JSON.stringify(nestedObjectData));
+  const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
 
   const nestedObject: any = countNestedObjectLevels(nestedObjectData);
   const total = TotalItemsCounting(nestedObjectData);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const objectWithCoordinate : NestedObject = AddCoordinates(nestedDummy);
+  const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
 
   exploreObject(nestedObjectData);
 
@@ -146,8 +173,8 @@ const CanvasDrawing = () => {
       </h1>
       <div style={{ padding: "10px" }} />
       <h1>
-        This is AddCoordinates, lapos;objet avec x,y et isParsed{" "}
-        {/* {JSON.stringify(objectWithCoordinate, null, 2)} */}
+        This is AddCoordinates, l&apos;objet avec x,y et isParsed{" "}
+        {JSON.stringify(objectWithCoordinate)}
       </h1>
     </div>
   );
