@@ -155,7 +155,7 @@ const CanvasDrawing = () => {
         // width={total[0] * (200 + 100)}
         // height={total[1] * (100 + 20)}
         width="3000"
-        height="3000"
+        height="1000"
       />
       ;<h1>This is input {JSON.stringify(nestedObjectData)}</h1>
       <div style={{ padding: "30px" }} />
@@ -166,7 +166,7 @@ const CanvasDrawing = () => {
       </h1>
       <div style={{ padding: "10px" }} />
       <h1>
-        This is AddCoordinates, l&apos;objet avec x,y et isParsed{" "}
+        This is AddCoordinates, l&apos;objet avec x,y =
         {JSON.stringify(objectWithCoordinate)}
       </h1>
     </div>
