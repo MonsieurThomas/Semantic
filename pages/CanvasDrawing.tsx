@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObject";
 import TotalItemsCounting from "./MapLogic/TotalItemsCounting";
+import Zoomlogic from "./Zoomlogic";
 
 interface NestedObject {
   [key: string]: any;
@@ -38,14 +39,14 @@ const CanvasDrawing = () => {
     }
     if (localSum && depth - 1 > 0)
       newObj["pos"] = { x: localSum / localCount, y: depth - 1 };
-    console.log(
-      "This is localSum = ",
-      localSum,
-      "and localCount = ",
-      localCount,
-      "and depth = ",
-      depth
-    );
+    // console.log(
+    //   "This is localSum = ",
+    //   localSum,
+    //   "and localCount = ",
+    //   localCount,
+    //   "and depth = ",
+    //   depth
+    // );
     localSum += localSum / localCount;
     localCount++;
     return [newObj, localCount, localSum];
@@ -56,7 +57,6 @@ const CanvasDrawing = () => {
     return newObj;
   };
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   function countNestedObjectLevels(obj: NestedObject) {
     const count = (currentObj: any, depth: number = 0) => {
@@ -105,22 +105,22 @@ const CanvasDrawing = () => {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////  Drawing function   ////////////////////////////////////////////////
 
-  const drawSquare = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    label: string
-  ) => {
-    ctx.fillStyle = "blue"; // Couleur des carrés
-    ctx.fillRect(x + x * 100, y + y * 50, 200, 100);
-    ctx.fillStyle = "white"; // Couleur du texte pour le contraste
-    ctx.font = "20px Arial"; // Taille et type de police pour le label
-    ctx.fillText(label, x + x * 100 + 10, y + y * 50 + 30);
-  };
-
-  const traverseAndDraw = (obj: any, ctx: CanvasRenderingContext2D) => {
+  
+  const traverseAndDraw = useCallback((obj: any, ctx: CanvasRenderingContext2D) => {
+    const drawSquare = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      label: string
+    ) => {
+      ctx.fillStyle = "blue"; // Couleur des carrés
+      ctx.fillRect(x + x * 100, y + y * 50, 200, 100);
+      ctx.fillStyle = "white"; // Couleur du texte pour le contraste
+      ctx.font = "20px Arial"; // Taille et type de police pour le label
+      ctx.fillText(label, x + x * 100 + 10, y + y * 50 + 30);
+    };
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         const val = obj[key];
@@ -133,7 +133,7 @@ const CanvasDrawing = () => {
         }
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -148,28 +148,210 @@ const CanvasDrawing = () => {
     }
   }, []);
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////     Zoom Logic    ///////////////////////////////////////////////////
+
+  // const zoomHandleRef = useRef<HTMLDivElement>(null);
+  // const canvasRef = useRef<HTMLCanvasElement>(null);
+  // const maxZoom = 2; // Définissez selon vos besoins
+  // const minZoom = 0.5; // Définissez selon vos besoins
+  // let zoomLevel = 1;
+
+  // useEffect(() => {
+  //   const onMouseMove = (e: MouseEvent) => {
+  //     const zoomHandle = zoomHandleRef.current;
+  //     const canvas = canvasRef.current;
+  //     // if (!zoomHandle || !canvas) return;
+
+  //     // Convertir la position X de la souris en position relative dans le slider
+  //     if (zoomHandle) {
+  //       const rect = zoomHandle.parentElement!.getBoundingClientRect();
+  //       const newPositionX = Math.max(
+  //         0,
+  //         Math.min(e.clientX - rect.left, rect.width - zoomHandle.offsetWidth)
+  //       );
+
+  //       // Mettre à jour la position de la boule de zoom
+  //       zoomHandle.style.left = `${newPositionX}px`;
+
+  //       // Calculer le nouveau niveau de zoom
+  //       const zoomFraction =
+  //         newPositionX / (rect.width - zoomHandle.offsetWidth);
+  //       zoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
+  //       console.log("zoomLevel = ", zoomLevel);
+  //     }
+
+  //     // Redessiner le canvas avec le nouveau niveau de zoom
+  //     redrawCanvas(zoomLevel);
+  //   };
+
+  //   const onMouseDown = () => {
+  //     document.addEventListener("mousemove", onMouseMove);
+  //     document.addEventListener(
+  //       "mouseup",
+  //       () => {
+  //         document.removeEventListener("mousemove", onMouseMove);
+  //       },
+  //       { once: true }
+  //     );
+  //   };
+
+  //   if (zoomHandleRef.current) {
+  //     zoomHandleRef.current.addEventListener("mousedown", onMouseDown);
+  //   }
+
+  //   return () => {
+  //     if (zoomHandleRef.current) {
+  //       zoomHandleRef.current.removeEventListener("mousedown", onMouseDown);
+  //     }
+  //   };
+  // }, []);
+
+  // const redrawCanvas = (zoomLevel: number) => {
+  //   const canvas = canvasRef.current;
+  //   if (!canvas) return;
+  //   const ctx = canvas.getContext("2d");
+  //   if (!ctx) return;
+
+  //   ctx.clearRect(0, 0, canvas.width, canvas.height); //
+  //   ctx.save();
+  //   ctx.scale(zoomLevel, zoomLevel);
+  //   traverseAndDraw(objectWithCoordinate, ctx); //
+  //   ctx.restore();
+  // };
+
+  // Zoomlogic(canvasRef, zoomHandle, zoomSlider)
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  const [isZooming, setIsZooming] = useState(false);
+  const zoomHandleRef = useRef<HTMLDivElement>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [startPan, setStartPan] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const maxZoom = 2;
+  const minZoom = 0.5;
+
+  const redrawCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(panOffset.x, panOffset.y);
+    ctx.scale(zoomLevel, zoomLevel);
+    traverseAndDraw(objectWithCoordinate, ctx);
+    ctx.restore();
+  }, [panOffset, zoomLevel, objectWithCoordinate, traverseAndDraw]);
+
+  useEffect(() => {
+    redrawCanvas();
+  }, [redrawCanvas]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const zoomHandle = zoomHandleRef.current;
+
+    const onZoomHandleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation(); // Empêcher l'événement de se propager au canvas
+      setIsZooming(true);
+      // Plus de logique si nécessaire
+    };
+
+    // Modifier onMouseDown pour distinguer les deux cas
+    const onMouseDown = (e: MouseEvent) => {
+      if (!isZooming) {
+        setIsPanning(true);
+        setStartPan({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (isPanning && canvas) {
+        const dx = e.clientX - startPan.x;
+        const dy = e.clientY - startPan.y;
+        setPanOffset({ x: dx, y: dy });
+        redrawCanvas();
+      }
+
+      // Gestion du mouvement de la poignée de zoom
+      if (zoomHandle && e.target === zoomHandle) {
+        const rect = zoomHandle.parentElement!.getBoundingClientRect();
+        const newPositionX = Math.max(
+          0,
+          Math.min(e.clientX - rect.left, rect.width - zoomHandle.offsetWidth)
+        );
+
+        zoomHandle.style.left = `${newPositionX}px`;
+
+        const zoomFraction =
+          newPositionX / (rect.width - zoomHandle.offsetWidth);
+        const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
+        setZoomLevel(newZoomLevel);
+        redrawCanvas();
+      }
+    };
+
+    const onMouseUp = () => setIsPanning(false);
+
+    // Ajout des écouteurs d'événements pour la souris
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    if (zoomHandle) {
+      zoomHandle.addEventListener("mousedown", onMouseDown); // Pour déplacer la poignée de zoom
+    }
+    canvas?.addEventListener("mousedown", onMouseDown); // Pour commencer le panning
+
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      if (zoomHandle) {
+        zoomHandle.removeEventListener("mousedown", onMouseDown);
+      }
+      canvas?.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [
+    isPanning,
+    panOffset,
+    zoomLevel,
+    redrawCanvas,
+    startPan.x,
+    startPan.y,
+    isZooming,
+  ]);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   return (
-    <div>
-      <canvas
-        ref={canvasRef}
-        // width={total[0] * (200 + 100)}
-        // height={total[1] * (100 + 20)}
-        width="3000"
-        height="1000"
-      />
-      ;<h1>This is input {JSON.stringify(nestedObjectData)}</h1>
-      <div style={{ padding: "30px" }} />
-      <h1>This is countNestedObjectLevels {JSON.stringify(nestedObject)}</h1>
-      <div style={{ padding: "30px" }} />
-      <h1>
-        This is TotalItemsCounting, total des extremités {JSON.stringify(total)}
-      </h1>
-      <div style={{ padding: "10px" }} />
-      <h1>
-        This is AddCoordinates, l&apos;objet avec x,y =
-        {JSON.stringify(objectWithCoordinate)}
-      </h1>
-    </div>
+    <>
+      <div className=" ml-10 mt-10 fixed w-[200px] h-5 bg-[#ddd]">
+        <div
+          ref={zoomHandleRef}
+          className="absolute w-5 h-5 bg-[#333] cursor-pointer border-lg"
+        ></div>
+      </div>
+      <div className=" relative flex justify-center">
+        <canvas
+          ref={canvasRef}
+          width={total[1] * (200 + 100)}
+          height={total[0] * (100 + 8)}
+          style={{ border: "1px solid #000" }}
+        />
+      </div>
+    </>
   );
 };
 
