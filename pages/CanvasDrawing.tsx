@@ -3,14 +3,14 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObject";
 import TotalItemsCounting from "./MapLogic/TotalItemsCounting";
-import Zoomlogic from "./Zoomlogic";
+// import countNestedObjectLevels from "./ParsingLogic";
+import traverseAndDraw from "./MapLogic/Drawing";
 
 interface NestedObject {
   [key: string]: any;
 }
 
 const CanvasDrawing = () => {
-  ///////////////////////////////  ADDCoordinate   /////////////////////////////////////////////////////
   let count = 0;
 
   function processNestedObject(
@@ -28,7 +28,7 @@ const CanvasDrawing = () => {
           depth + 1
         );
         newObj[key] = processedObj;
-        localCount += subCount; // Inclure le compte des niveaux inférieurs
+        localCount += subCount;
         localSum += subSum;
       } else {
         count++;
@@ -39,25 +39,22 @@ const CanvasDrawing = () => {
     }
     if (localSum && depth - 1 > 0)
       newObj["pos"] = { x: localSum / localCount, y: depth - 1 };
-    // console.log(
-    //   "This is localSum = ",
-    //   localSum,
-    //   "and localCount = ",
-    //   localCount,
-    //   "and depth = ",
-    //   depth
-    // );
     localSum += localSum / localCount;
     localCount++;
     return [newObj, localCount, localSum];
   }
 
   const AddCoordinates = (obj: NestedObject): NestedObject => {
-    const [newObj, ,] = processNestedObject(obj, 1); // Commencer à la profondeur 1
+    const [newObj, ,] = processNestedObject(obj, 1);
     return newObj;
   };
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
   function countNestedObjectLevels(obj: NestedObject) {
     const count = (currentObj: any, depth: number = 0) => {
       if (typeof currentObj !== "object" || currentObj === null) {
@@ -87,13 +84,12 @@ const CanvasDrawing = () => {
     const { structure: resultStructure } = count(obj);
     return resultStructure;
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-
   const nestedObject: any = countNestedObjectLevels(nestedObjectData);
   const total = TotalItemsCounting(nestedObjectData);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,136 +97,23 @@ const CanvasDrawing = () => {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////  Drawing function   ////////////////////////////////////////////////
-
-  
-  const traverseAndDraw = useCallback((obj: any, ctx: CanvasRenderingContext2D) => {
-    const drawSquare = (
-      ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      label: string
-    ) => {
-      ctx.fillStyle = "blue"; // Couleur des carrés
-      ctx.fillRect(x + x * 100, y + y * 50, 200, 100);
-      ctx.fillStyle = "white"; // Couleur du texte pour le contraste
-      ctx.font = "20px Arial"; // Taille et type de police pour le label
-      ctx.fillText(label, x + x * 100 + 10, y + y * 50 + 30);
-    };
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const val = obj[key];
-        if (typeof val === "object" && val !== null) {
-          if ("x" in val && "y" in val) {
-            const label = `x: ${val.x}, y: ${val.y}`;
-            drawSquare(ctx, val.y * 2, val.x * 2, label); // inverser
-          }
-          traverseAndDraw(val, ctx);
-        }
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
-        // Nettoyer le canvas avant de dessiner
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
-        // Parcourir l'objet imbriqué et dessiner des carrés
         traverseAndDraw(objectWithCoordinate, ctx);
       }
     }
-  }, []);
+  }, [objectWithCoordinate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////     Zoom Logic    ///////////////////////////////////////////////////
 
-  // const zoomHandleRef = useRef<HTMLDivElement>(null);
-  // const canvasRef = useRef<HTMLCanvasElement>(null);
-  // const maxZoom = 2; // Définissez selon vos besoins
-  // const minZoom = 0.5; // Définissez selon vos besoins
-  // let zoomLevel = 1;
-
-  // useEffect(() => {
-  //   const onMouseMove = (e: MouseEvent) => {
-  //     const zoomHandle = zoomHandleRef.current;
-  //     const canvas = canvasRef.current;
-  //     // if (!zoomHandle || !canvas) return;
-
-  //     // Convertir la position X de la souris en position relative dans le slider
-  //     if (zoomHandle) {
-  //       const rect = zoomHandle.parentElement!.getBoundingClientRect();
-  //       const newPositionX = Math.max(
-  //         0,
-  //         Math.min(e.clientX - rect.left, rect.width - zoomHandle.offsetWidth)
-  //       );
-
-  //       // Mettre à jour la position de la boule de zoom
-  //       zoomHandle.style.left = `${newPositionX}px`;
-
-  //       // Calculer le nouveau niveau de zoom
-  //       const zoomFraction =
-  //         newPositionX / (rect.width - zoomHandle.offsetWidth);
-  //       zoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
-  //       console.log("zoomLevel = ", zoomLevel);
-  //     }
-
-  //     // Redessiner le canvas avec le nouveau niveau de zoom
-  //     redrawCanvas(zoomLevel);
-  //   };
-
-  //   const onMouseDown = () => {
-  //     document.addEventListener("mousemove", onMouseMove);
-  //     document.addEventListener(
-  //       "mouseup",
-  //       () => {
-  //         document.removeEventListener("mousemove", onMouseMove);
-  //       },
-  //       { once: true }
-  //     );
-  //   };
-
-  //   if (zoomHandleRef.current) {
-  //     zoomHandleRef.current.addEventListener("mousedown", onMouseDown);
-  //   }
-
-  //   return () => {
-  //     if (zoomHandleRef.current) {
-  //       zoomHandleRef.current.removeEventListener("mousedown", onMouseDown);
-  //     }
-  //   };
-  // }, []);
-
-  // const redrawCanvas = (zoomLevel: number) => {
-  //   const canvas = canvasRef.current;
-  //   if (!canvas) return;
-  //   const ctx = canvas.getContext("2d");
-  //   if (!ctx) return;
-
-  //   ctx.clearRect(0, 0, canvas.width, canvas.height); //
-  //   ctx.save();
-  //   ctx.scale(zoomLevel, zoomLevel);
-  //   traverseAndDraw(objectWithCoordinate, ctx); //
-  //   ctx.restore();
-  // };
-
-  // Zoomlogic(canvasRef, zoomHandle, zoomSlider)
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  const [isZooming, setIsZooming] = useState(false);
   const zoomHandleRef = useRef<HTMLDivElement>(null);
+  const [isZooming, setIsZooming] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
@@ -239,7 +122,15 @@ const CanvasDrawing = () => {
   });
   const [zoomLevel, setZoomLevel] = useState(1);
   const maxZoom = 2;
-  const minZoom = 0.5;
+  const minZoom = 0.3;
+
+  const onZoomHandleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation(); // Important pour éviter de déclencher le panning ou d'autres actions
+      setIsZooming(true);
+    },
+    []
+  );
 
   const redrawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -253,8 +144,7 @@ const CanvasDrawing = () => {
     ctx.scale(zoomLevel, zoomLevel);
     traverseAndDraw(objectWithCoordinate, ctx);
     ctx.restore();
-  }, [panOffset, zoomLevel, objectWithCoordinate, traverseAndDraw]);
-
+  }, [panOffset, zoomLevel, objectWithCoordinate]);
   useEffect(() => {
     redrawCanvas();
   }, [redrawCanvas]);
@@ -263,55 +153,85 @@ const CanvasDrawing = () => {
     const canvas = canvasRef.current;
     const zoomHandle = zoomHandleRef.current;
 
-    const onZoomHandleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-      e.stopPropagation(); // Empêcher l'événement de se propager au canvas
-      setIsZooming(true);
-      // Plus de logique si nécessaire
-    };
-
     // Modifier onMouseDown pour distinguer les deux cas
     const onMouseDown = (e: MouseEvent) => {
-      if (!isZooming) {
+      console.log("mouse down");
+      if (
+        zoomHandleRef.current &&
+        zoomHandleRef.current.contains(e.target as Node)
+      ) {
+        // La souris est enfoncée sur la poignée de zoom
+      } else {
+        // La souris est enfoncée ailleurs, commencer le panning
         setIsPanning(true);
         setStartPan({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       }
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (isPanning && canvas) {
+      if (isZooming && zoomHandle) {
+        const rect = zoomHandle.parentElement!.getBoundingClientRect();
+        const handleWidth = zoomHandle.offsetWidth;
+
+        const newPositionX = e.clientX - rect.left - handleWidth / 2;
+        const newLeft = Math.max(
+          0,
+          Math.min(newPositionX, rect.width - handleWidth)
+        );
+
+        // Définir la nouvelle position de la poignée de zoom
+        zoomHandle.style.left = `${newLeft}px`;
+        // console.log(newPositionX);
+        if (newPositionX >= 0 && newPositionX <= rect.width) {
+          const zoomFraction =
+            newPositionX / (rect.width - zoomHandle.offsetWidth);
+          const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
+
+          // Calculez d'abord newPanOffsetX et newPanOffsetY en utilisant newZoomLevel
+          const currentCenterX = (-panOffset.x + rect.width / 2) / zoomLevel;
+          const currentCenterY = (-panOffset.y + rect.height / 2) / zoomLevel;
+          console.log("currentCenterY", currentCenterY);
+          const newPanOffsetX = -(
+            currentCenterX * newZoomLevel -
+            rect.width / 2
+          );
+          console.log("newPanOffsetX", newPanOffsetX);
+          const newPanOffsetY = -(
+            currentCenterY * newZoomLevel -
+            rect.height / 2
+          );
+
+          // Ensuite, mettez à jour zoomLevel et panOffset
+          setZoomLevel(newZoomLevel);
+          setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
+        }
+      } else if (isPanning && canvas) {
         const dx = e.clientX - startPan.x;
         const dy = e.clientY - startPan.y;
         setPanOffset({ x: dx, y: dy });
         redrawCanvas();
       }
 
-      // Gestion du mouvement de la poignée de zoom
-      if (zoomHandle && e.target === zoomHandle) {
-        const rect = zoomHandle.parentElement!.getBoundingClientRect();
-        const newPositionX = Math.max(
-          0,
-          Math.min(e.clientX - rect.left, rect.width - zoomHandle.offsetWidth)
-        );
-
-        zoomHandle.style.left = `${newPositionX}px`;
-
-        const zoomFraction =
-          newPositionX / (rect.width - zoomHandle.offsetWidth);
-        const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
-        setZoomLevel(newZoomLevel);
+      if (zoomHandle && e.target === zoomHandle && isZooming) {
         redrawCanvas();
       }
     };
 
-    const onMouseUp = () => setIsPanning(false);
+    const onMouseUp = () => {
+      if (isPanning) {
+        setIsPanning(false);
+      }
+      if (isZooming) {
+        setIsZooming(false);
+      }
+    };
 
-    // Ajout des écouteurs d'événements pour la souris
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     if (zoomHandle) {
-      zoomHandle.addEventListener("mousedown", onMouseDown); // Pour déplacer la poignée de zoom
+      zoomHandle.addEventListener("mousedown", onMouseDown);
     }
-    canvas?.addEventListener("mousedown", onMouseDown); // Pour commencer le panning
+    canvas?.addEventListener("mousedown", onMouseDown);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
@@ -333,24 +253,33 @@ const CanvasDrawing = () => {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <>
-      <div className=" ml-10 mt-10 fixed w-[200px] h-5 bg-[#ddd]">
+      <input
+        type="text"
+        placeholder="rechercher"
+        className="bg-black-300 fixed ml-10 mt-2"
+      />
+      <div className=" ml-10 mt-12 fixed w-[150px] h-[2px] bg-[#ddd]">
         <div
           ref={zoomHandleRef}
-          className="absolute w-5 h-5 bg-[#333] cursor-pointer border-lg"
+          onMouseDown={onZoomHandleMouseDown}
+          className="absolute w-2 h-2 bg-[#DCDCDC] cursor-pointer border-lg rounded-xl"
+          style={{ top: "-3px", left: "50px" }}
         ></div>
       </div>
-      <div className=" relative flex justify-center">
+      <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
-          width={total[1] * (200 + 100)}
+          width={total[1] * (200 + 50)}
           height={total[0] * (100 + 8)}
-          style={{ border: "1px solid #000" }}
+          style={{ border: "1px solid black" }}
         />
       </div>
+      <h1>
+        This is objectWithCoordinate = {JSON.stringify(objectWithCoordinate)}
+      </h1>
     </>
   );
 };
