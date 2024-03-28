@@ -36,7 +36,7 @@ function Auth() {
           </button>
         </div>
       </div>
-      <Link href="/MapCreate">
+      <Link href="/MapChoice">
         <button className="bg-[#003642] text-white py-[8px] font-bold px-8 rounded-xl text-xl">
           {" "}
           Se Connecter

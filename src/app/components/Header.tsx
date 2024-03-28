@@ -8,7 +8,10 @@ import Link from "next/link";
 
 function Header() {
   return (
-    <div className="flex mx-10 items-center py-6">
+    <div
+      className="flex mx-10 items-center py-6  "
+      style={{ userSelect: "none" }}
+    >
       <Link href="/">
         <Image
           src={Logo}
@@ -24,9 +27,9 @@ function Header() {
           </span>
         </div>
         <div className="flex justify-center text-center gap-[150px] ">
-          <button className="bg-[#F56600] text-white p-2 font-semibold rounded-[14px] hover:cursor-pointer">
+          <Link href="/CanvasDrawing" className="bg-[#F56600] text-white p-2 font-semibold rounded-[14px] hover:cursor-pointer">
             Commencer l&apos;essai gratuit
-          </button>
+          </Link>
           <Image
             src={profilLogo}
             alt="Logo"
