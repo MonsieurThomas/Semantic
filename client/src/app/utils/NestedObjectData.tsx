@@ -1,8 +1,7 @@
 const nestedObjectData = {
   //////////////////////////////Choix 1 //////////////////////////////////////////////////
 
-  bigcategory :
-  {
+  bigcategory: {
     category1: {
       subcategory1: {
         item1: "valeur1",
@@ -55,7 +54,7 @@ const nestedObjectData = {
         item27: "valeur27",
       },
     },
-  }
+  },
 
   //////////////////////////////// Choix2 //////////////////////////////////////////////////
 
@@ -110,8 +109,8 @@ const nestedObjectData = {
 
 export default nestedObjectData;
 
-
- {/* <h1>This is input {JSON.stringify(nestedObjectData)}</h1>
+{
+  /* <h1>This is input {JSON.stringify(nestedObjectData)}</h1>
         <div style={{ padding: "30px" }} />
         <h1>This is countNestedObjectLevels {JSON.stringify(nestedObject)}</h1>
         <div style={{ padding: "30px" }} />
@@ -122,4 +121,5 @@ export default nestedObjectData;
         <h1>
           This is AddCoordinates, l&apos;objet avec x,y =
           {JSON.stringify(objectWithCoordinate)}
-        </h1> */}
+        </h1> */
+}
