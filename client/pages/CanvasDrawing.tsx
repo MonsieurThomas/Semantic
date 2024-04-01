@@ -11,87 +11,69 @@ interface NestedObject {
 }
 
 const CanvasDrawing = () => {
-  let count = 0;
 
-  function processNestedObject(
-    obj: NestedObject,
-    depth = 0
-  ): [NestedObject, number, number] {
+  let count = 0;
+  let branchNb = 0;
+
+  function processNestedObject(obj: NestedObject, depth = 0, branch = 1): [NestedObject, number, number, number] {
     let localCount = 0;
     let localSum = 0;
     const newObj: NestedObject = {};
-
+  
+    if (depth === 1) {
+      branch = branchNb++;
+    }
+  
     for (const key in obj) {
-      if (typeof obj[key] === "object" && obj[key] !== null) {
-        const [processedObj, subCount, subSum] = processNestedObject(
-          obj[key] as NestedObject,
-          depth + 1
-        );
-        newObj[key] = processedObj;
+      if (obj[key] !== null && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+        const [processedObj, subCount, subSum, processedBranch] = processNestedObject(obj[key], depth + 1, branch);
+        newObj[key] = { ...processedObj, branch: processedBranch };
         localCount += subCount;
         localSum += subSum;
       } else {
         count++;
         localCount++;
         localSum += count;
-        newObj[key] = { x: count, y: depth };
+        newObj[key] = { x: count, y: depth, value: obj[key], branch: branch };
       }
     }
-    if (localSum && depth - 1 > 0)
-      newObj["pos"] = { x: localSum / localCount, y: depth - 1 };
+  
+    if (depth === 0) {
+      branch = 0;
+    }
+    
+    if (localSum && depth > 0) {
+      newObj["pos"] = { x: localSum / localCount, y: depth - 1, branch: branch };
+    }
+  
     localSum += localSum / localCount;
     localCount++;
-    return [newObj, localCount, localSum];
+    return [newObj, localCount, localSum, branch];
   }
-
-  const AddCoordinates = (obj: NestedObject): NestedObject => {
-    const [newObj, ,] = processNestedObject(obj, 1);
+  
+  const AddCoordinates = (obj: NestedObject) => {
+    branchNb = 1;
+    const [newObj, , ,] = processNestedObject(obj, 0);
     return newObj;
   };
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  function countNestedObjectLevels(obj: NestedObject) {
-    const count = (currentObj: any, depth: number = 0) => {
-      if (typeof currentObj !== "object" || currentObj === null) {
-        return { value: currentObj, depth }; // For non-objects, return the value and depth directly
-      }
-
-      let structure: NestedObject = {};
-      let length = 0; // Initialize length count for this level
-
-      for (const key in currentObj) {
-        if (Object.prototype.hasOwnProperty.call(currentObj, key)) {
-          const item = currentObj[key];
-          const { structure: nestedStructure, depth: nestedDepth } = count(
-            item,
-            depth + 1
-          );
-          structure[key] = nestedStructure; // Add the nested structure or value directly
-          length += 1; // Count each item at this level
-        }
-      }
-
-      // Attach a length property and the nested structure or value
-      return { structure: { ...structure, length }, depth };
-      // return { structure: { ...structure, length }, depth };
-    };
-
-    const { structure: resultStructure } = count(obj);
-    return resultStructure;
-  }
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  function  getMidBranchandX(
+    obj: NestedObject,
+  ): [number, number] {
+
+
+
+
+    return [1,2]
+  }
+
   const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-  const nestedObject: any = countNestedObjectLevels(nestedObjectData);
-  const total = TotalItemsCounting(nestedObjectData);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
+  getMidBranchandX(nestedDummy),
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,10 +88,6 @@ const CanvasDrawing = () => {
     }
   }, [objectWithCoordinate]);
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,10 +142,9 @@ const CanvasDrawing = () => {
         zoomHandleRef.current &&
         zoomHandleRef.current.contains(e.target as Node)
       ) {
-        // La souris est enfoncée sur la poignée de zoom
       } else {
-        // La souris est enfoncée ailleurs, commencer le panning
-        setIsPanning(true);
+        // zoom
+        setIsPanning(true); // souris enfoncé
         setStartPan({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       }
     };
@@ -340,7 +317,7 @@ const CanvasDrawing = () => {
         <canvas
           ref={canvasRef}
           width="1400px"
-          height={total[0] * (100 + 8)}
+          height="500px"
           style={{ border: "1px solid black" }}
         />
       </div>
