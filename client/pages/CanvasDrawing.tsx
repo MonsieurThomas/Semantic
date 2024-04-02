@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback,  } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import TotalItemsCounting from "./MapLogic/TotalItemsCounting";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -10,16 +10,27 @@ interface NestedObject {
   [key: string]: any;
 }
 
+// let color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
+
+function randomColor() {
+  const randomNumber = Math.random();
+  const color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
+  const randomInteger = Math.floor(randomNumber * 5);
+
+  return color[randomInteger];
+}
+
 const CanvasDrawing = () => {
   let count = 0;
   let branchNb = 0;
+  let color = "";
 
   function processNestedObject(
     obj: NestedObject,
     depth = 0,
     branch = 0,
     parentKey = ""
-  ): [NestedObject, number, number, number] { // number en trop ?
+  ): [NestedObject, number, number, number] {
     let localCount = 0;
     let localSum = 0;
     const newObj: NestedObject = {};
@@ -30,7 +41,10 @@ const CanvasDrawing = () => {
         obj[key] !== null &&
         !Array.isArray(obj[key])
       ) {
-        if (depth === 1) branchNb++;
+        if (depth === 1) {
+          branchNb++;
+          color = randomColor();
+        }
         const [processedObj, subCount, subSum] = processNestedObject(
           obj[key],
           depth + 1,
@@ -51,6 +65,7 @@ const CanvasDrawing = () => {
           value: obj[key],
           branch: branchNb,
           parentValue: parentKey,
+          color: color,
         };
       }
     }
@@ -60,6 +75,7 @@ const CanvasDrawing = () => {
         y: depth - 1,
         branch: branch,
         value: parentKey,
+        color: color,
       };
     }
 
@@ -77,12 +93,11 @@ const CanvasDrawing = () => {
   ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // function getMidBranchandX(obj: NestedObject, branch:number): [ number] {
   function getMidBranchandXandChangeXTitle(
     obj: NestedObject,
     branch: number
   ): number {
-    let minX = Number.MAX_SAFE_INTEGER; // Initialize with the largest possible number
+    let minX = Number.MAX_SAFE_INTEGER;
 
     function traverse(obj: NestedObject) {
       for (const key of Object.keys(obj)) {
@@ -90,7 +105,7 @@ const CanvasDrawing = () => {
         if (typeof value === "object" && value !== null) {
           if (value.branch === branch && "x" in value && value.x < minX) {
             minX = value.x;
-            // console.log("We are in");
+            
           }
           if (value.branch === 0) value.x = minX / 2;
           traverse(value);
@@ -109,25 +124,25 @@ const CanvasDrawing = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
   const midBranch = Math.floor(branchNb / 2);
-  // console.log("midBranch", midBranch);
+  
   const midX = getMidBranchandXandChangeXTitle(
     objectWithCoordinate,
     midBranch + 1
   );
 
   const deltaX = (count - midX) * 2; // *2 ?? Detla entre la hauteur des branches de gauche et de droite
-  // console.log("midX", midX);
-  // console.log("deltaX", deltaX);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   useEffect(() => {
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        traverseAndDraw(objectWithCoordinate, ctx, midBranch, deltaX);
+        traverseAndDraw(objectWithCoordinate, ctx, midBranch, deltaX, {
+          x: 0,
+          y: 0,
+        });
       }
     }
   }, [objectWithCoordinate, midBranch, deltaX]);
@@ -169,7 +184,10 @@ const CanvasDrawing = () => {
     ctx.save();
     ctx.translate(panOffset.x, panOffset.y); ///// position de depart
     ctx.scale(zoomLevel, zoomLevel);
-    traverseAndDraw(objectWithCoordinate, ctx, midBranch + 1, deltaX);
+    traverseAndDraw(objectWithCoordinate, ctx, midBranch + 1, deltaX, {
+      x: 0,
+      y: 0,
+    });
     ctx.restore();
   }, [panOffset, zoomLevel, objectWithCoordinate, midBranch, deltaX]);
   useEffect(() => {

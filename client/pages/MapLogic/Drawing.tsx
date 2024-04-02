@@ -7,19 +7,36 @@ const traverseAndDraw = (
   obj: any,
   ctx: CanvasRenderingContext2D,
   midBranch: number,
-  deltaX: number
-) => {
-
-
-
+  deltaX: number,
+  parentPos: DrawPoint
+): void => {
   const drawLine = (
     ctx: CanvasRenderingContext2D,
     start: DrawPoint,
     end: DrawPoint
   ) => {
+    const midX = (start.x + end.x) / 2;
+    ctx.beginPath();
+    ctx.moveTo(start.x + 350, start.y);
+    ctx.lineTo(midX, start.y);
+    ctx.lineTo(midX, end.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = "black";
+
+    ctx.stroke();
+  };
+
+  const drawLineInverse = (
+    ctx: CanvasRenderingContext2D,
+    start: DrawPoint,
+    end: DrawPoint
+  ) => {
+    const midX = (start.x + (end.x + 350)) / 2;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(midX, start.y);
+    ctx.lineTo(midX, end.y);
+    ctx.lineTo(end.x + 350, end.y);
     ctx.strokeStyle = "black";
     ctx.stroke();
   };
@@ -29,49 +46,46 @@ const traverseAndDraw = (
     x: number,
     y: number,
     label: string,
-    label2: string
+    label2: string,
+    color: string
   ) => {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(x * 550, y * 160, 350, 100);
+    const posX = x * 550;
+    const posY = y * 160;
+    ctx.fillStyle = color;
+    ctx.fillRect(posX, posY, 350, 100);
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
-    ctx.fillText(label, x * 550, y * 160 + 30);
-    ctx.fillText(label2, x * 550, y * 160 + 60);
+    ctx.fillText(label, posX + 10, posY + 40);
+    ctx.fillText(label2, posX + 10, posY + 70);
+    return { x: posX, y: posY + 50 };
   };
+
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
-      const val = obj[key];
+      let val = obj[key];
       if (typeof val === "object" && val !== null) {
-        if ("x" in val && "y" in val) {
-          const label = `x: ${val.x}, y: ${val.y}`;
-
-          let label2 = "";
-          if ("value" in val) {
-            label2 = `branch: ${val.branch}, value: ${val.value}`;
-          } else if ("titre" in val) {
-            label2 = `branch: ${val.branch}, titre: ${val.titre}`;
-          } else if ("Bloc" in val) {
-            label2 = `branch: ${val.branch}, Bloc: ${val.Bloc}`;
-          } else label2 = `none`;
-          if (val.branch >= midBranch)
-          {
-            drawSquare(ctx, -val.y, val.x - deltaX, label, label2);
-            // drawLine(
-            //   ctx,
-            //   { x: val.x * 350, y: val.y * 100 },
-            //   { x: val.x * 350 + 300, y: val.y * 100 + 100 }
-            // );
-          }
-            // logique pour dessin a gauche
-          else drawSquare(ctx, val.y, val.x, label, label2);
-          console.log(`okk avec x= ${val.x}`);
-          // drawLine(
-          //   ctx,
-          //   { x: val.x * 350, y: val.y * 100 },
-          //   { x: val.x * 350 + 300, y: val.y * 100 + 100 }
-          // );
+        let tmpVal = null;
+        if (!val.x) {
+          tmpVal = val;
+          val = val.value;
         }
-        traverseAndDraw(val, ctx, midBranch, deltaX);
+
+        const adjustedY = val.branch >= midBranch ? -val.y : val.y;
+        const adjustedX = val.branch >= midBranch ? val.x - deltaX : val.x;
+        const currentPos = drawSquare(
+          ctx,
+          adjustedY,
+          adjustedX,
+          `x: ${val.x}, y: ${val.y}`,
+          `branch: ${val.branch}`,
+          val.color
+        );
+        if (val.branch != 0 && val.branch < midBranch)
+          drawLine(ctx, parentPos, currentPos);
+        if (val.branch != 0 && val.branch >= midBranch)
+          drawLineInverse(ctx, parentPos, currentPos);
+        if (tmpVal) traverseAndDraw(tmpVal, ctx, midBranch, deltaX, currentPos);
+        else traverseAndDraw(val, ctx, midBranch, deltaX, currentPos);
       }
     }
   }
