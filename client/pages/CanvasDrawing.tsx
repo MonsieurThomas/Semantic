@@ -11,69 +11,113 @@ interface NestedObject {
 }
 
 const CanvasDrawing = () => {
-
   let count = 0;
   let branchNb = 0;
 
-  function processNestedObject(obj: NestedObject, depth = 0, branch = 1): [NestedObject, number, number, number] {
+  function processNestedObject(
+    obj: NestedObject,
+    depth = 0,
+    branch = 0,
+    parentKey = ""
+  ): [NestedObject, number, number, number] { // number en trop ?
     let localCount = 0;
     let localSum = 0;
     const newObj: NestedObject = {};
-  
-    if (depth === 1) {
-      branch = branchNb++;
-    }
-  
+
     for (const key in obj) {
-      if (obj[key] !== null && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
-        const [processedObj, subCount, subSum, processedBranch] = processNestedObject(obj[key], depth + 1, branch);
-        newObj[key] = { ...processedObj, branch: processedBranch };
+      if (
+        typeof obj[key] === "object" &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
+        if (depth === 1) branchNb++;
+        const [processedObj, subCount, subSum] = processNestedObject(
+          obj[key],
+          depth + 1,
+          branchNb,
+          key
+        );
+        newObj[key] = { ...processedObj };
         localCount += subCount;
         localSum += subSum;
       } else {
+        if (depth === 1) branchNb++;
         count++;
         localCount++;
         localSum += count;
-        newObj[key] = { x: count, y: depth, value: obj[key], branch: branch };
+        newObj[key] = {
+          x: count,
+          y: depth,
+          value: obj[key],
+          branch: branchNb,
+          parentValue: parentKey,
+        };
       }
     }
-  
-    if (depth === 0) {
-      branch = 0;
+    if (localSum && depth - 1 >= 0) {
+      newObj["value"] = {
+        x: localSum / localCount,
+        y: depth - 1,
+        branch: branch,
+        value: parentKey,
+      };
     }
-    
-    if (localSum && depth > 0) {
-      newObj["pos"] = { x: localSum / localCount, y: depth - 1, branch: branch };
-    }
-  
+
     localSum += localSum / localCount;
     localCount++;
     return [newObj, localCount, localSum, branch];
   }
-  
+
   const AddCoordinates = (obj: NestedObject) => {
-    branchNb = 1;
     const [newObj, , ,] = processNestedObject(obj, 0);
     return newObj;
   };
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function  getMidBranchandX(
+  // function getMidBranchandX(obj: NestedObject, branch:number): [ number] {
+  function getMidBranchandXandChangeXTitle(
     obj: NestedObject,
-  ): [number, number] {
+    branch: number
+  ): number {
+    let minX = Number.MAX_SAFE_INTEGER; // Initialize with the largest possible number
 
-
-
-
-    return [1,2]
+    function traverse(obj: NestedObject) {
+      for (const key of Object.keys(obj)) {
+        const value = obj[key];
+        if (typeof value === "object" && value !== null) {
+          if (value.branch === branch && "x" in value && value.x < minX) {
+            minX = value.x;
+            // console.log("We are in");
+          }
+          if (value.branch === 0) value.x = minX / 2;
+          traverse(value);
+        }
+      }
+    }
+    for (const nextLevel of Object.values(obj)) {
+      if (typeof nextLevel === "object" && nextLevel !== null) {
+        traverse(nextLevel);
+      }
+    }
+    return minX === Number.MAX_SAFE_INTEGER ? -1 : minX;
   }
 
   const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
-  getMidBranchandX(nestedDummy),
+  const midBranch = Math.floor(branchNb / 2);
+  // console.log("midBranch", midBranch);
+  const midX = getMidBranchandXandChangeXTitle(
+    objectWithCoordinate,
+    midBranch + 1
+  );
+
+  const deltaX = (count - midX) * 2; // *2 ?? Detla entre la hauteur des branches de gauche et de droite
+  // console.log("midX", midX);
+  // console.log("deltaX", deltaX);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,10 +127,10 @@ const CanvasDrawing = () => {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        traverseAndDraw(objectWithCoordinate, ctx);
+        traverseAndDraw(objectWithCoordinate, ctx, midBranch, deltaX);
       }
     }
-  }, [objectWithCoordinate]);
+  }, [objectWithCoordinate, midBranch, deltaX]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,9 +169,9 @@ const CanvasDrawing = () => {
     ctx.save();
     ctx.translate(panOffset.x, panOffset.y); ///// position de depart
     ctx.scale(zoomLevel, zoomLevel);
-    traverseAndDraw(objectWithCoordinate, ctx);
+    traverseAndDraw(objectWithCoordinate, ctx, midBranch + 1, deltaX);
     ctx.restore();
-  }, [panOffset, zoomLevel, objectWithCoordinate]);
+  }, [panOffset, zoomLevel, objectWithCoordinate, midBranch, deltaX]);
   useEffect(() => {
     redrawCanvas();
   }, [redrawCanvas]);
@@ -136,7 +180,7 @@ const CanvasDrawing = () => {
     const canvas = canvasRef.current;
     const zoomHandle = zoomHandleRef.current;
 
-    console.log("zoomLevel", zoomLevel);
+    // console.log("zoomLevel", zoomLevel);
     const onMouseDown = (e: MouseEvent) => {
       if (
         zoomHandleRef.current &&
@@ -190,7 +234,7 @@ const CanvasDrawing = () => {
     /////handle weel ////
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      console.log("handleWheel");
+      // console.log("handleWheel");
       const zoomIntensity = 0.05;
       const direction = e.deltaY < 0 ? 1 : -1;
       const newZoomLevel = Math.min(
@@ -225,7 +269,7 @@ const CanvasDrawing = () => {
           zoomHandle.style.left = `${
             ((newLeft - minZoom) / (maxZoom - minZoom)) * 150
           }px`;
-          console.log("newLeft", newLeft);
+          // console.log("newLeft", newLeft);
         }
         setZoomLevel(newZoomLevel);
         setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
