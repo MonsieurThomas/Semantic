@@ -1,41 +1,33 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback,  } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
-import TotalItemsCounting from "./MapLogic/TotalItemsCounting";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import traverseAndDraw from "./MapLogic/Drawing";
+import DrawTab from "./MapLogic/DrawTab";
 
 interface NestedObject {
   [key: string]: any;
 }
 
-// let color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
-
-function randomColor() {
-  const randomNumber = Math.random();
-  const color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
-  const randomInteger = Math.floor(randomNumber * 5);
-
-  return color[randomInteger];
-}
-
 const CanvasDrawing = () => {
   let count = 0;
   let branchNb = 0;
-  let color = "";
+  let localeTab: Array<any> = [];
 
   function processNestedObject(
     obj: NestedObject,
     depth = 0,
     branch = 0,
-    parentKey = ""
+    parentKey = "",
+    path = "" //
   ): [NestedObject, number, number, number] {
     let localCount = 0;
     let localSum = 0;
     const newObj: NestedObject = {};
-
+    let index = 0;
     for (const key in obj) {
+      let currentPath = path ? `${path}.${index + 1}` : `${index + 1}`;
       if (
         typeof obj[key] === "object" &&
         obj[key] !== null &&
@@ -43,109 +35,120 @@ const CanvasDrawing = () => {
       ) {
         if (depth === 1) {
           branchNb++;
-          color = randomColor();
+          path = `${branchNb}`;
         }
+        index++;
         const [processedObj, subCount, subSum] = processNestedObject(
           obj[key],
           depth + 1,
           branchNb,
-          key
+          key,
+          currentPath
         );
         newObj[key] = { ...processedObj };
         localCount += subCount;
         localSum += subSum;
       } else {
-        if (depth === 1) branchNb++;
+        if (depth === 1) {
+          branchNb++;
+        }
+        index++;
         count++;
         localCount++;
         localSum += count;
-        newObj[key] = {
-          x: count,
-          y: depth,
+        localeTab.push({
+          x: depth,
+          y: count,
           value: obj[key],
           branch: branchNb,
-          parentValue: parentKey,
-          color: color,
-        };
+          path: currentPath.substring(2),
+        });
       }
     }
     if (localSum && depth - 1 >= 0) {
-      newObj["value"] = {
-        x: localSum / localCount,
-        y: depth - 1,
-        branch: branch,
+      localeTab.push({
+        x: depth - 1,
+        y: localSum / localCount,
         value: parentKey,
-        color: color,
-      };
+        branch: branchNb,
+        path: path.substring(2),
+      });
     }
-
     localSum += localSum / localCount;
     localCount++;
+    console.log("ok");
     return [newObj, localCount, localSum, branch];
   }
 
-  const AddCoordinates = (obj: NestedObject) => {
+  const AddCoordinates: (obj: NestedObject) => any[][] = (
+    obj: NestedObject
+  ) => {
+    localeTab = [];
     const [newObj, , ,] = processNestedObject(obj, 0);
-    return newObj;
+    return localeTab;
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////  countNestedObjectLevels   ////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function getMidBranchandXandChangeXTitle(
-    obj: NestedObject,
-    branch: number
-  ): number {
-    let minX = Number.MAX_SAFE_INTEGER;
+  function ChangeXandY(tab: Array<any>) {
+    let maxBranch = 0;
+    let midBranch = 0;
+    let midCount = 0;
+    let maxCount = 0;
 
-    function traverse(obj: NestedObject) {
-      for (const key of Object.keys(obj)) {
-        const value = obj[key];
-        if (typeof value === "object" && value !== null) {
-          if (value.branch === branch && "x" in value && value.x < minX) {
-            minX = value.x;
-            
-          }
-          if (value.branch === 0) value.x = minX / 2;
-          traverse(value);
-        }
+    tab.forEach((obj) => {
+      // branche moyenne pour envoyer la moitié de la carte a gauche
+      if (obj.branch > maxBranch) {
+        maxBranch = obj.branch;
       }
-    }
-    for (const nextLevel of Object.values(obj)) {
-      if (typeof nextLevel === "object" && nextLevel !== null) {
-        traverse(nextLevel);
+    });
+    midBranch = maxBranch / 2 + 1;
+
+    tab.forEach((obj) => {
+      // hauteur max de la section droite de la carte
+      if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
+    });
+
+    tab.forEach((obj) => {
+      // hauteur max total pour calcul de la postion de la section gauche
+      if (obj) if (maxCount < obj.y) maxCount = obj.y;
+    });
+
+    tab.forEach((obj) => {
+      // changement de position pour la gauche
+      if (obj.branch >= midBranch) {
+        obj.y = obj.y - midCount + (maxCount - midCount) / 2;
+        obj.x = -obj.x;
       }
-    }
-    return minX === Number.MAX_SAFE_INTEGER ? -1 : minX;
+    });
+    tab.forEach((obj) => {
+      //placement titre centrale a la moyenne de la section droite
+      if (obj.x === 0 || obj.x === -0) {
+        obj.y = midCount / 2;
+        obj.branch = 0;
+      }
+    });
   }
 
-  const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
+  function Color(tab: Array<any>) {
+    const randomNumber = Math.random();
+    const color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
+    tab.forEach((obj) => {
+      obj.color = color[obj.branch];
+    });
+  }
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const objectWithCoordinate: NestedObject = AddCoordinates(nestedDummy);
-  const midBranch = Math.floor(branchNb / 2);
-  
-  const midX = getMidBranchandXandChangeXTitle(
-    objectWithCoordinate,
-    midBranch + 1
-  );
 
-  const deltaX = (count - midX) * 2; // *2 ?? Detla entre la hauteur des branches de gauche et de droite
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  useEffect(() => {
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        traverseAndDraw(objectWithCoordinate, ctx, midBranch, deltaX, {
-          x: 0,
-          y: 0,
-        });
-      }
-    }
-  }, [objectWithCoordinate, midBranch, deltaX]);
+  const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
+  let localTab = AddCoordinates(nestedDummy);
+  ChangeXandY(localTab);
+  Color(localTab);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,8 +166,8 @@ const CanvasDrawing = () => {
     y: 0,
   });
   const [zoomLevel, setZoomLevel] = useState(1);
-  const maxZoom = 2;
-  const minZoom = 0.2;
+  const maxZoom = 0.7;
+  const minZoom = 0.15;
 
   const onZoomHandleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -184,15 +187,13 @@ const CanvasDrawing = () => {
     ctx.save();
     ctx.translate(panOffset.x, panOffset.y); ///// position de depart
     ctx.scale(zoomLevel, zoomLevel);
-    traverseAndDraw(objectWithCoordinate, ctx, midBranch + 1, deltaX, {
-      x: 0,
-      y: 0,
-    });
+    DrawTab(ctx, localTab);
     ctx.restore();
-  }, [panOffset, zoomLevel, objectWithCoordinate, midBranch, deltaX]);
-  useEffect(() => {
-    redrawCanvas();
-  }, [redrawCanvas]);
+  }, [panOffset, zoomLevel, localTab]);
+
+  // useEffect(() => {
+  //   redrawCanvas();
+  // }, [redrawCanvas]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -287,7 +288,6 @@ const CanvasDrawing = () => {
           zoomHandle.style.left = `${
             ((newLeft - minZoom) / (maxZoom - minZoom)) * 150
           }px`;
-          // console.log("newLeft", newLeft);
         }
         setZoomLevel(newZoomLevel);
         setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
@@ -351,7 +351,7 @@ const CanvasDrawing = () => {
 
   return (
     <>
-      <div className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl ">
+      {/* <div className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl ">
         <SearchOutlinedIcon />
         <input
           type="text"
@@ -359,8 +359,8 @@ const CanvasDrawing = () => {
           className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
           style={{ userSelect: "none" }}
         />
-      </div>
-      <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
+      </div> */}
+      {/* <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
         <div
           ref={zoomHandleRef}
           onMouseDown={onZoomHandleMouseDown}
@@ -374,7 +374,7 @@ const CanvasDrawing = () => {
           {" "}
           {formatZoom(zoomFraction)} %
         </div>
-      </div>
+      </div> */}
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
@@ -383,9 +383,24 @@ const CanvasDrawing = () => {
           style={{ border: "1px solid black" }}
         />
       </div>
-      <h1>
-        This is objectWithCoordinate = {JSON.stringify(objectWithCoordinate)}
-      </h1>
+      <div>
+        {/* This is objectWithCoordinate = {JSON.stringify(tab)} */}
+        {/* This is objectWithCoordinate = {JSON.stringify(objectWithCoordinate)} */}
+        {/* This is objectWithCoordinate = {JSON.stringify(flatArray)} */}
+        {localTab.map((item, id) => {
+          return <div key={id}>{JSON.stringify(item)}</div>;
+        })}
+        This is count = {count};
+      </div>
+      <>
+        {/* {tab.map((item, id) => {
+          return (
+            <h1 key={id} className="m-4">
+              {JSON.stringify(item)}!!!!!\n\n!
+            </h1>
+          );
+        })} */}
+      </>
     </>
   );
 };

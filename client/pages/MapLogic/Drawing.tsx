@@ -13,11 +13,12 @@ const traverseAndDraw = (
   const drawLine = (
     ctx: CanvasRenderingContext2D,
     start: DrawPoint,
-    end: DrawPoint
+    end: DrawPoint,
+    tmpVal: any
   ) => {
-    const midX = (start.x + end.x) / 2;
+    const midX = (start.x + 350 + end.x) / 2;
     ctx.beginPath();
-    ctx.moveTo(start.x + 350, start.y);
+    ctx.moveTo(start.x, start.y);
     ctx.lineTo(midX, start.y);
     ctx.lineTo(midX, end.y);
     ctx.lineTo(end.x, end.y);
@@ -31,12 +32,12 @@ const traverseAndDraw = (
     start: DrawPoint,
     end: DrawPoint
   ) => {
-    const midX = (start.x + (end.x + 350)) / 2;
+    const midX = (start.x + end.x) / 2;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(midX, start.y);
     ctx.lineTo(midX, end.y);
-    ctx.lineTo(end.x + 350, end.y);
+    ctx.lineTo(end.x, end.y);
     ctx.strokeStyle = "black";
     ctx.stroke();
   };
@@ -81,7 +82,7 @@ const traverseAndDraw = (
           val.color
         );
         if (val.branch != 0 && val.branch < midBranch)
-          drawLine(ctx, parentPos, currentPos);
+          drawLine(ctx, parentPos, currentPos, tmpVal);
         if (val.branch != 0 && val.branch >= midBranch)
           drawLineInverse(ctx, parentPos, currentPos);
         if (tmpVal) traverseAndDraw(tmpVal, ctx, midBranch, deltaX, currentPos);

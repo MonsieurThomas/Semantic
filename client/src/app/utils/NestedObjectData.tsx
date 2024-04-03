@@ -53,7 +53,7 @@ const nestedObjectData = {
         item27: "valeur27",
       },
     },
-    category4: "test",
+    category4: "test branch4",
   },
 
   //////////////////////////////// Choix2 //////////////////////////////////////////////////
@@ -62,12 +62,12 @@ const nestedObjectData = {
   //   valeur1: "Valeur au niveau 1",
   //   valeur2: "Valeur au niveau 1",
   //   valeur3: "Valeur au niveau 1",
-  //   valeur4: "Valeur au niveau 1",//4
+  //   valeur4: "Valeur au niveau 1", //4
   //   niveau2: {
   //     valeur1: "Valeur au niveau 2",
   //     valeur2: "Valeur au niveau 2",
   //     valeur3: "Valeur au niveau 2",
-  //     valeur4: "Valeur au niveau 2",//4
+  //     valeur4: "Valeur au niveau 2", //4
   //     niveau3: {
   //       valeur1: "Valeur au niveau 3",
   //       valeur2: "Valeur au niveau 3",
@@ -78,10 +78,10 @@ const nestedObjectData = {
   //         valeur2: "Valeur au niveau 4",
   //         valeur3: "Valeur au niveau 4",
   //         valeur4: "Valeur au niveau 4", //4
-  //       }
-  //     }
-  //   }
-  // }
+  //       },
+  //     },
+  //   },
+  // },
 
   //////////////////////////////// Choix3 //////////////////////////////////////////////////
 
@@ -109,85 +109,85 @@ const nestedObjectData = {
   // export default nestedObjectData;
 
   // const nestedObjectData = {
-  // // "titre": "La Blockchain d'Entreprise",
-  // "La Blockchain d'Entreprise": {
-  //   Introduction: {
-  //     titre: "Introduction",
-  //     "niveau inférieur": {
-  //       "Enjeux de confiance": {
-  //         titre: "Enjeux de confiance",
-  //         "niveau inférieur": {
-  //           "Protection des données et confiance (Bloc 0:0-255)": {
-  //             titre: "Protection des données et confiance (Bloc 0:0-255)",
-  //             Bloc: "Introduction —> actuel, étant donné la.",
+  // "titre": "La Blockchain d'Entreprise",
+  //   "La Blockchain d'Entreprise": {
+  //     Introduction: {
+  //       titre: "Introduction",
+  //       "niveau inférieur": {
+  //         "Enjeux de confiance": {
+  //           titre: "Enjeux de confiance",
+  //           "niveau inférieur": {
+  //             "Protection des données et confiance (Bloc 0:0-255)": {
+  //               titre: "Protection des données et confiance (Bloc 0:0-255)",
+  //               Bloc: "Introduction —> actuel, étant donné la.",
+  //             },
+  //             "Problématiques des entreprises (Bloc 256-533)": {
+  //               titre: "Problématiques des entreprises (Bloc 256-533)",
+  //               Bloc: "multiplicité des identificateurs —> B2C).",
+  //             },
   //           },
-  //           "Problématiques des entreprises (Bloc 256-533)": {
-  //             titre: "Problématiques des entreprises (Bloc 256-533)",
-  //             Bloc: "multiplicité des identificateurs —> B2C).",
+  //         },
+  //       },
+  //     },
+  //     "Blockchain: Historique et Évolution": {
+  //       titre: "Blockchain: Historique et Évolution",
+  //       "niveau inférieur": {
+  //         "Origines de la Blockchain": {
+  //           titre: "Origines de la Blockchain",
+  //           "niveau inférieur": {
+  //             "Début de la technologie blockchain (Bloc 534-1033)": {
+  //               titre: "Début de la technologie blockchain (Bloc 534-1033)",
+  //               Bloc: "1. Rappel : un petit —> sans aucune autorité centrale.",
+  //             },
+  //             "Bitcoin et décentralisation (Bloc 1034-1402)": {
+  //               titre: "Bitcoin et décentralisation (Bloc 1034-1402)",
+  //               Bloc: "Alors que la blockchain du Bitcoin —> stockant les bitcoins des abonnés),",
+  //             },
+  //           },
+  //         },
+  //         "Blockchain Programmable": {
+  //           titre: "Blockchain Programmable",
+  //           "niveau inférieur": {
+  //             "Introduction des Smart Contracts (Bloc 1403-2170)": {
+  //               titre: "Introduction des Smart Contracts (Bloc 1403-2170)",
+  //               Bloc: "de nouvelles Blockchains, inspirées —> Algorand, etc.",
+  //             },
+  //             "Blockchains non-permissionnées (Bloc 2171-2691)": {
+  //               titre: "Blockchains non-permissionnées (Bloc 2171-2691)",
+  //               Bloc: "Toutes ces blockchains —> et lus par tous.",
+  //             },
+  //           },
+  //         },
+  //         "Réticences et Barrières": {
+  //           titre: "Réticences et Barrières",
+  //           "niveau inférieur": {
+  //             "Barrières des blockchains publiques (Bloc 2692-3428)": {
+  //               titre: "Barrières des blockchains publiques (Bloc 2692-3428)",
+  //               Bloc: "Malgré le succès spectaculaire —> responsable diffuse et indéterminée).",
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     "Blockchain d'Entreprise": {
+  //       titre: "Blockchain d'Entreprise",
+  //       "niveau inférieur": {
+  //         "Blockchain Permissionnée": {
+  //           titre: "Blockchain Permissionnée",
+  //           "niveau inférieur": {
+  //             "Définition et accès contrôlé (Bloc 3429-4140)": {
+  //               titre: "Définition et accès contrôlé (Bloc 3429-4140)",
+  //               Bloc: "Ces facteurs ont fait émerger —> gérée par la société R3),",
+  //             },
+  //             "Exemples notoires (Bloc 4141-4420)": {
+  //               titre: "Exemples notoires (Bloc 4141-4420)",
+  //               Bloc: "et plus récemment Hyperledger —> consommation d’énergie.",
+  //             },
   //           },
   //         },
   //       },
   //     },
   //   },
-  //   "Blockchain: Historique et Évolution": {
-  //     titre: "Blockchain: Historique et Évolution",
-  //     "niveau inférieur": {
-  //       "Origines de la Blockchain": {
-  //         titre: "Origines de la Blockchain",
-  //         "niveau inférieur": {
-  //           "Début de la technologie blockchain (Bloc 534-1033)": {
-  //             titre: "Début de la technologie blockchain (Bloc 534-1033)",
-  //             Bloc: "1. Rappel : un petit —> sans aucune autorité centrale.",
-  //           },
-  //           "Bitcoin et décentralisation (Bloc 1034-1402)": {
-  //             titre: "Bitcoin et décentralisation (Bloc 1034-1402)",
-  //             Bloc: "Alors que la blockchain du Bitcoin —> stockant les bitcoins des abonnés),",
-  //           },
-  //         },
-  //       },
-  //       "Blockchain Programmable": {
-  //         titre: "Blockchain Programmable",
-  //         "niveau inférieur": {
-  //           "Introduction des Smart Contracts (Bloc 1403-2170)": {
-  //             titre: "Introduction des Smart Contracts (Bloc 1403-2170)",
-  //             Bloc: "de nouvelles Blockchains, inspirées —> Algorand, etc.",
-  //           },
-  //           "Blockchains non-permissionnées (Bloc 2171-2691)": {
-  //             titre: "Blockchains non-permissionnées (Bloc 2171-2691)",
-  //             Bloc: "Toutes ces blockchains —> et lus par tous.",
-  //           },
-  //         },
-  //       },
-  //       "Réticences et Barrières": {
-  //         titre: "Réticences et Barrières",
-  //         "niveau inférieur": {
-  //           "Barrières des blockchains publiques (Bloc 2692-3428)": {
-  //             titre: "Barrières des blockchains publiques (Bloc 2692-3428)",
-  //             Bloc: "Malgré le succès spectaculaire —> responsable diffuse et indéterminée).",
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  //   "Blockchain d'Entreprise": {
-  //     titre: "Blockchain d'Entreprise",
-  //     "niveau inférieur": {
-  //       "Blockchain Permissionnée": {
-  //         titre: "Blockchain Permissionnée",
-  //         "niveau inférieur": {
-  //           "Définition et accès contrôlé (Bloc 3429-4140)": {
-  //             titre: "Définition et accès contrôlé (Bloc 3429-4140)",
-  //             Bloc: "Ces facteurs ont fait émerger —> gérée par la société R3),",
-  //           },
-  //           "Exemples notoires (Bloc 4141-4420)": {
-  //             titre: "Exemples notoires (Bloc 4141-4420)",
-  //             Bloc: "et plus récemment Hyperledger —> consommation d’énergie.",
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // },
 };
 
 export default nestedObjectData;
