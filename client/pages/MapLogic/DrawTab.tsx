@@ -102,18 +102,18 @@ function DrawSquare(ctx: CanvasRenderingContext2D, obj: any) {
   ctx.fillRect(posX, posY, caseWidth, caseHeight);
   ctx.fillStyle = "black"; // ou toute autre couleur pour le texte
   ctx.font = "20px Arial";
-  console.log("obj.value", (10 - (Math.abs(1) - 1) * 1.5) / 10);
+  const xy = `${obj.x} et ${obj.y}`;
+  if (obj.hover) return;
   ctx.fillText(obj.value, posX + 10, posY + 30);
+  ctx.fillText(xy, posX + 10, posY + 60);
 }
 
 function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>) {
   if (!Array.isArray(tab)) {
     return;
   }
-  tab.forEach((obj) => {
-    obj.y = obj.y * height;
-    obj.x = obj.x * width;
-  });
+//   console.log("on passe le return DrawTab", { tab });
+
   tab.forEach((obj) => {
     DrawSquare(ctx, obj);
   });

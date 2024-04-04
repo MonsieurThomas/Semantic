@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import traverseAndDraw from "./MapLogic/Drawing";
 import DrawTab from "./MapLogic/DrawTab";
 
 interface NestedObject {
@@ -76,7 +75,6 @@ const CanvasDrawing = () => {
     }
     localSum += localSum / localCount;
     localCount++;
-    // console.log("ok");
     return [newObj, localCount, localSum, branch];
   }
 
@@ -85,6 +83,10 @@ const CanvasDrawing = () => {
   ) => {
     localeTab = [];
     const [newObj, , ,] = processNestedObject(obj, 0);
+    count = 0;
+    branchNb = 0;
+    console.log("Mince pendant instanciation");
+
     return localeTab;
   };
 
@@ -95,12 +97,28 @@ const CanvasDrawing = () => {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  function setCamera(obj: any) {
+    const centerX = obj.x + 350 / 2;
+    const centerY = obj.y * 160 + 100 / 2;
+    console.log("obj.y", obj.y);
+    const centerViewportX = widthScreen / 2;
+    const centerViewportY = heightScreen / 2;
+    const newZoomLevel = 0.3;
+
+    const panX = (centerX * newZoomLevel - centerViewportX) * -1;
+    const panY = (centerY * newZoomLevel - centerViewportY) * -1;
+
+    setPanOffset({ x: panX, y: panY });
+    setZoomLevel(newZoomLevel);
+    redrawCanvas();
+  }
+
   function ChangeXandY(tab: Array<any>) {
     let maxBranch = 0;
     let midBranch = 0;
     let midCount = 0;
     let maxCount = 0;
-
+    console.log("Mince apres instanciation");
     tab.forEach((obj) => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.branch > maxBranch) {
@@ -131,7 +149,14 @@ const CanvasDrawing = () => {
       if (obj.x === 0 || obj.x === -0) {
         obj.y = midCount / 2;
         obj.branch = 0;
+        setCamera(obj);
       }
+    });
+
+    tab.forEach((obj) => {
+      obj.y = obj.y * 160;
+      obj.x = obj.x * 550;
+      obj.hover = false;
     });
   }
 
@@ -145,11 +170,19 @@ const CanvasDrawing = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-  let localTab = AddCoordinates(nestedDummy);
-  ChangeXandY(localTab);
-  Color(localTab);
+  const [localTab, setLocalTab] = useState<Array<any>>([]);
 
+  useEffect(() => {
+    const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
+    const tab = AddCoordinates(nestedDummy);
+    ChangeXandY(tab);
+    Color(tab);
+    setLocalTab(tab);
+  }, []);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,6 +194,9 @@ const CanvasDrawing = () => {
   const [zoomFraction, setZoomFraction] = useState<number>(0.35);
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [isHoveringObject, setIsHoveringObject] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -168,6 +204,8 @@ const CanvasDrawing = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const maxZoom = 0.7;
   const minZoom = 0.15;
+  const widthScreen = 1500;
+  const heightScreen = 500;
 
   const onZoomHandleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -191,15 +229,46 @@ const CanvasDrawing = () => {
     ctx.restore();
   }, [panOffset, zoomLevel, localTab]);
 
-  // useEffect(() => {
-  //   redrawCanvas();
-  // }, [redrawCanvas]);
+  useEffect(() => {
+    redrawCanvas();
+  }, [localTab, redrawCanvas]);
+
+  const checkClosenessWithCases = useCallback(
+    (e: MouseEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+
+      const x = e.clientX - rect.left - panOffset.x;
+      const y = e.clientY - rect.top - panOffset.y;
+
+      let isHovering = false;
+
+      localTab.forEach((obj) => {
+        const adjustedX = x / zoomLevel;
+        const adjustedY = y / zoomLevel;
+
+        if (
+          adjustedX >= obj.x &&
+          adjustedX <= obj.x + 550 &&
+          adjustedY >= obj.y &&
+          adjustedY <= obj.y + 160
+        ) {
+          obj.hover = true;
+          isHovering = true;
+        } else {
+          obj.hover = false;
+        }
+      });
+      setIsHoveringObject(isHovering);
+      redrawCanvas();
+    },
+    [zoomLevel, panOffset.x, panOffset.y, localTab, redrawCanvas]
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const zoomHandle = zoomHandleRef.current;
-
-    // console.log("zoomLevel", zoomLevel);
     const onMouseDown = (e: MouseEvent) => {
       if (
         zoomHandleRef.current &&
@@ -213,6 +282,7 @@ const CanvasDrawing = () => {
     };
 
     const onMouseMove = (e: MouseEvent) => {
+      checkClosenessWithCases(e);
       if (isZooming && zoomHandle) {
         const rect = zoomHandle.parentElement!.getBoundingClientRect();
         const handleWidth = zoomHandle.offsetWidth;
@@ -252,9 +322,10 @@ const CanvasDrawing = () => {
     /////handle weel ////
     /////handle weel ////
     const handleWheel = (e: WheelEvent) => {
+      if (searchValue && e.clientX < 220 && e.clientX < 435) return;
       e.preventDefault();
-      // console.log("handleWheel");
-      const zoomIntensity = 0.05;
+
+      const zoomIntensity = 0.03;
       const direction = e.deltaY < 0 ? 1 : -1;
       const newZoomLevel = Math.min(
         maxZoom,
@@ -304,10 +375,35 @@ const CanvasDrawing = () => {
       }
     };
 
+    const handleCanvasClick = (e: MouseEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+
+      const x = e.clientX - rect.left - panOffset.x;
+      const y = e.clientY - rect.top - panOffset.y;
+
+      localTab.forEach((obj) => {
+        const adjustedX = x / zoomLevel;
+        const adjustedY = y / zoomLevel;
+
+        if (
+          adjustedX >= obj.x &&
+          adjustedX <= obj.x + 550 &&
+          adjustedY >= obj.y &&
+          adjustedY <= obj.y + 160
+        ) {
+        }
+      });
+    };
+
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("click", handleCanvasClick);
     document.addEventListener("wheel", handleWheel, { passive: false });
-
+    document.addEventListener("gesturestart", function (e) {
+      e.preventDefault();
+    });
     if (zoomHandle) {
       zoomHandle.addEventListener("mousedown", onMouseDown);
     }
@@ -316,7 +412,8 @@ const CanvasDrawing = () => {
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("wheel", handleWheel); // Correction ici
+      document.removeEventListener("click", handleCanvasClick);
+      document.removeEventListener("wheel", handleWheel);
       if (zoomHandle) {
         zoomHandle.removeEventListener("mousedown", onMouseDown);
       }
@@ -331,6 +428,9 @@ const CanvasDrawing = () => {
     startPan.y,
     isZooming,
     zoomFraction,
+    searchValue,
+    localTab,
+    checkClosenessWithCases,
   ]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -347,60 +447,133 @@ const CanvasDrawing = () => {
     return formattedNumber;
   }
 
-  ////
+  const handleInputChange = (event: any) => {
+    setSearchValue(event.target.value);
+  };
+
+  function getOpacity(obj: any) {
+    const calculatedOpacity = (10 - (Math.abs(obj.x / 550) - 1) * 1.5) / 10;
+    return Math.max(calculatedOpacity, 0.5);
+  }
+
+  const zoomToValue = useCallback(
+    (obj: any) => {
+      const centerX = obj.x + 350 / 2;
+      const centerY = obj.y + 100 / 2;
+
+      const centerViewportX = widthScreen / 2;
+      const centerViewportY = heightScreen / 2;
+      const newZoomLevel = 0.5;
+
+      const panX = (centerX * newZoomLevel - centerViewportX) * -1;
+      const panY = (centerY * newZoomLevel - centerViewportY) * -1;
+
+      setPanOffset({ x: panX, y: panY });
+      setZoomLevel(newZoomLevel);
+      redrawCanvas();
+    },
+    [widthScreen, heightScreen, setPanOffset, setZoomLevel, redrawCanvas]
+  );
 
   return (
     <>
-      <div className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl ">
-        <SearchOutlinedIcon />
-        <input
-          type="text"
-          placeholder="rechercher"
-          className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
-          style={{ userSelect: "none" }}
-        />
+      <div
+        className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl "
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)} //
+      >
+        {!isHovering && !searchValue && <SearchOutlinedIcon className="mt-1" />}
+        {isHovering || searchValue ? (
+          <div className="flex justify-center items-center">
+            <SearchOutlinedIcon className="cursor-pointer" />
+            <input
+              type="text"
+              placeholder="rechercher"
+              // placeholder={searchValue ? searchValue : "rechercher"}
+              className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
+              onChange={handleInputChange}
+              value={searchValue}
+              style={{ userSelect: "none", outline: "none" }}
+            />
+          </div>
+        ) : null}
       </div>
-      <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
-        <div
-          ref={zoomHandleRef}
-          onMouseDown={onZoomHandleMouseDown}
-          className="absolute w-2 h-2 bg-[#DCDCDC] cursor-pointer border-lg rounded-xl"
-          style={{ top: "-3px", left: "50px" }}
-        />
-        <div
-          className="ml-[160px] mt-[-8px] fixed font-[#ddd] text-xs text-[#a3a3a3]"
-          style={{ userSelect: "none" }}
-        >
-          {" "}
-          {formatZoom(zoomFraction)} %
+      {!searchValue && (
+        <>
+          <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
+            <div
+              ref={zoomHandleRef}
+              onMouseDown={onZoomHandleMouseDown}
+              className="absolute w-2 h-2 bg-[#DCDCDC] cursor-pointer border-lg rounded-xl"
+              style={{ top: "-3px", left: "50px" }}
+            />
+            <div
+              className="ml-[160px] mt-[-8px] fixed font-[#ddd] text-xs text-[#a3a3a3]"
+              style={{ userSelect: "none" }}
+            >
+              {formatZoom(zoomFraction)} %
+            </div>
+          </div>
+        </>
+      )}
+      {searchValue && (
+        <div className="w-[182px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
+          <div>
+            {localTab
+              .filter((obj) => obj.value.includes(searchValue))
+              .map((obj, index) => (
+                <div
+                  key={index}
+                  className="ml-3 mb-1 inline-block rounded-md bg-white"
+                >
+                  <div
+                    className=" rounded-md text-xs p-1 cursor-pointer"
+                    style={{
+                      backgroundColor: obj.color,
+                      opacity: `${getOpacity(obj)}`,
+                    }}
+                    onClick={() => zoomToValue(obj)}
+                  >
+                    {obj.value}
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
+      {localTab
+        .filter((obj) => obj.hover)
+        .map((obj) => (
+          <React.Fragment key={obj.value}>
+            <div
+              style={{
+                position: "absolute",
+                // left: `550px`,
+                top: `${obj.y}px`,
+                // top: `160px`,
+                left: `${obj.x}px`,
+                // backgroundColor: "black",
+              }}
+            >
+              <SearchOutlinedIcon />
+            </div>
+          </React.Fragment>
+        ))}
+
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
-          width="1400px"
-          height="500px"
+          width={widthScreen}
+          height={heightScreen}
           style={{ border: "1px solid black" }}
         />
       </div>
-      <div>
-        {/* This is objectWithCoordinate = {JSON.stringify(tab)} */}
-        {/* This is objectWithCoordinate = {JSON.stringify(objectWithCoordinate)} */}
-        {/* This is objectWithCoordinate = {JSON.stringify(flatArray)} */}
+      {/* <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div>
-      <>
-        {/* {tab.map((item, id) => {
-          return (
-            <h1 key={id} className="m-4">
-              {JSON.stringify(item)}!!!!!\n\n!
-            </h1>
-          );
-        })} */}
-      </>
+      </div> */}
     </>
   );
 };

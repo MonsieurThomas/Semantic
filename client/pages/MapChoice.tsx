@@ -13,9 +13,9 @@ function MapChoice() {
   let dateTmp = "";
 
   return (
-    <div className="  flex w-screen gap-2 mt-10 overflow-hidden">
+    <div className="  flex w-screen gap-2 mt-10 ">
       <div
-        className="bg-[#F2F2F2]  flex flex-col h-[400px] rounded-xl overflow-hidden"
+        className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl  "
         style={{ flex: 3 }}
       >
         <div className="flex gap-2 ml-auto pr-10 pt-5">
