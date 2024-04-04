@@ -76,7 +76,7 @@ const CanvasDrawing = () => {
     }
     localSum += localSum / localCount;
     localCount++;
-    console.log("ok");
+    // console.log("ok");
     return [newObj, localCount, localSum, branch];
   }
 
@@ -351,7 +351,7 @@ const CanvasDrawing = () => {
 
   return (
     <>
-      {/* <div className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl ">
+      <div className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl ">
         <SearchOutlinedIcon />
         <input
           type="text"
@@ -359,8 +359,8 @@ const CanvasDrawing = () => {
           className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
           style={{ userSelect: "none" }}
         />
-      </div> */}
-      {/* <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
+      </div>
+      <div className=" ml-10 mt-14 fixed w-[150px] h-[2px] bg-[#ddd]">
         <div
           ref={zoomHandleRef}
           onMouseDown={onZoomHandleMouseDown}
@@ -374,7 +374,7 @@ const CanvasDrawing = () => {
           {" "}
           {formatZoom(zoomFraction)} %
         </div>
-      </div> */}
+      </div>
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}

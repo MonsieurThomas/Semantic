@@ -34,18 +34,17 @@ function DrawCurveLine(ctx: CanvasRenderingContext2D, obj: any, obj2: any) {
     if (obj2.y > obj.y) {
       ctx.moveTo(obj.x + 50, obj.y + caseHeight);
       ctx.quadraticCurveTo(
-        obj.x + obj2.x / 4,
+        obj.x + obj2.x / 2,
         obj.y + (obj2.y - obj.y),
-        obj2.x + 300,
+        obj2.x + caseWidth,
         obj2.y + caseHeight / 2
       );
     } else {
-    //   console.log("ici aussi");
       ctx.moveTo(obj.x + 50, obj.y);
       ctx.quadraticCurveTo(
         obj.x + obj2.x / 2,
         obj.y - (obj.y - obj2.y),
-        obj2.x,
+        obj2.x + caseWidth,
         obj2.y + caseHeight / 2
       );
     }
@@ -68,8 +67,6 @@ function DrawLine(ctx: CanvasRenderingContext2D, obj: any, obj2: any) {
   ctx.lineWidth = 3; // Augmente l'épaisseur de la ligne
   ctx.stroke();
 }
-
-
 
 function ParseLine(ctx: CanvasRenderingContext2D, tab: Array<any>) {
   //   console.log("ok");
@@ -98,14 +95,21 @@ function DrawSquare(ctx: CanvasRenderingContext2D, obj: any) {
   const posX = obj.x;
   const posY = obj.y;
   ctx.fillStyle = obj.color;
+  const calculatedOpacity = (10 - (Math.abs(obj.x / caseWidth) - 1) * 1.5) / 10;
+  const opacity = Math.max(calculatedOpacity, 0.5);
+
+  ctx.globalAlpha = opacity;
   ctx.fillRect(posX, posY, caseWidth, caseHeight);
+  ctx.fillStyle = "black"; // ou toute autre couleur pour le texte
+  ctx.font = "20px Arial";
+  console.log("obj.value", (10 - (Math.abs(1) - 1) * 1.5) / 10);
+  ctx.fillText(obj.value, posX + 10, posY + 30);
 }
 
 function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>) {
-    if (!Array.isArray(tab)) {
-        console.error("DrawTab a reçu un argument qui n'est pas un tableau", tab);
-        return; // Sort de la fonction si tab n'est pas un tableau
-      }
+  if (!Array.isArray(tab)) {
+    return;
+  }
   tab.forEach((obj) => {
     obj.y = obj.y * height;
     obj.x = obj.x * width;
