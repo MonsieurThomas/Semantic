@@ -91,9 +91,6 @@ function ParseLine(ctx: CanvasRenderingContext2D, tab: Array<any>) {
         DrawCurveLine(ctx, obj, obj2);
       }
     });
-    // if (obj.path.includes("1")) console.log(obj.path);
-    // else console.log("nope");
-    // console.log("mince");
   });
 }
 
@@ -105,6 +102,10 @@ function DrawSquare(ctx: CanvasRenderingContext2D, obj: any) {
 }
 
 function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>) {
+    if (!Array.isArray(tab)) {
+        console.error("DrawTab a reçu un argument qui n'est pas un tableau", tab);
+        return; // Sort de la fonction si tab n'est pas un tableau
+      }
   tab.forEach((obj) => {
     obj.y = obj.y * height;
     obj.x = obj.x * width;
