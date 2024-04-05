@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
+import PdfDisplay from "./PdfDisplay";
 
 interface NestedObject {
   [key: string]: any;
@@ -157,6 +158,8 @@ const CanvasDrawing = () => {
       obj.y = obj.y * 160;
       obj.x = obj.x * 550;
       obj.hover = false;
+      obj.hide = false;
+      obj.hideRoot = false;
     });
   }
 
@@ -196,7 +199,10 @@ const CanvasDrawing = () => {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isHoveringObject, setIsHoveringObject] = useState(false);
+  const [isPdfVisible, setIsPdfVisible] = useState(false);
+
   const [searchValue, setSearchValue] = useState("");
+  const pdfRef = useRef(null);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -250,9 +256,9 @@ const CanvasDrawing = () => {
 
         if (
           adjustedX >= obj.x &&
-          adjustedX <= obj.x + 550 &&
-          adjustedY >= obj.y &&
-          adjustedY <= obj.y + 160
+          adjustedX <= obj.x + 350 &&
+          adjustedY >= obj.y - 30 &&
+          adjustedY <= obj.y + 100
         ) {
           obj.hover = true;
           isHovering = true;
@@ -296,7 +302,7 @@ const CanvasDrawing = () => {
           setZoomFraction(newPositionX / (rect.width - zoomHandle.offsetWidth));
           if (canvas) {
             const centerX = canvas.width / 2;
-            const centerY = window.innerHeight / 1.8;
+            const centerY = canvas.height / 2;
             const canvasX = (centerX - panOffset.x) / zoomLevel;
             const canvasY = (centerY - panOffset.y) / zoomLevel;
             const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
@@ -360,6 +366,9 @@ const CanvasDrawing = () => {
             ((newLeft - minZoom) / (maxZoom - minZoom)) * 150
           }px`;
         }
+        console.log("newPanOffsetX dans handlewheel = ", newPanOffsetX);
+        console.log("newPanOffsetY dans handlewheel = ", newPanOffsetY);
+        // console.log("newZoomLevel dans handlewheel = ", newZoomLevel);
         setZoomLevel(newZoomLevel);
         setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
         redrawCanvas();
@@ -389,13 +398,30 @@ const CanvasDrawing = () => {
 
         if (
           adjustedX >= obj.x &&
-          adjustedX <= obj.x + 550 &&
+          adjustedX <= obj.x + 350 &&
           adjustedY >= obj.y &&
-          adjustedY <= obj.y + 160
+          adjustedY <= obj.y + 100
         ) {
+          console.log("sur la case ", obj.value);
+          setIsPdfVisible(!isPdfVisible);
+        }
+        if (
+          adjustedX >= obj.x + 15 &&
+          adjustedX <= obj.x + 70 &&
+          adjustedY >= obj.y - 40 &&
+          adjustedY <= obj.y
+        ) {
+          obj.hideRoot = !obj.hideRoot;
+          hideCases(localTab, obj);
         }
       });
     };
+
+    function handleClickOutside(event) {
+      if (pdfRef.current && !pdfRef.current.contains(event.target)) {
+        setIsPdfVisible(false); // Cache le PDF si le clic est à l'extérieur
+      }
+    }
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
@@ -408,12 +434,14 @@ const CanvasDrawing = () => {
       zoomHandle.addEventListener("mousedown", onMouseDown);
     }
     canvas?.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
       document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("mousedown", handleClickOutside);
       if (zoomHandle) {
         zoomHandle.removeEventListener("mousedown", onMouseDown);
       }
@@ -431,6 +459,9 @@ const CanvasDrawing = () => {
     searchValue,
     localTab,
     checkClosenessWithCases,
+    pdfRef,
+    hideCases,
+    isPdfVisible,
   ]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -475,6 +506,19 @@ const CanvasDrawing = () => {
     [widthScreen, heightScreen, setPanOffset, setZoomLevel, redrawCanvas]
   );
 
+  function hideCases(localTab: any, objPath: any) {
+    localTab.forEach((obj: any) => {
+      if (
+        obj.path.includes(objPath.path) &&
+        obj.path.startsWith(objPath.path) &&
+        obj.path.length != objPath.path.length
+      ) {
+        obj.hide = !obj.hide;
+      }
+    });
+    redrawCanvas();
+  }
+
   return (
     <>
       <div
@@ -482,7 +526,11 @@ const CanvasDrawing = () => {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)} //
       >
-        {!isHovering && !searchValue && <SearchOutlinedIcon className="mt-1" />}
+        {isPdfVisible && (
+          <div ref={pdfRef}>
+            <PdfDisplay />
+          </div>
+        )}
         {isHovering || searchValue ? (
           <div className="flex justify-center items-center">
             <SearchOutlinedIcon className="cursor-pointer" />
@@ -541,24 +589,37 @@ const CanvasDrawing = () => {
           </div>
         </div>
       )}
-      {localTab
+      <div className="flex items-center justify-center">
+        {isPdfVisible && <PdfDisplay />}
+      </div>
+      {/* {localTab
         .filter((obj) => obj.hover)
-        .map((obj) => (
-          <React.Fragment key={obj.value}>
-            <div
-              style={{
-                position: "absolute",
-                // left: `550px`,
-                top: `${obj.y}px`,
-                // top: `160px`,
-                left: `${obj.x}px`,
-                // backgroundColor: "black",
-              }}
-            >
-              <SearchOutlinedIcon />
-            </div>
-          </React.Fragment>
-        ))}
+        .map((obj) => {
+          const adjustedX = obj.x * zoomLevel + panOffset.x;
+          const adjustedY = obj.y * zoomLevel + panOffset.y;
+          console.log("zoomLevel dans return = ", zoomLevel);
+
+          console.log("panOffset.x", panOffset.x);
+          console.log("panOffset.y", panOffset.y);
+          // console.log("panOffset.y", panOffset.y);
+          // console.log("adjustedX", adjustedX);
+          // console.log("adjustedY", adjustedY);
+
+          return (
+            <React.Fragment key={obj.value}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: `${adjustedY}px`,
+                  left: `${adjustedX}px`,
+                  transform: "translate(-50%, -50%)", // Centrer l'icône par rapport à ses coordonnées
+                }}
+              >
+                <SearchOutlinedIcon />
+              </div>
+            </React.Fragment>
+          );
+        })} */}
 
       <div className=" flex justify-center">
         <canvas
@@ -568,12 +629,12 @@ const CanvasDrawing = () => {
           style={{ border: "1px solid black" }}
         />
       </div>
-      {/* <div>
+      <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div> */}
+      </div>
     </>
   );
 };

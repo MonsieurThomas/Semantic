@@ -5,6 +5,52 @@ let height = 160;
 let caseWidth = 350;
 let caseHeight = 100;
 
+function eyeShape(ctx: CanvasRenderingContext2D, obj: any) {
+  const x = obj.x + 40;
+  const y = obj.y - 20;
+
+  // Les nouveaux points pour les extrémités pointues
+  const startX = x - 20; // Début de la courbe à gauche
+  const endX = x + 20; // Fin de la courbe à droite
+
+  // Dessine le contour supérieur de l'œil avec une courbe pointue
+  ctx.beginPath();
+  ctx.moveTo(startX, y); // Commence à gauche
+  ctx.quadraticCurveTo(x, y - 20, endX, y); // Courbe supérieure
+  ctx.stroke();
+
+  // Dessine le contour inférieur de l'œil avec une courbe pointue
+  ctx.beginPath();
+  ctx.moveTo(startX, y); // Re-commence à gauche
+  ctx.quadraticCurveTo(x, y + 20, endX, y); // Courbe inférieure
+  ctx.stroke();
+
+  // Dessine l'iris (sans modification)
+  ctx.beginPath();
+  ctx.arc(x, y, 7.5, 0, 2 * Math.PI); // rayonIris était 7.5
+  ctx.fillStyle = "white"; // Tu peux changer la couleur
+  ctx.fill();
+  ctx.stroke();
+
+  // Dessine la pupille (sans modification)
+  ctx.beginPath();
+  ctx.arc(x, y, 4, 0, 2 * Math.PI); // rayonPupille était 4
+  ctx.fillStyle = "black";
+  ctx.fill();
+
+  if (obj.hideRoot) {
+    ctx.beginPath();
+    ctx.moveTo(startX, y + 20); // Commence en haut à gauche
+    ctx.lineTo(endX, y - 20); // Fini en bas à droite
+    ctx.strokeStyle = "black"; // Couleur de la ligne
+    ctx.lineWidth = 3; // Augmente l'épaisseur de la ligne
+    ctx.stroke();
+  }
+}
+
+// Utilisez cette fonction dans votre méthode redrawCanvas
+// en passant le contexte du canvas et les coordonnées où vous voulez dessiner la forme
+
 function DrawCurveLine(ctx: CanvasRenderingContext2D, obj: any, obj2: any) {
   ctx.beginPath();
 
@@ -75,7 +121,9 @@ function ParseLine(ctx: CanvasRenderingContext2D, tab: Array<any>) {
       if (
         obj.path.includes(obj2.path) &&
         obj.path.startsWith(obj2.path) &&
-        Math.abs(obj2.path.length - obj.path.length) == 2
+        Math.abs(obj2.path.length - obj.path.length) == 2 &&
+        !obj.hide &&
+        !obj2.hide
       ) {
         // console.log("ok pour ", obj.path, "et ", obj2.path);
         if (obj.x > 0) DrawLine(ctx, obj, obj2);
@@ -83,7 +131,9 @@ function ParseLine(ctx: CanvasRenderingContext2D, tab: Array<any>) {
       }
       if (
         Math.abs(obj2.path.length + obj.path.length) === 1 &&
-        obj.path.length === 0
+        obj.path.length === 0 &&
+        !obj.hide &&
+        !obj2.hide
       ) {
         DrawCurveLine(ctx, obj, obj2);
       }
@@ -92,6 +142,7 @@ function ParseLine(ctx: CanvasRenderingContext2D, tab: Array<any>) {
 }
 
 function DrawSquare(ctx: CanvasRenderingContext2D, obj: any) {
+  if (obj.hide) return;
   const posX = obj.x;
   const posY = obj.y;
   ctx.fillStyle = obj.color;
@@ -103,7 +154,7 @@ function DrawSquare(ctx: CanvasRenderingContext2D, obj: any) {
   ctx.fillStyle = "black"; // ou toute autre couleur pour le texte
   ctx.font = "20px Arial";
   const xy = `${obj.x} et ${obj.y}`;
-  if (obj.hover) return;
+  if (obj.hover) eyeShape(ctx, obj);
   ctx.fillText(obj.value, posX + 10, posY + 30);
   ctx.fillText(xy, posX + 10, posY + 60);
 }
@@ -112,7 +163,7 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>) {
   if (!Array.isArray(tab)) {
     return;
   }
-//   console.log("on passe le return DrawTab", { tab });
+  //   console.log("on passe le return DrawTab", { tab });
 
   tab.forEach((obj) => {
     DrawSquare(ctx, obj);

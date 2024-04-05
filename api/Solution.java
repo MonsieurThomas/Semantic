@@ -7,21 +7,22 @@ class Solution {
 
     public static void main(String args[]) {
 
-        int N = 4;
-        System.out.println(N+ "\n");
 
-        int[] tab = new int[N];
-        int []tabData = {4,6,2,8};
-        for (int i = 0; i < N; i++) {
-            tab[i] = tabData[i];
+
+        int i = 12;
+        int a = 0;
+        String s = "123a";
+        char b = 'a';
+        b = Character.toUpperCase(b);
+
+        String str = String.valueOf(i);
+        try {
+            a = Integer.valueOf(s);
+            
+        } catch (Exception e) {
         }
-
-        Arrays.sort(tab);
-
-        for(int i : tab)
-        System.out.println(i);
-
-
-        
+        System.out.println(str);
+        System.out.println("a = " + a);
+        System.out.println("b = " + b);
     }
 }
