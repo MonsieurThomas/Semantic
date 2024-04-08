@@ -1,0 +1,14 @@
+/* Style pour les titres */
+.title {
+    color: #0070f3; /* Bleu */
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  /* Style pour les paragraphes */
+  .paragraph {
+    color: #333; /* Gris foncé */
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+  

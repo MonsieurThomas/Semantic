@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
-import PdfDisplay from "./PdfDisplay";
+import extractPdfContent from "./PdfViewver";
 
 interface NestedObject {
   [key: string]: any;
@@ -14,6 +14,7 @@ const CanvasDrawing = () => {
   let count = 0;
   let branchNb = 0;
   let localeTab: Array<any> = [];
+  let pdf = "";
 
   function processNestedObject(
     obj: NestedObject,
@@ -159,7 +160,15 @@ const CanvasDrawing = () => {
       obj.x = obj.x * 550;
       obj.hover = false;
       obj.hide = false;
-      obj.hideRoot = false;
+    });
+    // PdfTextDisplay(); ///////////////
+
+    // Exemple d'utilisation de la fonction
+    const pdfPath = "Feuilletage.pdf";
+    extractPdfContent(pdfPath).then((htmlContent) => {
+      console.log(htmlContent);
+      setPdfText(htmlContent); // Affiche le contenu HTML extrait dans la console
+      // Ici, vous pouvez décider de comment utiliser le contenu HTML extrait
     });
   }
 
@@ -199,10 +208,8 @@ const CanvasDrawing = () => {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isHoveringObject, setIsHoveringObject] = useState(false);
-  const [isPdfVisible, setIsPdfVisible] = useState(false);
-
   const [searchValue, setSearchValue] = useState("");
-  const pdfRef = useRef(null);
+  const [pdfText, setPdfText] = useState("");
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -403,7 +410,6 @@ const CanvasDrawing = () => {
           adjustedY <= obj.y + 100
         ) {
           console.log("sur la case ", obj.value);
-          setIsPdfVisible(!isPdfVisible);
         }
         if (
           adjustedX >= obj.x + 15 &&
@@ -417,12 +423,6 @@ const CanvasDrawing = () => {
       });
     };
 
-    function handleClickOutside(event) {
-      if (pdfRef.current && !pdfRef.current.contains(event.target)) {
-        setIsPdfVisible(false); // Cache le PDF si le clic est à l'extérieur
-      }
-    }
-
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
@@ -434,14 +434,12 @@ const CanvasDrawing = () => {
       zoomHandle.addEventListener("mousedown", onMouseDown);
     }
     canvas?.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
       document.removeEventListener("wheel", handleWheel);
-      document.removeEventListener("mousedown", handleClickOutside);
       if (zoomHandle) {
         zoomHandle.removeEventListener("mousedown", onMouseDown);
       }
@@ -459,9 +457,6 @@ const CanvasDrawing = () => {
     searchValue,
     localTab,
     checkClosenessWithCases,
-    pdfRef,
-    hideCases,
-    isPdfVisible,
   ]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -526,11 +521,7 @@ const CanvasDrawing = () => {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)} //
       >
-        {isPdfVisible && (
-          <div ref={pdfRef}>
-            <PdfDisplay />
-          </div>
-        )}
+        {!isHovering && !searchValue && <SearchOutlinedIcon className="mt-1" />}
         {isHovering || searchValue ? (
           <div className="flex justify-center items-center">
             <SearchOutlinedIcon className="cursor-pointer" />
@@ -589,38 +580,6 @@ const CanvasDrawing = () => {
           </div>
         </div>
       )}
-      <div className="flex items-center justify-center">
-        {isPdfVisible && <PdfDisplay />}
-      </div>
-      {/* {localTab
-        .filter((obj) => obj.hover)
-        .map((obj) => {
-          const adjustedX = obj.x * zoomLevel + panOffset.x;
-          const adjustedY = obj.y * zoomLevel + panOffset.y;
-          console.log("zoomLevel dans return = ", zoomLevel);
-
-          console.log("panOffset.x", panOffset.x);
-          console.log("panOffset.y", panOffset.y);
-          // console.log("panOffset.y", panOffset.y);
-          // console.log("adjustedX", adjustedX);
-          // console.log("adjustedY", adjustedY);
-
-          return (
-            <React.Fragment key={obj.value}>
-              <div
-                style={{
-                  position: "absolute",
-                  top: `${adjustedY}px`,
-                  left: `${adjustedX}px`,
-                  transform: "translate(-50%, -50%)", // Centrer l'icône par rapport à ses coordonnées
-                }}
-              >
-                <SearchOutlinedIcon />
-              </div>
-            </React.Fragment>
-          );
-        })} */}
-
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
@@ -635,6 +594,10 @@ const CanvasDrawing = () => {
         })}
         This is count = {count};
       </div>
+      {/* <PdfTextExtractor /> */}
+      {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
+      {/* <TextDisplay htmlText={htmlText} /> */}
+      {pdfText}
     </>
   );
 };
