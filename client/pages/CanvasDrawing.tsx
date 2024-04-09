@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
-import extractPdfContent from "./PdfViewver";
 import UploadDocxForm from "./UploadDocxForm";
 
 interface NestedObject {
