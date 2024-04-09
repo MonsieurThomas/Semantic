@@ -5,6 +5,7 @@ import nestedObjectData from "../src/app/utils/NestedObjectData";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
 import extractPdfContent from "./PdfViewver";
+import UploadDocxForm from "./UploadDocxForm";
 
 interface NestedObject {
   [key: string]: any;
@@ -160,17 +161,52 @@ const CanvasDrawing = () => {
       obj.x = obj.x * 550;
       obj.hover = false;
       obj.hide = false;
-    });
-    // PdfTextDisplay(); ///////////////
-
-    // Exemple d'utilisation de la fonction
-    const pdfPath = "Feuilletage.pdf";
-    extractPdfContent(pdfPath).then((htmlContent) => {
-      console.log(htmlContent);
-      setPdfText(htmlContent); // Affiche le contenu HTML extrait dans la console
-      // Ici, vous pouvez décider de comment utiliser le contenu HTML extrait
+      obj.occurence = 2;
     });
   }
+
+  /////
+  /////
+  /////word
+
+  const [htmlContent, setHtmlContent] = useState("");
+  useEffect(() => {
+    console.log("test")
+    fetch("/api/convert-docx")
+      .then((response) => response.json())
+      .then((data) => {
+        setHtmlContent(data.html);
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la récupération du contenu HTML:", error);
+      });
+  }, []);
+
+
+  // useEffect(() => {
+  //   // Supposons que `htmlContent` contienne votre HTML converti
+  //   if (htmlContent) {
+  //     const position = 10000; // Définir la position du caractère cible
+  //     // Créer un nouvel élément HTML pour marquer la position
+  //     const markerHtml = `<span id="scroll-target"></span>`;
+  //     // Insérer le marqueur dans le contenu HTML à la position spécifiée
+  //     const modifiedHtml = htmlContent.slice(0, position) + markerHtml + htmlContent.slice(position);
+  //     // Mettre à jour le contenu HTML avec la version modifiée
+  //     setHtmlContent(modifiedHtml);
+
+  //     // Utiliser requestAnimationFrame pour s'assurer que le DOM est mis à jour
+  //     requestAnimationFrame(() => {
+  //       const target = document.getElementById("scroll-target");
+  //       if (target) {
+  //         target.scrollIntoView({ behavior: "smooth" });
+  //       }
+  //     });
+  //   }
+  // }, [htmlContent]);
+
+  /////
+  /////
+  /////
 
   function Color(tab: Array<any>) {
     const randomNumber = Math.random();
@@ -210,6 +246,7 @@ const CanvasDrawing = () => {
   const [isHoveringObject, setIsHoveringObject] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [pdfText, setPdfText] = useState("");
+  const [isTextShown, SetIsTextShown] = useState(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -238,9 +275,9 @@ const CanvasDrawing = () => {
     ctx.save();
     ctx.translate(panOffset.x, panOffset.y); ///// position de depart
     ctx.scale(zoomLevel, zoomLevel);
-    DrawTab(ctx, localTab);
+    DrawTab(ctx, localTab, formatZoom(zoomFraction));
     ctx.restore();
-  }, [panOffset, zoomLevel, localTab]);
+  }, [panOffset, zoomLevel, localTab, zoomFraction]);
 
   useEffect(() => {
     redrawCanvas();
@@ -336,6 +373,7 @@ const CanvasDrawing = () => {
     /////handle weel ////
     const handleWheel = (e: WheelEvent) => {
       if (searchValue && e.clientX < 220 && e.clientX < 435) return;
+      if (isTextShown) return;
       e.preventDefault();
 
       const zoomIntensity = 0.03;
@@ -382,6 +420,13 @@ const CanvasDrawing = () => {
       }
     };
 
+    const handleClickOutside = (e: MouseEvent) => {
+      // // Vérifie si le clic a été en dehors du contenu du texte
+      // if (e.target?.id === "modal-backdrop") {
+      SetIsTextShown(false);
+      // }
+    };
+
     const onMouseUp = () => {
       if (isPanning) {
         setIsPanning(false);
@@ -410,6 +455,7 @@ const CanvasDrawing = () => {
           adjustedY <= obj.y + 100
         ) {
           console.log("sur la case ", obj.value);
+          SetIsTextShown(!isTextShown);
         }
         if (
           adjustedX >= obj.x + 15 &&
@@ -426,19 +472,19 @@ const CanvasDrawing = () => {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
+    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("wheel", handleWheel, { passive: false });
     document.addEventListener("gesturestart", function (e) {
       e.preventDefault();
     });
-    if (zoomHandle) {
-      zoomHandle.addEventListener("mousedown", onMouseDown);
-    }
+    if (zoomHandle) zoomHandle.addEventListener("mousedown", onMouseDown);
     canvas?.addEventListener("mousedown", onMouseDown);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
+      document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("wheel", handleWheel);
       if (zoomHandle) {
         zoomHandle.removeEventListener("mousedown", onMouseDown);
@@ -457,6 +503,8 @@ const CanvasDrawing = () => {
     searchValue,
     localTab,
     checkClosenessWithCases,
+    hideCases,
+    isTextShown,
   ]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -559,7 +607,7 @@ const CanvasDrawing = () => {
         <div className="w-[182px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
           <div>
             {localTab
-              .filter((obj) => obj.value.includes(searchValue))
+              .filter((obj) => obj.value.startsWith(searchValue))
               .map((obj, index) => (
                 <div
                   key={index}
@@ -585,19 +633,37 @@ const CanvasDrawing = () => {
           ref={canvasRef}
           width={widthScreen}
           height={heightScreen}
-          style={{ border: "1px solid black" }}
+          // style={{ border: "1px solid black" }}
         />
       </div>
-      <div>
+      {/* <div>
+        <form onSubmit={handleSubmit}>
+          <input type="file" name="file" accept=".docx" required />
+          <button type="submit">Envoyer</button>
+        </form>
+        <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+      </div> */}
+      {/* <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div>
+      </div> */}
       {/* <PdfTextExtractor /> */}
       {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
       {/* <TextDisplay htmlText={htmlText} /> */}
-      {pdfText}
+      {/* {pdfText} */}
+      {/* <UploadDocxForm /> */}
+      {isTextShown && (
+        <div
+          id="modal-backdrop"
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 overflow-auto"
+        >
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-[800px] mx-auto text-black">
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          </div>
+        </div>
+      )}
     </>
   );
 };
