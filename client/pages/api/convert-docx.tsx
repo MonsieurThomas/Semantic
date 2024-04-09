@@ -4,7 +4,7 @@ import * as mammoth from "mammoth";
 import path from "path";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const docxFilePath = path.resolve("./public/Finance.docx"); // Assurez-vous que le chemin est correct
+  const docxFilePath = path.resolve("./public/Feuilletage.docx"); // Assurez-vous que le chemin est correct
 
   mammoth
     .convertToHtml({ path: docxFilePath })
