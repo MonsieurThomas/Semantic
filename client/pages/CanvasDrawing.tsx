@@ -63,9 +63,11 @@ const CanvasDrawing = () => {
           value: obj[key],
           branch: branchNb,
           path: currentPath.substring(2),
+          count: count,
         });
       }
     }
+    // count++;
     if (localSum && depth - 1 >= 0) {
       localeTab.push({
         x: depth - 1,
@@ -73,6 +75,7 @@ const CanvasDrawing = () => {
         value: parentKey,
         branch: branchNb,
         path: path.substring(2),
+        count: count,
       });
     }
     localSum += localSum / localCount;
@@ -85,9 +88,9 @@ const CanvasDrawing = () => {
   ) => {
     localeTab = [];
     const [newObj, , ,] = processNestedObject(obj, 0);
-    count = 0;
+    // count = 0;
     branchNb = 0;
-    console.log("Mince pendant instanciation");
+    // console.log("Mince pendant instanciation");
 
     return localeTab;
   };
@@ -102,7 +105,7 @@ const CanvasDrawing = () => {
   function setCamera(obj: any) {
     const centerX = obj.x + 350 / 2;
     const centerY = obj.y * 160 + 100 / 2;
-    console.log("obj.y", obj.y);
+    // console.log("obj.y", obj.y);
     const centerViewportX = widthScreen / 2;
     const centerViewportY = heightScreen / 2;
     const newZoomLevel = 0.3;
@@ -116,36 +119,48 @@ const CanvasDrawing = () => {
   }
 
   function ChangeXandY(tab: Array<any>) {
-    let maxBranch = 0;
     let midBranch = 0;
     let midCount = 0;
     let maxCount = 0;
-    console.log("Mince apres instanciation");
+
     tab.forEach((obj) => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
-      if (obj.branch > maxBranch) {
-        maxBranch = obj.branch;
-      }
+      if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
-    midBranch = maxBranch / 2 + 1;
+    console.log("This is midbranch = ", midBranch);
 
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
     });
 
+    console.log("This maxcount = ", maxCount);
+
     tab.forEach((obj) => {
-      // hauteur max total pour calcul de la postion de la section gauche
-      if (obj) if (maxCount < obj.y) maxCount = obj.y;
+      // creating obj.end for drawing arc
+      let localeNumObj = obj.path[obj.path.length - 1];
+      let max = 0;
+      // console.log(localeNumObj);
+      tab.forEach((obj2) => {
+        let localeNumObj2 = obj2.path[obj2.path.length - 1];
+        if (obj.path.slice(0, -1) === obj2.path.slice(0, -1))
+          if (localeNumObj2 > max) max = localeNumObj2;
+      });
+      // console.log("max = ", max);
+      localeNumObj === max ? (obj.end = true) : (obj.end = false);
     });
 
     tab.forEach((obj) => {
       // changement de position pour la gauche
+      console.log("This midcount", midCount);
+      console.log("This autre", count - midCount);
+
       if (obj.branch >= midBranch) {
-        obj.y = obj.y - midCount + (maxCount - midCount) / 2;
+        obj.y = obj.y - midCount + (count - midCount) / 2 - 3;
         obj.x = -obj.x;
       }
     });
+
     tab.forEach((obj) => {
       //placement titre centrale a la moyenne de la section droite
       if (obj.x === 0 || obj.x === -0) {
@@ -170,7 +185,7 @@ const CanvasDrawing = () => {
 
   const [htmlContent, setHtmlContent] = useState("");
   useEffect(() => {
-    console.log("test")
+    // console.log("test");
     fetch("/api/convert-docx")
       .then((response) => response.json())
       .then((data) => {
@@ -181,35 +196,20 @@ const CanvasDrawing = () => {
       });
   }, []);
 
-
-  // useEffect(() => {
-  //   // Supposons que `htmlContent` contienne votre HTML converti
-  //   if (htmlContent) {
-  //     const position = 10000; // Définir la position du caractère cible
-  //     // Créer un nouvel élément HTML pour marquer la position
-  //     const markerHtml = `<span id="scroll-target"></span>`;
-  //     // Insérer le marqueur dans le contenu HTML à la position spécifiée
-  //     const modifiedHtml = htmlContent.slice(0, position) + markerHtml + htmlContent.slice(position);
-  //     // Mettre à jour le contenu HTML avec la version modifiée
-  //     setHtmlContent(modifiedHtml);
-
-  //     // Utiliser requestAnimationFrame pour s'assurer que le DOM est mis à jour
-  //     requestAnimationFrame(() => {
-  //       const target = document.getElementById("scroll-target");
-  //       if (target) {
-  //         target.scrollIntoView({ behavior: "smooth" });
-  //       }
-  //     });
-  //   }
-  // }, [htmlContent]);
-
   /////
   /////
   /////
 
   function Color(tab: Array<any>) {
     const randomNumber = Math.random();
-    const color = ["#FA463E", "#01B577", "#F39D4C", "#E2C524", "#47B8D4"];
+    const color = [
+      "#000229",
+      "#FA463E",
+      "#01B577",
+      "#F39D4C",
+      "#E2C524",
+      "#47B8D4",
+    ];
     tab.forEach((obj) => {
       obj.color = color[obj.branch];
     });
@@ -225,6 +225,7 @@ const CanvasDrawing = () => {
     ChangeXandY(tab);
     Color(tab);
     setLocalTab(tab);
+    console.log("This is count = ", count);
   }, []);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,8 +411,8 @@ const CanvasDrawing = () => {
             ((newLeft - minZoom) / (maxZoom - minZoom)) * 150
           }px`;
         }
-        console.log("newPanOffsetX dans handlewheel = ", newPanOffsetX);
-        console.log("newPanOffsetY dans handlewheel = ", newPanOffsetY);
+        // console.log("newPanOffsetX dans handlewheel = ", newPanOffsetX);
+        // console.log("newPanOffsetY dans handlewheel = ", newPanOffsetY);
         // console.log("newZoomLevel dans handlewheel = ", newZoomLevel);
         setZoomLevel(newZoomLevel);
         setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
@@ -453,7 +454,7 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
-          console.log("sur la case ", obj.value);
+          // console.log("sur la case ", obj.value);
           SetIsTextShown(!isTextShown);
         }
         if (
@@ -642,18 +643,18 @@ const CanvasDrawing = () => {
         </form>
         <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
       </div> */}
-      {/* <div>
+      <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div> */}
+      </div>
       {/* <PdfTextExtractor /> */}
       {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
       {/* <TextDisplay htmlText={htmlText} /> */}
       {/* {pdfText} */}
       {/* <UploadDocxForm /> */}
-      {isTextShown && (
+      {/* {isTextShown && (
         <div
           id="modal-backdrop"
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 overflow-auto"
@@ -662,7 +663,7 @@ const CanvasDrawing = () => {
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
