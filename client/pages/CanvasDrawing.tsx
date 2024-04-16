@@ -127,33 +127,38 @@ const CanvasDrawing = () => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
-    console.log("This is midbranch = ", midBranch);
+    // console.log("This is midbranch = ", midBranch);
 
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
     });
 
-    console.log("This maxcount = ", maxCount);
-
     tab.forEach((obj) => {
       // creating obj.end for drawing arc
       let localeNumObj = obj.path[obj.path.length - 1];
       let max = 0;
-      // console.log(localeNumObj);
+      let diff = 0;
+      obj.begin = false;
       tab.forEach((obj2) => {
         let localeNumObj2 = obj2.path[obj2.path.length - 1];
-        if (obj.path.slice(0, -1) === obj2.path.slice(0, -1))
+        if (obj.path.slice(0, -1) === obj2.path.slice(0, -1)) {
+          diff++;
           if (localeNumObj2 > max) max = localeNumObj2;
+          if (
+            obj.path[obj.path.length - 1] == "1" &&
+            obj2.path[obj2.path.length - 1] === "2"
+          ) {
+            // console.log(`ok pour ${obj.path} et ${obj2.path}`);
+            obj.begin = true;
+          }
+        }
       });
-      // console.log("max = ", max);
-      localeNumObj === max ? (obj.end = true) : (obj.end = false);
+      localeNumObj === max && diff > 1 ? (obj.end = true) : (obj.end = false);
     });
 
     tab.forEach((obj) => {
-      // changement de position pour la gauche
-      console.log("This midcount", midCount);
-      console.log("This autre", count - midCount);
+      // // changement de position pour la gauche
 
       if (obj.branch >= midBranch) {
         obj.y = obj.y - midCount + (count - midCount) / 2 - 3;
@@ -225,7 +230,7 @@ const CanvasDrawing = () => {
     ChangeXandY(tab);
     Color(tab);
     setLocalTab(tab);
-    console.log("This is count = ", count);
+    // console.log("This is count = ", count);
   }, []);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +252,7 @@ const CanvasDrawing = () => {
   const [searchValue, setSearchValue] = useState("");
   const [pdfText, setPdfText] = useState("");
   const [isTextShown, SetIsTextShown] = useState(false);
+  const [isPistacheOpen, setIsPistacheOpen] = useState(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -440,6 +446,7 @@ const CanvasDrawing = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
+      // setIsPistacheOpen(!isPistacheOpen)
 
       const x = e.clientX - rect.left - panOffset.x;
       const y = e.clientY - rect.top - panOffset.y;
@@ -454,7 +461,6 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
-          // console.log("sur la case ", obj.value);
           SetIsTextShown(!isTextShown);
         }
         if (
@@ -465,6 +471,26 @@ const CanvasDrawing = () => {
         ) {
           obj.hideRoot = !obj.hideRoot;
           hideCases(localTab, obj);
+        } else if (
+          adjustedX >= obj.x + 290 &&
+          adjustedX <= obj.x + 350 &&
+          adjustedY >= obj.y - 40 &&
+          adjustedY <= obj.y
+        ) {
+          if (isPistacheOpen == false)
+          {
+            obj.isPistache = !obj.isPistache;
+            setIsPistacheOpen(!isPistacheOpen)
+          }
+          else if (isPistacheOpen && obj.isPistache)
+          {
+            obj.isPistache = !obj.isPistache;
+            setIsPistacheOpen(!isPistacheOpen)
+          }
+          
+          console.log("ok pistache");
+          console.log("ok isPistacheOpen = ", isPistacheOpen);
+          redrawCanvas();
         }
       });
     };
@@ -654,7 +680,7 @@ const CanvasDrawing = () => {
       {/* <TextDisplay htmlText={htmlText} /> */}
       {/* {pdfText} */}
       {/* <UploadDocxForm /> */}
-      {/* {isTextShown && (
+      {isTextShown && (
         <div
           id="modal-backdrop"
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 overflow-auto"
@@ -663,7 +689,7 @@ const CanvasDrawing = () => {
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
           </div>
         </div>
-      )} */}
+      )}
     </>
   );
 };
