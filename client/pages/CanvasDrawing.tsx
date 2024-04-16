@@ -307,7 +307,7 @@ const CanvasDrawing = () => {
         if (
           adjustedX >= obj.x &&
           adjustedX <= obj.x + 350 &&
-          adjustedY >= obj.y - 30 &&
+          adjustedY >= obj.y - 50 &&
           adjustedY <= obj.y + 100
         ) {
           obj.hover = true;
@@ -669,12 +669,12 @@ const CanvasDrawing = () => {
         </form>
         <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
       </div> */}
-      <div>
+      {/* <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div>
+      </div> */}
       {/* <PdfTextExtractor /> */}
       {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
       {/* <TextDisplay htmlText={htmlText} /> */}
