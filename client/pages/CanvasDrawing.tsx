@@ -758,7 +758,7 @@ const CanvasDrawing = () => {
             const hasRole = item.role && item.role !== "pageNumber";
             const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
             const containsSelected = item.content.toLowerCase().includes(selected.toLowerCase());
-            const colorStyle = containsSelected ? 'text-red-500 opacity-50' : '';
+            const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
             
             return (
               <div key={index} className="p-0">
