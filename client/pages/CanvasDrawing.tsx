@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
+import apiResponse from "../src/app/utils/ApiJsonResponse";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
-import UploadDocxForm from "./UploadDocxForm";
 
 interface NestedObject {
   [key: string]: any;
@@ -188,19 +188,49 @@ const CanvasDrawing = () => {
   /////
   /////word
 
-  const [htmlContent, setHtmlContent] = useState("");
-  useEffect(() => {
-    // console.log("test");
-    fetch("/api/convert-docx")
-      .then((response) => response.json())
-      .then((data) => {
-        setHtmlContent(data.html);
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du contenu HTML:", error);
-      });
-  }, []);
+  // const [htmlContent, setHtmlContent] = useState("");
+  // useEffect(() => {
+  //   // console.log("test");
+  //   fetch("/api/convert-docx")
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       setHtmlContent(data.html);
+  //       setPageCount(data.pages);   
+  //     })
+  //     .catch((error) => {
+  //       console.error("Erreur lors de la récupération du contenu HTML:", error);
+  //     });
+  // }, []);
 
+  // useEffect(() => {
+  //   const analyzeDocument = async () => {
+  //       try {
+  //           console.log("\n\nthis is htmlcontent before\n\n");
+  //           const response = await fetch(`${window.location.origin}/api/analyzeDocument`, {
+  //               method: 'POST',
+  //               headers: {
+  //                   'Content-Type': 'application/json',
+  //               },
+  //               body: JSON.stringify({ filePath: "./pages/api/textMap.pdf" }), // Ensure this is accessible server-side
+  //           });
+  //           const data = await response.json();
+  //           console.log("\n\nthis is htmlcontent, c'est une reussite\n\n");
+
+  //           setHtmlContent(data);
+  //           console.log("this is htmlcontent in useEffect = ", data);
+
+  //       } catch (error) {
+  //           console.error('Error fetching analysis results:', error);
+  //       }
+  //   };
+
+    // analyzeDocument();
+// }, []);
+ 
+
+  /////
+  /////
+  /////
   /////
   /////
   /////
@@ -243,6 +273,9 @@ const CanvasDrawing = () => {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const zoomHandleRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const selectedRef = useRef<HTMLDivElement>(null);
+
   const [isZooming, setIsZooming] = useState(false);
   const [zoomFraction, setZoomFraction] = useState<number>(0.35);
   const [isPanning, setIsPanning] = useState(false);
@@ -252,7 +285,10 @@ const CanvasDrawing = () => {
   const [searchValue, setSearchValue] = useState("");
   const [pdfText, setPdfText] = useState("");
   const [isTextShown, SetIsTextShown] = useState(false);
+  const [scrollPercentage, setScrollPercentage] = useState(0);
+  const [selected, setSelected] = useState("");
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
+  const [pageCount, setPageCount] = useState(0);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -325,6 +361,8 @@ const CanvasDrawing = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const zoomHandle = zoomHandleRef.current;
+    const scrollContainer = scrollContainerRef.current;
+
     const onMouseDown = (e: MouseEvent) => {
       if (
         zoomHandleRef.current &&
@@ -442,6 +480,15 @@ const CanvasDrawing = () => {
       }
     };
 
+    const handleScroll = () => {
+      console.log("ScrollPourcent debut")
+      const totalScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScrollPosition = window.pageYOffset;
+      const scrolledPercentage = (currentScrollPosition / totalScrollHeight) * 100;
+
+      // setScrollPercentage(scrolledPercentage);
+    };
+
     const handleCanvasClick = (e: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -461,6 +508,9 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
+          console.log("this is obj.value = ", obj.value);
+          setSelected(obj.value);
+          console.log("this is setSelected ", selected);
           SetIsTextShown(!isTextShown);
         }
         if (
@@ -495,26 +545,36 @@ const CanvasDrawing = () => {
       });
     };
 
+    const handleScrollOverflow = () => {
+      if (!scrollContainerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      const totalScrollHeight = scrollHeight - clientHeight;
+      const scrolledPercentage = (scrollTop / totalScrollHeight) * 100;
+      setScrollPercentage(scrolledPercentage);
+    }
+
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("wheel", handleWheel, { passive: false });
+    if (scrollContainer) scrollContainer.addEventListener('scroll', handleScrollOverflow);
     document.addEventListener("gesturestart", function (e) {
       e.preventDefault();
     });
+    window.addEventListener('scroll', handleScroll);
     if (zoomHandle) zoomHandle.addEventListener("mousedown", onMouseDown);
     canvas?.addEventListener("mousedown", onMouseDown);
 
     return () => {
+      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("wheel", handleWheel);
-      if (zoomHandle) {
-        zoomHandle.removeEventListener("mousedown", onMouseDown);
-      }
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScrollOverflow);
+      if (zoomHandle) zoomHandle.removeEventListener("mousedown", onMouseDown);
       canvas?.removeEventListener("mousedown", onMouseDown);
     };
   }, [
@@ -587,6 +647,12 @@ const CanvasDrawing = () => {
     });
     redrawCanvas();
   }
+
+  useEffect(() => {
+    if (selectedRef.current) {
+      selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selected]); 
 
   return (
     <>
@@ -681,15 +747,50 @@ const CanvasDrawing = () => {
       {/* {pdfText} */}
       {/* <UploadDocxForm /> */}
       {isTextShown && (
-        <div
-          id="modal-backdrop"
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 overflow-auto"
-        >
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-[800px] mx-auto text-black">
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-          </div>
+      <div
+        id="modal-backdrop"
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 overflow-auto"
+        ref={scrollContainerRef}
+      >
+        <div style={{ width: '8px', height: `${scrollPercentage}%`, backgroundColor: 'blue', transition: 'height 0.2s ease', alignSelf: 'stretch' }} />
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-[800px] mx-auto text-black">
+          {apiResponse.map((item, index) => {
+            const hasRole = item.role && item.role !== "pageNumber";
+            const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
+            const containsSelected = item.content.toLowerCase().includes(selected.toLowerCase());
+            const colorStyle = containsSelected ? 'text-red-500 opacity-50' : '';
+            
+            return (
+              <div key={index} className="p-0">
+                {(item.content.length >= 100 || hasRole) && (
+                  <p
+                    ref={containsSelected && !selectedRef.current ? selectedRef : null}
+                    className={`${textStyle} ${colorStyle} pt-7`}
+                  >
+                    {item.content}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
+    )}
+      <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
+      <h1>This is number of pages = {pageCount}</h1>
+
+
+    {apiResponse.map((item, index) => (
+      <div key={index} className="p-0">
+        {/* {item.role && <p className="font-semibold p-6">Role: {item.role}</p>} */}
+        {(item.content.length >= 100 || (item.role && item.role !=="pageNumber"))&& (
+          <p className={`${item.role ? 'text-lg font-bold pt-7' : 'text-base font-normal pt-2'}`}>
+          {item.content}
+          </p>
+        )}
+      </div>
+    ))}
+
     </>
   );
 };

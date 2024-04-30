@@ -10,7 +10,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     .convertToHtml({ path: docxFilePath })
     .then((result) => {
       const htmlWithoutImages = result.value.replace(/<img[^>]*>/g, ""); // retirer les images
-      res.status(200).json({ html: htmlWithoutImages });
+      const estimatedPages = Math.ceil(htmlWithoutImages.length / 2000);
+
+      res.status(200).json({ html: htmlWithoutImages, pages: estimatedPages });
     })
     .catch((err) => {
       res.status(500).json({ error: err.message });
