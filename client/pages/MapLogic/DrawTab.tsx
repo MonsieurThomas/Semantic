@@ -207,7 +207,7 @@ function wrapText(
   ctx.closePath();
 
   const calculatedOpacity = (10 - (Math.abs(obj.x / caseWidth) - 1) * 1.5) / 10;
-  const opacity = Math.max(calculatedOpacity, 0.5);
+  const opacity = Math.max(calculatedOpacity, 0.4);
   ctx.globalAlpha = opacity;
 
   ctx.fillStyle = obj.color;
@@ -219,6 +219,32 @@ function wrapText(
   if (obj.hover && obj.branch != 0) eyeShape(ctx, obj);
   if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj);
   wrapText(ctx, obj, caseWidth, 27);
+  if (obj.pistacheColor)
+  {
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(obj.x+340, obj.y, 20, 0, 2 * Math.PI);
+    ctx.fillStyle = obj.pistacheColor;
+    ctx.fill();
+     if (obj.pistacheType == "flag")
+     {
+       drawFlag(ctx, obj.x+338, obj.y, 14);
+       ctx.strokeStyle = obj.pistacheColor;
+     }
+     else if (obj.pistacheType == "priorité") {
+       ctx.fillStyle = "white";
+       ctx.fillText(`${obj.pistacheNum}`, obj.x+332, obj.y+10);
+       ctx.strokeStyle = obj.pistacheColor;
+      }
+      else if (obj.pistacheType == "tache") {
+       drawLoadingCircle(ctx,obj.x + 340, obj.y-20, obj.pistacheNum-1, 20)
+       ctx.strokeStyle = "#1EC07C";
+      }
+      else if (obj.pistacheType == "etiquette") {
+        ctx.strokeStyle = obj.pistacheColor;
+       }
+    ctx.stroke();
+  }
 }
 
 
@@ -478,35 +504,36 @@ function drawLoadingCircle(ctx: CanvasRenderingContext2D, posX: number, labelPos
       endAngle = startAngle + (2 * Math.PI * (num / 6));
   }
   ctx.beginPath();
-  ctx.arc(posX + (num + 1) * 45, labelPosY + 20, circleRadius, 0, 2 * Math.PI);
+  ctx.arc(posX, labelPosY + 20, circleRadius, 0, 2 * Math.PI);
   ctx.fillStyle = 'white';
   ctx.fill();
 
   if (num > 0 && num <= 6) {
       ctx.beginPath();
-      ctx.moveTo(posX + (num + 1) * 45, labelPosY + 20); 
-      ctx.arc(posX + (num + 1) * 45, labelPosY + 20, circleRadius, startAngle, endAngle);
+      ctx.moveTo(posX, labelPosY + 20); 
+      ctx.arc(posX, labelPosY + 20, circleRadius, startAngle, endAngle);
       ctx.closePath();
       ctx.fillStyle = '#1EC07C';
       ctx.fill();
   }
   if (num == 6) {
     ctx.beginPath();
-    ctx.moveTo(posX + (num + 1) * 45 - 9, labelPosY + 20);
-    ctx.lineTo(posX + (num + 1) * 45-2, labelPosY + 25);
-    ctx.lineTo(posX + (num + 1) * 45 + 8, labelPosY + 10);
+    ctx.moveTo(posX - 9, labelPosY + 20);
+    ctx.lineTo(posX-2, labelPosY + 25);
+    ctx.lineTo(posX + 8, labelPosY + 10);
     // ctx.moveTo(posX + (num + 1) * 45 - 10, labelPosY + 30);
     // ctx.lineTo(posX + (num + 1) * 45, labelPosY + 20);
     // ctx.lineTo(posX + (num + 1) * 45 + 10, labelPosY + 30);
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 5;
+    ctx.fill();
     ctx.stroke();
 }
 
 
 
   ctx.beginPath();
-  ctx.arc(posX + (num + 1) * 45, labelPosY + 20, circleRadius, 0, 2 * Math.PI);
+  ctx.arc(posX, labelPosY + 20, circleRadius, 0, 2 * Math.PI);
   ctx.strokeStyle = '#1EC07C';
   ctx.lineWidth = 2;
   ctx.stroke();
@@ -524,7 +551,7 @@ function drawFlag(ctx: CanvasRenderingContext2D, x:number, y:number, size:number
 }
 
 function Pistache(ctx: CanvasRenderingContext2D, obj:any, caseWidth:number, caseHeight:number) {
-  console.log("ok dans pistache pour obj = ", obj.value);
+  // console.log("ok dans pistache pour obj = ", obj.value);
   let posX = obj.x + caseWidth + 20;
   let posY = obj.y - 100;
   const cornerRadius = 20;
@@ -564,11 +591,10 @@ function Pistache(ctx: CanvasRenderingContext2D, obj:any, caseWidth:number, case
         ctx.fillStyle = "white"; // Ensure text color is black
         ctx.fillText(`${num + 1}`, posX-7 + (num + 1) * 45, labelPosY + 30);
       }
-      if (index === 2) drawLoadingCircle(ctx,posX, labelPosY, num, circleRadius)
-      if (index === 3) drawFlag(ctx, posX - 2 + (num + 1) * 45, labelPosY + 20, circleRadius - 5);
+      if (index === 2) drawLoadingCircle(ctx,posX - 2 + (num + 1) * 45, labelPosY, num, circleRadius)
+      if (index === 3) drawFlag(ctx, posX + (num + 1) * 45, labelPosY + 20, circleRadius - 5);
     });
   });
-  
 }
 
 
@@ -580,6 +606,7 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>, zoom: number) {
   let caseWidth = 350;
   let caseHeight = 100;
   tab.forEach((obj) => {
+    // console.log("this is obj in drawSquare = ", {obj})
     DrawSquare(ctx, obj, caseWidth, caseHeight);
     DrawBubble(ctx, obj, caseWidth, caseHeight, zoom);
   });

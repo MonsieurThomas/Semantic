@@ -5,6 +5,11 @@ import nestedObjectData from "../src/app/utils/NestedObjectData";
 import apiResponse from "../src/app/utils/ApiJsonResponse";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
+import CheckPistachePostion from "./CheckPistachePostion";
+import MarquePage from "../public/MarquePage.png"
+import Image from "next/image";
+import { RxCross1 } from "react-icons/rx";
+
 
 interface NestedObject {
   [key: string]: any;
@@ -276,14 +281,18 @@ const CanvasDrawing = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLDivElement>(null);
 
+  type Quartet = [string, string, string, string];
+
   const [isZooming, setIsZooming] = useState(false);
   const [zoomFraction, setZoomFraction] = useState<number>(0.35);
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isHoveringObject, setIsHoveringObject] = useState(false);
+  const [pistacheTab, setPistacheTab] = useState<Quartet[]>([]); 
   const [searchValue, setSearchValue] = useState("");
   const [pdfText, setPdfText] = useState("");
+  const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, SetIsTextShown] = useState(false);
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState("");
@@ -417,6 +426,8 @@ const CanvasDrawing = () => {
     /////handle weel ////
     const handleWheel = (e: WheelEvent) => {
       if (searchValue && e.clientX < 220 && e.clientX < 435) return;
+      if (showPistacheTab && e.clientX > 1140 && e.clientX < 1500) return;
+      console.log("e.clientX dans handlewheel = ", e.clientX)
       if (isTextShown) return;
       e.preventDefault();
 
@@ -481,7 +492,7 @@ const CanvasDrawing = () => {
     };
 
     const handleScroll = () => {
-      console.log("ScrollPourcent debut")
+      // console.log("ScrollPourcent debut")
       const totalScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const currentScrollPosition = window.pageYOffset;
       const scrolledPercentage = (currentScrollPosition / totalScrollHeight) * 100;
@@ -508,9 +519,9 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
-          console.log("this is obj.value = ", obj.value);
+          // console.log("this is obj.value = ", obj.value);
           setSelected(obj.value);
-          console.log("this is setSelected ", selected);
+          // console.log("this is setSelected ", selected);
           SetIsTextShown(!isTextShown);
         }
         if (
@@ -530,18 +541,22 @@ const CanvasDrawing = () => {
           if (isPistacheOpen == false)
           {
             obj.isPistache = !obj.isPistache;
-            setIsPistacheOpen(!isPistacheOpen)
+            // setIsPistacheOpen(!isPistacheOpen)
           }
           else if (isPistacheOpen && obj.isPistache)
           {
             obj.isPistache = !obj.isPistache;
-            setIsPistacheOpen(!isPistacheOpen)
+            // setIsPistacheOpen(!isPistacheOpen)
           }
-          
-          console.log("ok pistache");
-          console.log("ok isPistacheOpen = ", isPistacheOpen);
           redrawCanvas();
         }
+        if (obj.isPistache &&
+          adjustedX >= obj.x + 400 &&
+          adjustedX <= obj.x + 750 &&
+          adjustedY >= obj.y - 120 &&
+          adjustedY <= obj.y + 260)
+          CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab, setPistacheTab);
+          redrawCanvas();
       });
     };
 
@@ -654,6 +669,31 @@ const CanvasDrawing = () => {
     }
   }, [selected]); 
 
+  const togglePistacheTab = () => {
+    console.log("Nouvelle func")
+    // console.log("showPistacheTab func avabt", showPistacheTab)
+    
+    setShowPistacheTab(!showPistacheTab);
+    // console.log("showPistacheTab func apres", showPistacheTab)
+
+  };
+
+  function removeItem(index:any) {
+    // Crée une nouvelle copie de pistacheTab sans l'élément à l'index spécifié
+    const newPistacheTab = [...pistacheTab.slice(0, index), ...pistacheTab.slice(index + 1)];
+    setPistacheTab(newPistacheTab); // Met à jour l'état avec le nouveau tableau
+  }
+  
+
+  const itemHeight = 70; // Hauteur de chaque élément en pixels
+  // Calcul de la hauteur maximum pour 4 éléments
+  const maxHeight = itemHeight * 4;
+  // Hauteur dynamique basée sur le nombre d'éléments
+  const dynamicHeight = itemHeight * pistacheTab.length;
+  // Détermine si la hauteur dépasse le maximum pour 4 éléments
+  const scrollNeeded = dynamicHeight > maxHeight;
+
+  
   return (
     <>
       <div
@@ -735,18 +775,13 @@ const CanvasDrawing = () => {
         </form>
         <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
       </div> */}
-      {/* <div>
-        {localTab.map((item, id) => {
-          return <div key={id}>{JSON.stringify(item)}</div>;
-        })}
-        This is count = {count};
-      </div> */}
+    
       {/* <PdfTextExtractor /> */}
       {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
       {/* <TextDisplay htmlText={htmlText} /> */}
       {/* {pdfText} */}
       {/* <UploadDocxForm /> */}
-      {isTextShown && (
+      {/* {isTextShown && (
       <div
         id="modal-backdrop"
         className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 overflow-auto"
@@ -775,21 +810,102 @@ const CanvasDrawing = () => {
           })}
         </div>
       </div>
-    )}
+    )} */}
+    {
+      pistacheTab.length > 0 && (
+        <Image src={MarquePage} alt="no image" className="fixed top-20 right-[-15px] w-20 h-20 cursor-pointer" style={{ userSelect: "none" }} onClick={togglePistacheTab}/>
+      )
+    } 
+      {
+  showPistacheTab && (
+    <div 
+      className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl p-4"
+      style={{
+        height: `${scrollNeeded ? maxHeight : dynamicHeight}px`, // Utilisation de maxHeight si le défilement est nécessaire
+        overflowY: scrollNeeded ? 'auto' : 'hidden', // Activation du défilement si nécessaire
+      }}
+    >
+    {
+  pistacheTab.map((item, index) => (
+    <div
+      key={index}
+      style={{
+        display: 'flex',               // Utilisez flexbox pour aligner les éléments horizontalement
+        alignItems: 'center',          // Centre les éléments verticalement
+        marginBottom: '10px',          // Espace entre chaque groupe d'éléments
+      }}
+    >
+      <button
+            style={{
+              position: 'relative',
+              height: '30px',
+              width: '30px',
+              backgroundColor: item[1],
+              borderRadius: '50%',
+              cursor: 'pointer',
+              marginRight: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={() => removeItem(index)} // Supprime l'élément au clic
+          >
+            {/* <RxCross1 style={{
+              display: 'hidden', // Affiche seulement si hover
+              width: '20px',
+              height: '20px',
+              color: 'white' // Icône blanche
+            }} /> */}
+          </button>
+      
+      <div
+        style={{
+          color: 'white',
+          backgroundColor: item[3],
+          padding: '10px',
+          borderRadius: '20px',
+          fontWeight:"500",
+          textAlign: 'right',
+          whiteSpace: 'nowrap',          // Empêche le texte de passer à la ligne suivante
+          overflow: 'hidden',            // Masque les débordements de texte qui ne rentrent pas dans une ligne
+          textOverflow: 'ellipsis',      // Ajoute des points de suspension si le texte déborde
+          flexGrow: 1,                   // Permet à la case de prendre tout l'espace horizontal disponible
+        }}
+      >
+        {item[2]} {/* item[2] correspond à `value` */}
+      </div>
+    </div>
+  ))
+}
+
+
+    </div>
+  )
+}
+
+
+      <h1>This is pistacheTab length = {pistacheTab.length}</h1>
+      <h1>This is pistacheTab  = {pistacheTab}</h1>
       <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
       <h1>This is number of pages = {pageCount}</h1>
+      <div>
+        {localTab.map((item, id) => {
+          return <div key={id}>{JSON.stringify(item)}</div>;
+        })}
+        This is count = {count};
+      </div>
 
-
+{/* 
     {apiResponse.map((item, index) => (
       <div key={index} className="p-0">
-        {/* {item.role && <p className="font-semibold p-6">Role: {item.role}</p>} */}
+        {item.role && <p className="font-semibold p-6">Role: {item.role}</p>}
         {(item.content.length >= 100 || (item.role && item.role !=="pageNumber"))&& (
           <p className={`${item.role ? 'text-lg font-bold pt-7' : 'text-base font-normal pt-2'}`}>
           {item.content}
           </p>
         )}
       </div>
-    ))}
+    ))} */}
 
     </>
   );
