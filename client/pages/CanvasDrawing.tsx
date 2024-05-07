@@ -289,7 +289,7 @@ const CanvasDrawing = () => {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isHoveringObject, setIsHoveringObject] = useState(false);
-  const [pistacheTab, setPistacheTab] = useState<Quartet[]>([]); 
+  const [pistacheTab, setPistacheTab] = useState<any>([]);
   const [searchValue, setSearchValue] = useState("");
   const [pdfText, setPdfText] = useState("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
@@ -304,6 +304,7 @@ const CanvasDrawing = () => {
   });
   const [zoomLevel, setZoomLevel] = useState(1);
   const maxZoom = 0.7;
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const minZoom = 0.15;
   const widthScreen = 1500;
   const heightScreen = 500;
@@ -555,7 +556,7 @@ const CanvasDrawing = () => {
           adjustedX <= obj.x + 750 &&
           adjustedY >= obj.y - 120 &&
           adjustedY <= obj.y + 260)
-          CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab, setPistacheTab);
+          setPistacheTab(CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab));
           redrawCanvas();
       });
     };
@@ -678,22 +679,38 @@ const CanvasDrawing = () => {
 
   };
 
-  function removeItem(index:any) {
-    // Crée une nouvelle copie de pistacheTab sans l'élément à l'index spécifié
-    const newPistacheTab = [...pistacheTab.slice(0, index), ...pistacheTab.slice(index + 1)];
-    setPistacheTab(newPistacheTab); // Met à jour l'état avec le nouveau tableau
-  }
+  function removeItem(targetItem: any): void {
+    const newPistacheTab = pistacheTab.filter((item:any) => item.value !== targetItem.value);
+    setPistacheTab(newPistacheTab);
+
+    if (newPistacheTab.length === 0) {
+        setShowPistacheTab(false);
+    }
+    const newLocalTab = localTab.map(item => {
+      console.log("dans 2eme aprtie de remove")
+        if (item.value === targetItem.value) {
+          console.log("dans 2eme aprtie de remove")
+
+            const updatedItem = { ...item, pistacheType: undefined, pistacheColor: undefined };
+            return updatedItem;
+        }
+        return item;
+    });
+
+    setLocalTab(newLocalTab);
+}
+
+  
+  
+  
   
 
-  const itemHeight = 70; // Hauteur de chaque élément en pixels
-  // Calcul de la hauteur maximum pour 4 éléments
+  const itemHeight = 70;
   const maxHeight = itemHeight * 4;
-  // Hauteur dynamique basée sur le nombre d'éléments
   const dynamicHeight = itemHeight * pistacheTab.length;
-  // Détermine si la hauteur dépasse le maximum pour 4 éléments
   const scrollNeeded = dynamicHeight > maxHeight;
 
-  
+
   return (
     <>
       <div
@@ -813,7 +830,7 @@ const CanvasDrawing = () => {
     )} */}
     {
       pistacheTab.length > 0 && (
-        <Image src={MarquePage} alt="no image" className="fixed top-20 right-[-15px] w-20 h-20 cursor-pointer" style={{ userSelect: "none" }} onClick={togglePistacheTab}/>
+        <Image src={MarquePage} alt="no image" className="fixed top-20 w-20 h-20 cursor-pointer" style={{ userSelect: "none", right: showPistacheTab ? "280px" : "-15px" }} onClick={togglePistacheTab}/>
       )
     } 
       {
@@ -826,7 +843,7 @@ const CanvasDrawing = () => {
       }}
     >
     {
-  pistacheTab.map((item, index) => (
+  pistacheTab.map((item:any, index:number) => (
     <div
       key={index}
       style={{
@@ -836,32 +853,44 @@ const CanvasDrawing = () => {
       }}
     >
       <button
-            style={{
-              position: 'relative',
-              height: '30px',
-              width: '30px',
-              backgroundColor: item[1],
-              borderRadius: '50%',
-              cursor: 'pointer',
-              marginRight: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onClick={() => removeItem(index)} // Supprime l'élément au clic
-          >
-            {/* <RxCross1 style={{
-              display: 'hidden', // Affiche seulement si hover
-              width: '20px',
-              height: '20px',
-              color: 'white' // Icône blanche
-            }} /> */}
-          </button>
+      style={{
+        position: 'relative',
+        height: '30px',
+        width: '30px',
+        backgroundColor: item.pistacheColor,
+        borderRadius: '50%',
+        cursor: 'pointer',
+        marginRight: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+      onClick={() => removeItem(item)}
+      onMouseEnter={() => {  
+        console.log("Mouse enter at index:", index);
+      setHoveredIndex(index);
+    }} 
+      onMouseLeave={() => {
+        console.log("Mouse sortie at index:", index);
+        setHoveredIndex(null)
+      }}  
+    >
+      <div style={{
+        width: '20px',
+        height: '20px',
+        display: hoveredIndex === index ? 'flex' : 'none', // Show icon only when hovered
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <RxCross1 style={{ color: 'white' }} />
+      </div>
+    </button>
       
       <div
         style={{
           color: 'white',
-          backgroundColor: item[3],
+          backgroundColor: item.color,
           padding: '10px',
           borderRadius: '20px',
           fontWeight:"500",
@@ -871,8 +900,9 @@ const CanvasDrawing = () => {
           textOverflow: 'ellipsis',      // Ajoute des points de suspension si le texte déborde
           flexGrow: 1,                   // Permet à la case de prendre tout l'espace horizontal disponible
         }}
+        onClick={() => zoomToValue(item)}
       >
-        {item[2]} {/* item[2] correspond à `value` */}
+        {item.value}
       </div>
     </div>
   ))
@@ -885,15 +915,14 @@ const CanvasDrawing = () => {
 
 
       <h1>This is pistacheTab length = {pistacheTab.length}</h1>
-      <h1>This is pistacheTab  = {pistacheTab}</h1>
       <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
       <h1>This is number of pages = {pageCount}</h1>
-      <div>
+      {/* <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div>
+      </div> */}
 
 {/* 
     {apiResponse.map((item, index) => (

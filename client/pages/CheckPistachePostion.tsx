@@ -1,27 +1,26 @@
-import React from 'react'
 
-function updatePistacheTab(obj: { pistacheType: string; pistacheColor: string; value: string; color: string }, pistacheTab:any, setPistacheTab:any) {
-    type Quartet = [string, string, string, string]; // Assurez-vous que ceci est déclaré dans la portée approprié
-
-    if (Array.isArray(pistacheTab)) {
-        const index = pistacheTab.findIndex((item:Quartet) => item[2] === obj.value); // item[2] correspond à 'value'
-        // your logic here
-        let newPistacheTab = [...pistacheTab];
-        
-        if (index !== -1) {
-            // Si l'élément existe, supprimez-le
-            newPistacheTab.splice(index, 1);
-        } else {
-            // Si l'élément n'existe pas, ajoutez le nouveau objet
-            newPistacheTab.push([obj.pistacheType, obj.pistacheColor, obj.value, obj.color]);
-        }
-        
-        // Mettre à jour l'état avec le nouveau tableau
-        setPistacheTab(newPistacheTab);
-    } else {
-      console.error('pistacheTab is not an array:', pistacheTab);
+function updatePistacheTab(obj: any, pistacheTab: any) {
+    if (!Array.isArray(pistacheTab)) {
+        console.error("Invalid pistacheTab: Expected an array", pistacheTab);
+        return []; // Return an empty array or the existing pistacheTab as appropriate
     }
-  }
+
+    const index = pistacheTab.findIndex((item: any) => item.value === obj.value);
+    const newPistacheTab = [...pistacheTab];
+
+    if (index !== -1) {
+        // Check if updates are necessary
+        if (newPistacheTab[index].pistacheColor !== obj.pistacheColor || newPistacheTab[index].pistacheType !== obj.pistacheType) {
+            newPistacheTab[index] = {...newPistacheTab[index], ...obj};
+        }
+    } else {
+        // Add the new item if not found
+        newPistacheTab.push(obj);
+    }
+
+    return newPistacheTab;
+}
+
   
 
 
@@ -44,27 +43,6 @@ function CheckNum (adjustedX:number, obj:any)
 
 }
 
-function CheckTache (adjustedX:number, obj:any)
-{
-    // if (adjustedX >= obj.x + 400 && adjustedX <= obj.x + 750)
-    //     console.log("Couleur")
-    if (adjustedX >= obj.x + 395 && adjustedX <= obj.x + 435)
-    console.log("1")
-    else if (adjustedX >= obj.x + 440 && adjustedX <= obj.x + 475)
-    console.log("2")
-    else if (adjustedX >= obj.x + 490 && adjustedX <= obj.x + 520)
-    console.log("3")
-    else if (adjustedX >= obj.x + 530 && adjustedX <= obj.x + 575)
-    console.log("4")
-    else if (adjustedX >= obj.x + 580 && adjustedX <= obj.x + 610)
-    console.log("5")
-    else if (adjustedX >= obj.x + 625 && adjustedX <= obj.x + 655)
-    console.log("6")
-    else if (adjustedX >= obj.x + 670 && adjustedX <= obj.x + 700)
-    console.log("7")
-
-}
-
 function CheckColor (adjustedX:number, obj:any)
 {
     if (adjustedX >= obj.x + 395 && adjustedX <= obj.x + 435)
@@ -83,44 +61,29 @@ function CheckColor (adjustedX:number, obj:any)
         obj.pistacheColor = "#9D9DA0" // gris
 }
 
-function CheckPistachePostion(obj:any, adjustedX:number, adjustedY:number, pistacheTab:any, setPistacheTab:any) {
-
-    if (adjustedY >= obj.y - 80 && adjustedY <= obj.y - 40)
-    {
-        console.log("Etiquette");
-        CheckColor (adjustedX, obj)
-        obj.pistacheType = "etiquette"
+function CheckPistachePosition(obj:any, adjustedX:number, adjustedY:number, pistacheTab:any) {
+    if (adjustedY >= obj.y - 80 && adjustedY <= obj.y - 40) {
+      CheckColor(adjustedX, obj);
+      obj.pistacheType = "etiquette";
+    } else if (adjustedY >= obj.y - 5 && adjustedY <= obj.y + 35) {
+      CheckColor(adjustedX, obj);
+      obj.pistacheType = "priorité";
+      CheckNum(adjustedX, obj);
+    } else if (adjustedY >= obj.y + 80 && adjustedY <= obj.y + 110) {
+      CheckColor(adjustedX, obj);
+      obj.pistacheType = "tache";
+      CheckNum(adjustedX, obj);
+      obj.pistacheColor = "#1EC07C" 
+    } else if (adjustedY >= obj.y + 150 && adjustedY <= obj.y + 190) {
+      CheckColor(adjustedX, obj);
+      obj.pistacheType = "flag";
+    } else {
+      console.log("No matching position found");
     }
-        
-    else if (adjustedY >= obj.y - 5 && adjustedY <= obj.y + 35)
-        {
-            console.log("Priorité");
-            CheckColor (adjustedX, obj)
-            obj.pistacheType = "priorité"
-            CheckNum(adjustedX, obj)
-        }
-    else if (
-        adjustedY >= obj.y + 80 &&
-            adjustedY <= obj.y + 110)
-        {
-            CheckColor (adjustedX, obj)
-            obj.pistacheType = "tache"
-            CheckNum(adjustedX, obj)
-            console.log(obj.pistacheType);
-        }
-    else if (
-        adjustedY >= obj.y + 150 &&
-            adjustedY <= obj.y + 190)
-        {
-            console.log("Drapeaux");
-            CheckColor (adjustedX, obj)
-            obj.pistacheType = "flag"
-        }
-    else
-        console.log("Mince")
+    obj.isPistache = false;
+    return updatePistacheTab(obj, pistacheTab);
+  }
+  
 
-    updatePistacheTab(obj, pistacheTab, setPistacheTab)
-    // setPistacheTab([...pistacheTab, [obj.pistacheType, obj.pistacheColor, obj.value, obj.color]]);
-}
-
-export default CheckPistachePostion
+export default CheckPistachePosition
+///////
