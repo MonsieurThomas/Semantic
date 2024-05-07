@@ -1,16 +1,17 @@
 import React from "react";
 
-export const MapObject = [
+const MapObject = [
   {
     date: new Date(2024, 0, 18, 16, 50),
     color: "#EB473D",
-    title: "Blockchain",
+    title: "\"Blockchain et santé\".docx",
     theme: [
       "La blockchain d'entreprise",
       "Blockain and gaming",
       "Blockchain, cryptomonaie, NFT: new tech a la porté de tous ?",
       "Blockchain et santé",
     ],
+    page:5
   },
   {
     date: new Date(2024, 0, 15, 12, 30),
@@ -98,3 +99,5 @@ export const MapObject = [
     ],
   },
 ];
+
+export default MapObject

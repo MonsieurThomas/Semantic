@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { MapObject } from "../src/app/utils/MapObject";
+import  MapObject  from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";

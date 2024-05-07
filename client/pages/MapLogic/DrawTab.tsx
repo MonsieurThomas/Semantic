@@ -119,7 +119,6 @@ function wrapText(
   let boxY = obj.y + 5;
   if (obj.branch == 0) boxX -= 50;
 
-  // Pré-calculer les lignes pour déterminer la hauteur totale
   for (let i = 0; i < words.length; i++) {
     const testLine = line + words[i] + " ";
     const metrics = ctx.measureText(testLine);
@@ -135,23 +134,33 @@ function wrapText(
       line = testLine;
     }
   }
+
   if (lines.length < 3) {
-    lines.push(line); // Ajoute la dernière ligne si moins de trois
+    lines.push(line); // Adds the last line if fewer than three
   } else {
-    lines[2] = line.trim() + "..."; // Tronque et ajoute "..." à la troisième ligne
+    lines[2] = line.trim() + "..."; // Truncate and add "..." to the third line
   }
+
   let startY = boxY + lineHeight;
-  // Dessiner les lignes centrées horizontalement jusqu'à un maximum de trois
+  // Draw the lines centered horizontally up to a maximum of three
   lines.forEach((ln, index) => {
     if (index < 3) {
-      // Dessine seulement les trois premières lignes
       const lineWidth = ctx.measureText(ln).width;
       const startX = boxX + (boxWidth - lineWidth) / 2;
       ctx.fillText(ln, startX, startY);
-      startY += lineHeight; // Ajouter l'écart augmenté entre les lignes
+      startY += lineHeight; // Add the increased gap between lines
     }
   });
+
+  // Displaying the offset below the text
+  if (obj.offset !== undefined) {
+    const offsetText = `Offset: ${obj.offset}`;
+    const offsetWidth = ctx.measureText(offsetText).width;
+    const offsetX = boxX + (boxWidth - offsetWidth) / 2;
+    ctx.fillText(offsetText, offsetX, startY);  // startY is now at the position below the last line of text
+  }
 }
+
 
  function DrawSquare(
   ctx: CanvasRenderingContext2D,
@@ -206,8 +215,8 @@ function wrapText(
   );
   ctx.closePath();
 
-  const calculatedOpacity = (10 - (Math.abs(obj.x / caseWidth) - 1) * 1.5) / 10;
-  const opacity = Math.max(calculatedOpacity, 0.4);
+  const calculatedOpacity = (10 - (Math.abs(obj.x / caseWidth) - 1) * 0.9) / 10;
+  const opacity = Math.max(calculatedOpacity, 0.3);
   ctx.globalAlpha = opacity;
 
   ctx.fillStyle = obj.color;
@@ -218,8 +227,8 @@ function wrapText(
   if (obj.branch == 0) ctx.font = "50px Arial";
   if (obj.hover && obj.branch != 0) eyeShape(ctx, obj);
   if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj);
-  wrapText(ctx, obj, caseWidth, 27);
-  if (obj.pistacheColor)
+  wrapText(ctx, obj, caseWidth, 27); // affichage texte
+  if (obj.pistacheColor) // pistache part
   {
     ctx.globalAlpha = 1;
     ctx.beginPath();
@@ -427,30 +436,32 @@ function DrawBubble(
 ) {
   ctx.save();
 
-  if (zoom > 50) {
-    let opacity = (zoom - 50) / 50;
-    ctx.globalAlpha = opacity;
+  if (Array.isArray(obj.offset) && obj.offset.length > 0) {
+    if (zoom > 50) {
+      let opacity = (zoom - 50) / 50;
+      ctx.globalAlpha = opacity;
 
-    ctx.beginPath();
-    if (obj.x < 0) ctx.arc(obj.x - 20, obj.y + 50, 14, 0, 2 * Math.PI, false);
-    else ctx.arc(obj.x + 370, obj.y + 50, 14, 0, 2 * Math.PI, false);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "black";
-    ctx.stroke();
+      ctx.beginPath();
+      if (obj.x < 0) ctx.arc(obj.x - 20, obj.y + 50, 14, 0, 2 * Math.PI, false);
+      else ctx.arc(obj.x + 370, obj.y + 50, 14, 0, 2 * Math.PI, false);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "black";
+      ctx.stroke();
 
-    if (obj.occurence) {
-      ctx.fillStyle = "black";
-      ctx.font = "17px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      if (obj.x < 0) {
-        ctx.fillText(obj.occurence.toString(), obj.x - 20, obj.y + 50);
-      } else {
-        ctx.fillText(obj.occurence.toString(), obj.x + 370, obj.y + 50);
+      // console.log("obj.offset", obj.offset)
+      
+        ctx.fillStyle = "black";
+        ctx.font = "17px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        if (obj.x < 0) {
+          ctx.fillText(obj.offset.length.toString(), obj.x - 20, obj.y + 50);
+        } else {
+          ctx.fillText(obj.offset.length.toString(), obj.x + 370, obj.y + 50);
+        }
       }
-    }
   }
   ctx.restore();
 }

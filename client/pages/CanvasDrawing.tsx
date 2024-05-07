@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import nestedObjectData from "../src/app/utils/NestedObjectData";
 import apiResponse from "../src/app/utils/ApiJsonResponse";
+import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
 import CheckPistachePostion from "./CheckPistachePostion";
@@ -16,28 +17,31 @@ interface NestedObject {
 }
 
 const CanvasDrawing = () => {
+  
   let count = 0;
   let branchNb = 0;
   let localeTab: Array<any> = [];
   let pdf = "";
-
+  
   function processNestedObject(
     obj: NestedObject,
     depth = 0,
     branch = 0,
     parentKey = "",
-    path = "" //
+    path = ""
   ): [NestedObject, number, number, number] {
     let localCount = 0;
     let localSum = 0;
     const newObj: NestedObject = {};
     let index = 0;
+  
     for (const key in obj) {
       let currentPath = path ? `${path}.${index + 1}` : `${index + 1}`;
       if (
         typeof obj[key] === "object" &&
         obj[key] !== null &&
-        !Array.isArray(obj[key])
+        !Array.isArray(obj[key]) &&
+        !('value' in obj[key])  // Check if it's not a terminal node
       ) {
         if (depth === 1) {
           branchNb++;
@@ -54,7 +58,7 @@ const CanvasDrawing = () => {
         newObj[key] = { ...processedObj };
         localCount += subCount;
         localSum += subSum;
-      } else {
+      } else if ('value' in obj[key]) {  // Handle terminal nodes with value and offset
         if (depth === 1) {
           branchNb++;
         }
@@ -65,14 +69,15 @@ const CanvasDrawing = () => {
         localeTab.push({
           x: depth,
           y: count,
-          value: obj[key],
+          value: obj[key].value,
           branch: branchNb,
           path: currentPath.substring(2),
           count: count,
+          offset: obj[key].offset
         });
       }
     }
-    // count++;
+  
     if (localSum && depth - 1 >= 0) {
       localeTab.push({
         x: depth - 1,
@@ -87,6 +92,7 @@ const CanvasDrawing = () => {
     localCount++;
     return [newObj, localCount, localSum, branch];
   }
+  
 
   const AddCoordinates: (obj: NestedObject) => any[][] = (
     obj: NestedObject
@@ -193,43 +199,31 @@ const CanvasDrawing = () => {
   /////
   /////word
 
-  // const [htmlContent, setHtmlContent] = useState("");
-  // useEffect(() => {
-  //   // console.log("test");
-  //   fetch("/api/convert-docx")
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       setHtmlContent(data.html);
-  //       setPageCount(data.pages);   
-  //     })
-  //     .catch((error) => {
-  //       console.error("Erreur lors de la récupération du contenu HTML:", error);
-  //     });
-  // }, []);
+//   const [htmlContent, setHtmlContent] = useState("");
 
-  // useEffect(() => {
-  //   const analyzeDocument = async () => {
-  //       try {
-  //           console.log("\n\nthis is htmlcontent before\n\n");
-  //           const response = await fetch(`${window.location.origin}/api/analyzeDocument`, {
-  //               method: 'POST',
-  //               headers: {
-  //                   'Content-Type': 'application/json',
-  //               },
-  //               body: JSON.stringify({ filePath: "./pages/api/textMap.pdf" }), // Ensure this is accessible server-side
-  //           });
-  //           const data = await response.json();
-  //           console.log("\n\nthis is htmlcontent, c'est une reussite\n\n");
+//   useEffect(() => {
+//     const analyzeDocument = async () => {
+//         try {
+//             console.log("\n\nthis is htmlcontent before\n\n");
+//             const response = await fetch(`${window.location.origin}/api/analyzeDocument`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify({ filePath: "./pages/api/textMap.pdf" }), // Ensure this is accessible server-side
+//             });
+//             const data = await response.json();
+//             console.log("\n\nthis is htmlcontent, c'est une reussite\n\n");
 
-  //           setHtmlContent(data);
-  //           console.log("this is htmlcontent in useEffect = ", data);
+//             setHtmlContent(data);
+//             console.log("this is htmlcontent in useEffect = ", data);
 
-  //       } catch (error) {
-  //           console.error('Error fetching analysis results:', error);
-  //       }
-  //   };
+//         } catch (error) {
+//             console.error('Error fetching analysis results:', error);
+//         }
+//     };
 
-    // analyzeDocument();
+//     analyzeDocument();
 // }, []);
  
 
@@ -291,11 +285,10 @@ const CanvasDrawing = () => {
   const [isHoveringObject, setIsHoveringObject] = useState(false);
   const [pistacheTab, setPistacheTab] = useState<any>([]);
   const [searchValue, setSearchValue] = useState("");
-  const [pdfText, setPdfText] = useState("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, SetIsTextShown] = useState(false);
   const [scrollPercentage, setScrollPercentage] = useState(0);
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState<any>();
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
@@ -520,10 +513,10 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
-          // console.log("this is obj.value = ", obj.value);
-          setSelected(obj.value);
+          setSelected(obj);
           // console.log("this is setSelected ", selected);
-          SetIsTextShown(!isTextShown);
+          if (obj.offset) // = fin de branche donc possible affichage du texte
+            SetIsTextShown(!isTextShown);
         }
         if (
           adjustedX >= obj.x + 15 &&
@@ -756,7 +749,7 @@ const CanvasDrawing = () => {
         <div className="w-[182px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
           <div>
             {localTab
-              .filter((obj) => obj.value.startsWith(searchValue))
+              .filter((obj) => obj.value.toLowerCase().startsWith(searchValue.toLowerCase()))
               .map((obj, index) => (
                 <div
                   key={index}
@@ -785,49 +778,53 @@ const CanvasDrawing = () => {
           // style={{ border: "1px solid black" }}
         />
       </div>
-      {/* <div>
-        <form onSubmit={handleSubmit}>
-          <input type="file" name="file" accept=".docx" required />
-          <button type="submit">Envoyer</button>
-        </form>
-        <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-      </div> */}
     
-      {/* <PdfTextExtractor /> */}
-      {/* <PdfViewer pdfPath="Feuilletage.pdf" /> */}
-      {/* <TextDisplay htmlText={htmlText} /> */}
-      {/* {pdfText} */}
-      {/* <UploadDocxForm /> */}
-      {/* {isTextShown && (
-      <div
-        id="modal-backdrop"
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 overflow-auto"
-        ref={scrollContainerRef}
-      >
-        <div style={{ width: '8px', height: `${scrollPercentage}%`, backgroundColor: 'blue', transition: 'height 0.2s ease', alignSelf: 'stretch' }} />
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-[800px] mx-auto text-black">
-          {apiResponse.map((item, index) => {
-            const hasRole = item.role && item.role !== "pageNumber";
-            const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
-            const containsSelected = item.content.toLowerCase().includes(selected.toLowerCase());
-            const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
-            
-            return (
-              <div key={index} className="p-0">
-                {(item.content.length >= 100 || hasRole) && (
-                  <p
-                    ref={containsSelected && !selectedRef.current ? selectedRef : null}
-                    className={`${textStyle} ${colorStyle} pt-7`}
-                  >
-                    {item.content}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      {isTextShown && (
+  <div
+    id="modal-backdrop"
+    className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4"
+    ref={scrollContainerRef}
+  >
+    <div className="flex max-w-[1000px] mx-auto" style={{ width: '100%' }}> {/* Adjusting the flex container */}
+      {/* Sidebar for the boxes with its own scroll */}
+      <div className="flex flex-col justify-start overflow-auto mr-4" style={{ maxHeight: '80vh', minWidth: '250px', maxWidth: '300px' }}> {/* Adjusted sidebar dimensions */}
+        {selected.offset && selected.offset.map((offset: any, index: number) => (
+          <div key={index} className="bg-gray-200 px-5 py-5 mr-4 my-16 rounded-lg text-black text-sm leading-snug"> {/* Reduced padding, adjusted line height for better text fit */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+              <span>{MapObject[0]?.title}</span>
+              <h1 className="mt-2">P.{offset}</h1> {/* Margin-top for spacing between title and page number */}
+            </div>
+          </div>
+        ))}
       </div>
-    )} */}
+      {/* Main text content with its own scroll */}
+      <div className="bg-white p-6 rounded-lg shadow-lg flex-grow overflow-auto" style={{ maxHeight: '100vh' }}>
+        {apiResponse.map((item, index) => {
+          const hasRole = item.role && item.role !== "pageNumber";
+          const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
+          const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
+          const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
+          
+          return (
+            <div key={index} className="p-0">
+              {(item.content.length >= 100 || hasRole) && (
+                <p
+                  ref={containsSelected && !selectedRef.current ? selectedRef : null}
+                  className={`${textStyle} ${colorStyle} pt-7`}
+                >
+                  {item.content}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+)}
+
+
+
     {
       pistacheTab.length > 0 && (
         <Image src={MarquePage} alt="no image" className="fixed top-20 w-20 h-20 cursor-pointer" style={{ userSelect: "none", right: showPistacheTab ? "280px" : "-15px" }} onClick={togglePistacheTab}/>
@@ -847,9 +844,9 @@ const CanvasDrawing = () => {
     <div
       key={index}
       style={{
-        display: 'flex',               // Utilisez flexbox pour aligner les éléments horizontalement
-        alignItems: 'center',          // Centre les éléments verticalement
-        marginBottom: '10px',          // Espace entre chaque groupe d'éléments
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '10px',
       }}
     >
       <button
@@ -894,7 +891,7 @@ const CanvasDrawing = () => {
           padding: '10px',
           borderRadius: '20px',
           fontWeight:"500",
-          textAlign: 'right',
+          // textAlign: 'right',
           whiteSpace: 'nowrap',          // Empêche le texte de passer à la ligne suivante
           overflow: 'hidden',            // Masque les débordements de texte qui ne rentrent pas dans une ligne
           textOverflow: 'ellipsis',      // Ajoute des points de suspension si le texte déborde
@@ -917,12 +914,12 @@ const CanvasDrawing = () => {
       <h1>This is pistacheTab length = {pistacheTab.length}</h1>
       <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
       <h1>This is number of pages = {pageCount}</h1>
-      {/* <div>
+      <div>
         {localTab.map((item, id) => {
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div> */}
+      </div>
 
 {/* 
     {apiResponse.map((item, index) => (

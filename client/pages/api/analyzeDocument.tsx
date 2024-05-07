@@ -4,8 +4,8 @@ const fs = require("fs");
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     require('dotenv').config();
-    const endpoint = process.env.AZURE_ENDPOINT2;
-    const apiKey = process.env.AZURE_API_KEY2;
+    const endpoint = process.env.AZURE_ENDPOINT;
+    const apiKey = process.env.AZURE_API_KEY;
     const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(apiKey));
 
     // Expecting filePath to be sent in the request body for security and flexibility
