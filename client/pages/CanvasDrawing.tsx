@@ -8,6 +8,14 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
 import CheckPistachePostion from "./CheckPistachePostion";
 import MarquePage from "../public/MarquePage.png"
+import useOutsideClick from '../src/hooks/useOutsideClick'; 
+import task0 from "../public/task0.png"
+import task1 from "../public/task1.png"
+import task2 from "../public/task2.png"
+import task3 from "../public/task3.png"
+import task4 from "../public/task4.png"
+import task5 from "../public/task5.png"
+import task6 from "../public/task6.png"
 import Image from "next/image";
 import { RxCross1 } from "react-icons/rx";
 
@@ -73,7 +81,7 @@ const CanvasDrawing = () => {
           branch: branchNb,
           path: currentPath.substring(2),
           count: count,
-          offset: obj[key].offset
+          bounding: obj[key].bounding
         });
       }
     }
@@ -274,6 +282,7 @@ const CanvasDrawing = () => {
   const zoomHandleRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLDivElement>(null);
+  const modalRef   = useRef<HTMLDivElement>(null);
 
   type Quartet = [string, string, string, string];
 
@@ -286,7 +295,7 @@ const CanvasDrawing = () => {
   const [pistacheTab, setPistacheTab] = useState<any>([]);
   const [searchValue, setSearchValue] = useState("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
-  const [isTextShown, SetIsTextShown] = useState(false);
+  const [isTextShown, setIsTextShown] = useState(false);
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState<any>();
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
@@ -469,12 +478,12 @@ const CanvasDrawing = () => {
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      // // Vérifie si le clic a été en dehors du contenu du texte
-      // if (e.target?.id === "modal-backdrop") {
-      SetIsTextShown(false);
-      // }
-    };
+    // const handleClickOutside = (e: MouseEvent) => {
+    //   // // Vérifie si le clic a été en dehors du contenu du texte
+    //   // if (e.target?.id === "modal-backdrop") {
+    //   setIsTextShown(false);
+    //   // }
+    // };
 
     const onMouseUp = () => {
       if (isPanning) {
@@ -515,8 +524,8 @@ const CanvasDrawing = () => {
         ) {
           setSelected(obj);
           // console.log("this is setSelected ", selected);
-          if (obj.offset) // = fin de branche donc possible affichage du texte
-            SetIsTextShown(!isTextShown);
+          if (obj.bounding) // = fin de branche donc possible affichage du texte
+            setIsTextShown(!isTextShown);
         }
         if (
           adjustedX >= obj.x + 15 &&
@@ -665,11 +674,7 @@ const CanvasDrawing = () => {
 
   const togglePistacheTab = () => {
     console.log("Nouvelle func")
-    // console.log("showPistacheTab func avabt", showPistacheTab)
-    
     setShowPistacheTab(!showPistacheTab);
-    // console.log("showPistacheTab func apres", showPistacheTab)
-
   };
 
   function removeItem(targetItem: any): void {
@@ -693,7 +698,13 @@ const CanvasDrawing = () => {
     setLocalTab(newLocalTab);
 }
 
-  
+const handleClickOutside = () => {
+  console.log('Modal should close now');
+
+  // setIsTextShown(false);
+};
+
+useOutsideClick(modalRef, handleClickOutside);
   
   
   
@@ -780,48 +791,50 @@ const CanvasDrawing = () => {
       </div>
     
       {isTextShown && (
-  <div
-    id="modal-backdrop"
-    className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4"
-    ref={scrollContainerRef}
-  >
-    <div className="flex max-w-[1000px] mx-auto" style={{ width: '100%' }}> {/* Adjusting the flex container */}
-      {/* Sidebar for the boxes with its own scroll */}
-      <div className="flex flex-col justify-start overflow-auto mr-4" style={{ maxHeight: '80vh', minWidth: '250px', maxWidth: '300px' }}> {/* Adjusted sidebar dimensions */}
-        {selected.offset && selected.offset.map((offset: any, index: number) => (
-          <div key={index} className="bg-gray-200 px-5 py-5 mr-4 my-16 rounded-lg text-black text-sm leading-snug"> {/* Reduced padding, adjusted line height for better text fit */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-              <span>{MapObject[0]?.title}</span>
-              <h1 className="mt-2">P.{offset}</h1> {/* Margin-top for spacing between title and page number */}
-            </div>
+      <div
+        id="modal-backdrop"
+        className="fixed inset-0 bg-black bg-opacity-75 flex justify-center px-4" // Reduced outer padding
+        
+      >
+        <div ref={modalRef} className="flex w-full max-w-[1100px] gap-5 mr-[150px]"> {/* Constrain width and center horizontally */}
+          {/* Sidebar for the boxes with its own scroll */}
+          <div className="flex flex-col overflow-auto px-5 py-3" style={{ flex:2 ,width: '300px', maxHeight: '100vh' }}> {/* Adjusted sidebar dimensions and spacing */}
+            {selected.bounding.map((offset: any, index: number) => (
+              <div key={index} className="flex justify-between items-center my-[80px] gap-3"> {/* Evenly space and align items */}
+                <div className="bg-gray-200 rounded-lg text-black text-sm p-3 flex-grow"> {/* Unified padding */}
+                  <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '220px' }}> {/* Prevent text overflow */}
+                    {MapObject[0]?.title}
+                  </div>
+                  <h1 className="text-center">P.{offset}</h1>
+                </div>
+                <div className="bg-gray-200 rounded-lg text-black text-sm px-3 py-1 min-w-[40px] text-center"> {/* Consistent sizing for letters */}
+                  {String.fromCharCode(65 + index)}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+          <div className="bg-white rounded-lg shadow-lg overflow-auto p-5" style={{ flex: 5, maxHeight: '100vh' }}> {/* Flexible grow and consistent height */}
+            {apiResponse.map((item, index) => {
+              const hasRole = item.role && item.role !== "pageNumber";
+              const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
+              const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
+              const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
+
+              return (
+                <div key={index} className="">
+                  {item.content.length >= 100 || hasRole ? (
+                    <p ref={containsSelected && !selectedRef.current ? selectedRef : null} className={`${textStyle} ${colorStyle} pt-7`}>
+                      {item.content}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
-      {/* Main text content with its own scroll */}
-      <div className="bg-white p-6 rounded-lg shadow-lg flex-grow overflow-auto" style={{ maxHeight: '100vh' }}>
-        {apiResponse.map((item, index) => {
-          const hasRole = item.role && item.role !== "pageNumber";
-          const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
-          const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
-          const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
-          
-          return (
-            <div key={index} className="p-0">
-              {(item.content.length >= 100 || hasRole) && (
-                <p
-                  ref={containsSelected && !selectedRef.current ? selectedRef : null}
-                  className={`${textStyle} ${colorStyle} pt-7`}
-                >
-                  {item.content}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </div>
-)}
+    )}
+
 
 
 
@@ -841,68 +854,72 @@ const CanvasDrawing = () => {
     >
     {
   pistacheTab.map((item:any, index:number) => (
-    <div
-      key={index}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '10px',
-      }}
-    >
-      <button
-      style={{
-        position: 'relative',
-        height: '30px',
-        width: '30px',
-        backgroundColor: item.pistacheColor,
-        borderRadius: '50%',
-        cursor: 'pointer',
-        marginRight: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}
-      onClick={() => removeItem(item)}
-      onMouseEnter={() => {  
-        console.log("Mouse enter at index:", index);
-      setHoveredIndex(index);
-    }} 
-      onMouseLeave={() => {
-        console.log("Mouse sortie at index:", index);
-        setHoveredIndex(null)
-      }}  
-    >
-      <div style={{
-        width: '20px',
-        height: '20px',
-        display: hoveredIndex === index ? 'flex' : 'none', // Show icon only when hovered
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <RxCross1 style={{ color: 'white' }} />
-      </div>
-    </button>
-      
+    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', }}>
+      {item.pistacheType === "tache" ? (
+         <>
+         {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+         {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+       </>
+      ) : (
+        <button
+          style={{
+            position: 'relative',
+            height: '30px',
+            width: '30px',
+            backgroundColor: item.pistacheColor,
+            borderRadius: '50%',
+            cursor: 'pointer',
+            marginRight: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+          onClick={() => removeItem(item)}
+          onMouseEnter={() => {  
+            console.log("Mouse enter at index:", index);
+            setHoveredIndex(index);
+          }} 
+          onMouseLeave={() => {
+            console.log("Mouse sortie at index:", index);
+            setHoveredIndex(null);
+          }}  
+        >
+          <div style={{
+            width: '20px',
+            height: '20px',
+            display: hoveredIndex === index ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <RxCross1 style={{ color: 'white' }} />
+          </div>
+        </button>
+      )}
+  
       <div
         style={{
           color: 'white',
           backgroundColor: item.color,
           padding: '10px',
           borderRadius: '20px',
-          fontWeight:"500",
-          // textAlign: 'right',
-          whiteSpace: 'nowrap',          // Empêche le texte de passer à la ligne suivante
-          overflow: 'hidden',            // Masque les débordements de texte qui ne rentrent pas dans une ligne
-          textOverflow: 'ellipsis',      // Ajoute des points de suspension si le texte déborde
-          flexGrow: 1,                   // Permet à la case de prendre tout l'espace horizontal disponible
+          fontWeight: "500",
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          flexGrow: 1,
         }}
         onClick={() => zoomToValue(item)}
       >
         {item.value}
       </div>
     </div>
-  ))
+  ))  
 }
 
 

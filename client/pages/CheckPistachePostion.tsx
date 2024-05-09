@@ -73,6 +73,7 @@ function CheckPistachePosition(obj:any, adjustedX:number, adjustedY:number, pist
       CheckColor(adjustedX, obj);
       obj.pistacheType = "tache";
       CheckNum(adjustedX, obj);
+      console.log("pistacheNum = ", obj.pistacheNum)
       obj.pistacheColor = "#1EC07C" 
     } else if (adjustedY >= obj.y + 150 && adjustedY <= obj.y + 190) {
       CheckColor(adjustedX, obj);
