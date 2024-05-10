@@ -18,6 +18,7 @@ import task5 from "../public/task5.png"
 import task6 from "../public/task6.png"
 import Image from "next/image";
 import { RxCross1 } from "react-icons/rx";
+// import "../src/app/styles/style.css"
 
 
 interface NestedObject {
@@ -286,6 +287,8 @@ const CanvasDrawing = () => {
 
   type Quartet = [string, string, string, string];
 
+  const [selectedText, setSelectedText] = useState<string | null>(null);
+  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isZooming, setIsZooming] = useState(false);
   const [zoomFraction, setZoomFraction] = useState<number>(0.35);
   const [isPanning, setIsPanning] = useState(false);
@@ -296,6 +299,7 @@ const CanvasDrawing = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, setIsTextShown] = useState(false);
+  const [fullText, setFullText] = useState("");
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState<any>();
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
@@ -522,10 +526,13 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 100
         ) {
-          setSelected(obj);
+          if (obj.bounding)
           // console.log("this is setSelected ", selected);
-          if (obj.bounding) // = fin de branche donc possible affichage du texte
+          if (obj.bounding) 
+          {
+            setSelected(obj);
             setIsTextShown(!isTextShown);
+          }
         }
         if (
           adjustedX >= obj.x + 15 &&
@@ -542,15 +549,10 @@ const CanvasDrawing = () => {
           adjustedY <= obj.y
         ) {
           if (isPistacheOpen == false)
-          {
             obj.isPistache = !obj.isPistache;
-            // setIsPistacheOpen(!isPistacheOpen)
-          }
+
           else if (isPistacheOpen && obj.isPistache)
-          {
             obj.isPistache = !obj.isPistache;
-            // setIsPistacheOpen(!isPistacheOpen)
-          }
           redrawCanvas();
         }
         if (obj.isPistache &&
@@ -574,7 +576,7 @@ const CanvasDrawing = () => {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
-    document.addEventListener("mousedown", handleClickOutside);
+    // document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("wheel", handleWheel, { passive: false });
     if (scrollContainer) scrollContainer.addEventListener('scroll', handleScrollOverflow);
     document.addEventListener("gesturestart", function (e) {
@@ -589,7 +591,7 @@ const CanvasDrawing = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
-      document.removeEventListener("mousedown", handleClickOutside);
+      // document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("wheel", handleWheel);
       if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScrollOverflow);
       if (zoomHandle) zoomHandle.removeEventListener("mousedown", onMouseDown);
@@ -670,7 +672,7 @@ const CanvasDrawing = () => {
     if (selectedRef.current) {
       selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [selected]); 
+  }, [selected]);
 
   const togglePistacheTab = () => {
     console.log("Nouvelle func")
@@ -694,19 +696,18 @@ const CanvasDrawing = () => {
         }
         return item;
     });
-
     setLocalTab(newLocalTab);
 }
 
+
+
 const handleClickOutside = () => {
   console.log('Modal should close now');
-
-  // setIsTextShown(false);
+  if (hoveredIndex == null)
+    setIsTextShown(false);
 };
 
 useOutsideClick(modalRef, handleClickOutside);
-  
-  
   
 
   const itemHeight = 70;
@@ -714,6 +715,39 @@ useOutsideClick(modalRef, handleClickOutside);
   const dynamicHeight = itemHeight * pistacheTab.length;
   const scrollNeeded = dynamicHeight > maxHeight;
 
+  const findFullString = (index:number) => {
+    console.log("Index clicked:", index);
+    const searchText = String(selected.bounding[index]);
+    console.log("Search Text:", searchText);
+  
+    if (!searchText.includes("... —> ...")) {
+      console.error("Search text does not contain expected separator.");
+      return;
+    }
+  
+    const parts = searchText.split("... —> ...");
+    const startText = parts[0];
+    const endText = parts[1];
+    console.log("Start text:", startText, "End text:", endText);
+  
+    const apiText = apiResponse.find(item => 
+      item.content.includes(startText) && item.content.includes(endText)
+    );
+  
+    if (apiText) {
+      console.log("Full text found:", apiText.content);
+      const textIndex = apiResponse.findIndex(item => item === apiText);
+      const textElement = textRefs.current[textIndex];
+  
+      if (textElement) {
+        textElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        textElement.style.backgroundColor = 'lightblue'; // Change background color to light blue
+      }
+    } else {
+      console.log("No matching text found.");
+    }
+  };
+  
 
   return (
     <>
@@ -796,24 +830,36 @@ useOutsideClick(modalRef, handleClickOutside);
         className="fixed inset-0 bg-black bg-opacity-75 flex justify-center px-4" // Reduced outer padding
         
       >
-        <div ref={modalRef} className="flex w-full max-w-[1100px] gap-5 mr-[150px]"> {/* Constrain width and center horizontally */}
+        <div className="flex w-full max-w-[1100px] gap-5 mr-[150px]"> {/* Constrain width and center horizontally */}
           {/* Sidebar for the boxes with its own scroll */}
           <div className="flex flex-col overflow-auto px-5 py-3" style={{ flex:2 ,width: '300px', maxHeight: '100vh' }}> {/* Adjusted sidebar dimensions and spacing */}
+            {console.log("this is selected = ", selected)}
+            {console.log("this is selected.bounding = ", selected.bounding)}
             {selected.bounding.map((offset: any, index: number) => (
               <div key={index} className="flex justify-between items-center my-[80px] gap-3"> {/* Evenly space and align items */}
-                <div className="bg-gray-200 rounded-lg text-black text-sm p-3 flex-grow"> {/* Unified padding */}
-                  <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '220px' }}> {/* Prevent text overflow */}
+                <div className="bg-gray-200 rounded-lg text-black text-sm p-3 flex-grow cursor-pointer"
+                  onMouseEnter={() => setHoveredIndex(index)} 
+                  onMouseLeave={() => setHoveredIndex(null)} 
+                  onClick={() => findFullString(index)}
+                > 
+                  <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '220px' }}>
                     {MapObject[0]?.title}
                   </div>
                   <h1 className="text-center">P.{offset}</h1>
                 </div>
-                <div className="bg-gray-200 rounded-lg text-black text-sm px-3 py-1 min-w-[40px] text-center"> {/* Consistent sizing for letters */}
+                <div className="bg-gray-200 rounded-lg text-black text-sm px-3 py-1 min-w-[40px] text-center"
+                onMouseEnter={() => setHoveredIndex(index)} 
+                onMouseLeave={() => setHoveredIndex(null)} 
+                > {/* Consistent sizing for letters */}
                   {String.fromCharCode(65 + index)}
                 </div>
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-lg shadow-lg overflow-auto p-5" style={{ flex: 5, maxHeight: '100vh' }}> {/* Flexible grow and consistent height */}
+          <div 
+  ref={modalRef} 
+  className="bg-white rounded-lg shadow-lg overflow-auto p-5 custom-scrollbar" 
+  style={{ flex: 5, maxHeight: '100vh' }}>
             {apiResponse.map((item, index) => {
               const hasRole = item.role && item.role !== "pageNumber";
               const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
@@ -821,7 +867,7 @@ useOutsideClick(modalRef, handleClickOutside);
               const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
 
               return (
-                <div key={index} className="">
+                <div key={index} ref={el => textRefs.current[index] = el}>
                   {item.content.length >= 100 || hasRole ? (
                     <p ref={containsSelected && !selectedRef.current ? selectedRef : null} className={`${textStyle} ${colorStyle} pt-7`}>
                       {item.content}
@@ -847,39 +893,24 @@ useOutsideClick(modalRef, handleClickOutside);
   showPistacheTab && (
     <div 
       className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl p-4"
-      style={{
-        height: `${scrollNeeded ? maxHeight : dynamicHeight}px`, // Utilisation de maxHeight si le défilement est nécessaire
-        overflowY: scrollNeeded ? 'auto' : 'hidden', // Activation du défilement si nécessaire
-      }}
+      style={{height: `${scrollNeeded ? maxHeight : dynamicHeight}px`, overflowY: scrollNeeded ? 'auto' : 'hidden' }}
     >
     {
   pistacheTab.map((item:any, index:number) => (
     <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', }}>
       {item.pistacheType === "tache" ? (
-         <>
-         {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-         {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-       </>
+        <>
+          {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+          {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+        </>
       ) : (
         <button
-          style={{
-            position: 'relative',
-            height: '30px',
-            width: '30px',
-            backgroundColor: item.pistacheColor,
-            borderRadius: '50%',
-            cursor: 'pointer',
-            marginRight: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
+          style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}
           onClick={() => removeItem(item)}
           onMouseEnter={() => {  
             console.log("Mouse enter at index:", index);
@@ -890,30 +921,14 @@ useOutsideClick(modalRef, handleClickOutside);
             setHoveredIndex(null);
           }}  
         >
-          <div style={{
-            width: '20px',
-            height: '20px',
-            display: hoveredIndex === index ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          <div style={{width: '20px',height: '20px',display: hoveredIndex === index ? 'flex' : 'none',alignItems: 'center',justifyContent: 'center',}}>
             <RxCross1 style={{ color: 'white' }} />
           </div>
         </button>
       )}
   
       <div
-        style={{
-          color: 'white',
-          backgroundColor: item.color,
-          padding: '10px',
-          borderRadius: '20px',
-          fontWeight: "500",
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          flexGrow: 1,
-        }}
+        style={{color: 'white',backgroundColor: item.color,padding: '10px',borderRadius: '20px',fontWeight: "500",whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flexGrow: 1,}}
         onClick={() => zoomToValue(item)}
       >
         {item.value}

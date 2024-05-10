@@ -144,31 +144,31 @@ const nestedObjectData = {
     "Author's life": {
       item27: {
         value: "53- Blockchain, cryptomonnaies et NFTs: new tech a la portée de tous ?",
-        bounding: [2357]
+        bounding: ["La technologie de la ... —> ... d'applications décentralisées."]
       },
       "Gaming & Blockchain": {
         item28: {
           value: "CR7 fan",
-          bounding: [6543]
+          bounding: ["Au-delà de la technologie... —> ... modèle économique viable."]
         },
         "New games": {
           item29: {
             value: "Fortnite",
-            bounding: [156
-]          },
+            bounding: ["Ce qui a permis de développer des nouvelles ... —> ...les services administratifs, la mobilité)"]
+          },
           item30: {
             value: "Clash royale",
-            bounding: [8234]
+            bounding: ["Néanmoins les efforts ... —> ... les différents cas d'usage développés."]
           }
         },
         "Skins in fortnite": {
           item31: {
             value: "Stakes",
-            bounding: [3095]
+            bounding: ["Au vu des évolutions technologiques ... —> ... multiplicité de Blockchains dans le futur."]
           },
           item32: {
             value: "Risk",
-            bounding: [7823]
+            bounding: ["3. Amélioration du parcours citoyen ou de ... —> ... ou une entreprise privée (site e-commerce) ;","Leur nombre devra être suffisant ... —> ... modèles économiques, investissement).","la plateforme Ethereum peut être déployée ... —> ... et de consommation d'énergie"]
           }
         }
       },

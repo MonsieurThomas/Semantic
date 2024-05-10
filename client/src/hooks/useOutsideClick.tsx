@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 const useOutsideClick = (ref:any, handler:any) => {
     
     useEffect(() => {
-        console.log("ref.current.", {ref});
         const listener = (event:any) => {
             // console.log("Clicked element: ", event.target); 
             if (!ref.current || ref.current.contains(event.target)) {
+                console.log("ref.current.", {ref});
                 if (event.target.nodeName === 'CANVAS') {
                     // If clicking on canvas, decide based on your app's logic
                     console.log("Click on canvas, decide action based on app's logic.");
