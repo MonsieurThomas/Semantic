@@ -18,7 +18,7 @@ import task5 from "../public/task5.png"
 import task6 from "../public/task6.png"
 import Image from "next/image";
 import { RxCross1 } from "react-icons/rx";
-import findFullString from "./BoundingToParagraphe";
+// import findFullString from "./BoundingToParagraphe";
 // import "../src/app/styles/style.css"
 
 
@@ -256,9 +256,9 @@ const CanvasDrawing = () => {
     const color = [
       "#000229",
       "#B22920",
-      "#01B577",
-      "#F39D4C",
+      "#1BA024",
       "#E2C524",
+      "#F56600",
       "#47B8D4",
     ];
     tab.forEach((obj) => {
@@ -319,6 +319,7 @@ const CanvasDrawing = () => {
     x: 0,
     y: 0,
   });
+  const [lastClickedIndex, setLastClickedIndex] = useState<number>(0);
   const [zoomLevel, setZoomLevel] = useState(1);
   const maxZoom = 0.10;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -732,6 +733,38 @@ useOutsideClick(modalRef, handleClickOutside);
     console.log("Nouveau useEffectg")
   }, [isTextShown, selected]);
   
+
+  const findFullString = (index:number, selected:any, textRefs:any, setSelectedParagraphIndex:any, setShowBackground:any, setProgrammaticScroll:any) => {
+    console.log("this selected", selected)
+    const searchText = String(selected.bounding[index]);
+  
+    if (!searchText.includes("... —> ...")) {
+      return;
+    }
+  
+    const parts = searchText.split("... —> ...");
+    const startText = parts[0];
+    const endText = parts[1];
+  
+    const apiText = apiResponse.find(item => 
+      item.content.includes(startText) && item.content.includes(endText)
+    );
+  
+    if (apiText) {
+      const textIndex = apiResponse.findIndex((item:any) => item === apiText);
+      setSelectedParagraphIndex(textIndex);
+      setShowBackground(true);
+      setProgrammaticScroll(true); 
+      const textElement = textRefs.current[textIndex];
+  
+      if (textElement) {
+        textElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => setProgrammaticScroll(false), 1000);      }
+    } else {
+      console.log("No matching text found.");
+    }
+  };
+
 
   return (
     <>
