@@ -210,7 +210,7 @@ function wrapText(ctx: CanvasRenderingContext2D, obj:any, boxWidth:number) {
   const calculatedOpacity = 1 - ((obj.path.length-0.5)/10);
   // console.log("Math.abs(obj.x / caseWidth = ", Math.abs(obj.x / caseWidth), " for ", obj.value);
   const opacity = Math.max(calculatedOpacity, 0.1);
-  console.log("opacity = ", opacity, " for ", obj.value);
+  // console.log("opacity = ", opacity, " for ", obj.value);
 
   ctx.globalAlpha = opacity;
 

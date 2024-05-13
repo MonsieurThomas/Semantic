@@ -45,6 +45,8 @@ function CheckNum (adjustedX:number, obj:any)
 
 function CheckColor (adjustedX:number, obj:any)
 {
+    console.log("adjustedY dans check color pour ", obj.pistacheType)
+
     if (adjustedX >= obj.x + 3950 && adjustedX <= obj.x + 4350)
         obj.pistacheColor = "#FF9E43" // #FF9E43
     if (adjustedX >= obj.x + 4400 && adjustedX <= obj.x + 4750)
@@ -62,7 +64,8 @@ function CheckColor (adjustedX:number, obj:any)
 }
 
 function CheckPistachePosition(obj:any, adjustedX:number, adjustedY:number, pistacheTab:any) {
-    if (adjustedY >= obj.y - 800 && adjustedY <= obj.y - 400) {
+    // console.log("adjustedY", adjustedY)
+    if (adjustedY >= obj.y - 800 && adjustedY <= obj.y - 250) {
       CheckColor(adjustedX, obj);
       obj.pistacheType = "etiquette";
     } else if (adjustedY >= obj.y - 50 && adjustedY <= obj.y + 350) {

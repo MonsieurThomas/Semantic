@@ -18,6 +18,7 @@ import task5 from "../public/task5.png"
 import task6 from "../public/task6.png"
 import Image from "next/image";
 import { RxCross1 } from "react-icons/rx";
+import findFullString from "./BoundingToParagraphe";
 // import "../src/app/styles/style.css"
 
 
@@ -109,7 +110,6 @@ const CanvasDrawing = () => {
     const [newObj, , ,] = processNestedObject(obj, 0);
     // count = 0;
     branchNb = 0;
-    // console.log("Mince pendant instanciation");
 
     return localeTab;
   };
@@ -120,11 +120,25 @@ const CanvasDrawing = () => {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const setupCanvas = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to get the rendering context');
+    }
+    let ratio = window.devicePixelRatio || 1;
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(ratio, ratio);
+    return ctx;
+  };
 
   function setCamera(obj: any) {
     const centerX = obj.x + 3500 / 2;
     const centerY = obj.y * 1600 + 1000 / 2;
-    // console.log("obj.y", obj.y);
     const centerViewportX = widthScreen / 2;
     const centerViewportY = heightScreen / 2;
     const newZoomLevel = 0.02;
@@ -145,8 +159,6 @@ const CanvasDrawing = () => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
-    // console.log("This is midbranch = ", midBranch);
-
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
@@ -167,7 +179,6 @@ const CanvasDrawing = () => {
             obj.path[obj.path.length - 1] == "1" &&
             obj2.path[obj2.path.length - 1] === "2"
           ) {
-            // console.log(`ok pour ${obj.path} et ${obj2.path}`);
             obj.begin = true;
           }
         }
@@ -204,6 +215,38 @@ const CanvasDrawing = () => {
 
   /////
   /////
+  /////word
+
+//   const [htmlContent, setHtmlContent] = useState("");
+
+//   useEffect(() => {
+//     const analyzeDocument = async () => {
+//         try {
+//             console.log("\n\nthis is htmlcontent before\n\n");
+//             const response = await fetch(`${window.location.origin}/api/analyzeDocument`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify({ filePath: "./pages/api/textMap.pdf" }), // Ensure this is accessible server-side
+//             });
+//             const data = await response.json();
+//             console.log("\n\nthis is htmlcontent, c'est une reussite\n\n");
+
+//             setHtmlContent(data);
+//             console.log("this is htmlcontent in useEffect = ", data);
+
+//         } catch (error) {
+//             console.error('Error fetching analysis results:', error);
+//         }
+//     };
+
+//     analyzeDocument();
+// }, []);
+ 
+
+  /////
+  /////
   /////
   /////
   /////
@@ -224,6 +267,11 @@ const CanvasDrawing = () => {
   }
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dimensions, setDimensions] = useState({
+    width: 300,
+    height: 300
+  });
+
 
   const [localTab, setLocalTab] = useState<Array<any>>([]);
 
@@ -233,7 +281,6 @@ const CanvasDrawing = () => {
     ChangeXandY(tab);
     Color(tab);
     setLocalTab(tab);
-    // console.log("This is count = ", count);
   }, []);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,6 +313,8 @@ const CanvasDrawing = () => {
   const [selected, setSelected] = useState<any>();
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
   const [pageCount, setPageCount] = useState(0);
+  const [showBackground, setShowBackground] = useState(false);
+  const [programmaticScroll, setProgrammaticScroll] = useState(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -274,6 +323,7 @@ const CanvasDrawing = () => {
   const maxZoom = 0.10;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const minZoom = 0.02;
+  const [selectedParagraphIndex,setSelectedParagraphIndex] =useState<number>(0);
   const widthScreen = 1500;
   const heightScreen = 500;
 
@@ -287,9 +337,9 @@ const CanvasDrawing = () => {
 
   const redrawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!canvas) return; // Make sure the canvas is not null
+    const ctx = setupCanvas(canvas); // Call setupCanvas directly with the ref
+    if (!ctx) return; 
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
@@ -434,21 +484,11 @@ const CanvasDrawing = () => {
             ((newLeft - minZoom) / (maxZoom - minZoom)) * 150
           }px`;
         }
-        // console.log("newPanOffsetX dans handlewheel = ", newPanOffsetX);
-        // console.log("newPanOffsetY dans handlewheel = ", newPanOffsetY);
-        // console.log("newZoomLevel dans handlewheel = ", newZoomLevel);
         setZoomLevel(newZoomLevel);
         setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
         redrawCanvas();
       }
     };
-
-    // const handleClickOutside = (e: MouseEvent) => {
-    //   // // Vérifie si le clic a été en dehors du contenu du texte
-    //   // if (e.target?.id === "modal-backdrop") {
-    //   setIsTextShown(false);
-    //   // }
-    // };
 
     const onMouseUp = () => {
       if (isPanning) {
@@ -457,15 +497,6 @@ const CanvasDrawing = () => {
       if (isZooming) {
         setIsZooming(false);
       }
-    };
-
-    const handleScroll = () => {
-      // console.log("ScrollPourcent debut")
-      const totalScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const currentScrollPosition = window.pageYOffset;
-      const scrolledPercentage = (currentScrollPosition / totalScrollHeight) * 100;
-
-      // setScrollPercentage(scrolledPercentage);
     };
 
     const handleCanvasClick = (e: MouseEvent) => {
@@ -487,10 +518,11 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 1000
         ) {
-          if (obj.bounding) 
+          if (obj.bounding && !isTextShown) 
           {
             setSelected(obj);
-            setIsTextShown(!isTextShown);
+            setIsTextShown(true);
+            console.log("selected")
           }
         }
         if (
@@ -524,6 +556,20 @@ const CanvasDrawing = () => {
       });
     };
 
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      console.log("handkeresize", handleResize)
+    };
+    // handleResize();
+
+    const handleScroll = () => {
+      if (!programmaticScroll) 
+        setShowBackground(false); 
+    }
+
     const handleScrollOverflow = () => {
       if (!scrollContainerRef.current) return;
       const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
@@ -531,7 +577,9 @@ const CanvasDrawing = () => {
       const scrolledPercentage = (scrollTop / totalScrollHeight) * 100;
       setScrollPercentage(scrolledPercentage);
     }
+    const modal = modalRef.current;
 
+    window.addEventListener('resize', handleResize);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
@@ -541,12 +589,13 @@ const CanvasDrawing = () => {
     document.addEventListener("gesturestart", function (e) {
       e.preventDefault();
     });
-    window.addEventListener('scroll', handleScroll);
+    if (modal) modal.addEventListener('scroll', handleScroll);
     if (zoomHandle) zoomHandle.addEventListener("mousedown", onMouseDown);
     canvas?.addEventListener("mousedown", onMouseDown);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (modal) modal.removeEventListener('scroll', handleScroll);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
@@ -655,6 +704,12 @@ const CanvasDrawing = () => {
     setLocalTab(newLocalTab);
 }
 
+useEffect(() => {
+  if (canvasRef.current) {
+    canvasRef.current.width = dimensions.width;
+    canvasRef.current.height = dimensions.height;
+  }
+}, [dimensions]);
 
 
 const handleClickOutside = () => {
@@ -670,33 +725,12 @@ useOutsideClick(modalRef, handleClickOutside);
   const dynamicHeight = itemHeight * pistacheTab.length;
   const scrollNeeded = dynamicHeight > maxHeight;
 
-  const findFullString = (index:number) => {
-    const searchText = String(selected.bounding[index]);
-  
-    if (!searchText.includes("... —> ...")) {
-      return;
-    }
-  
-    const parts = searchText.split("... —> ...");
-    const startText = parts[0];
-    const endText = parts[1];
-  
-    const apiText = apiResponse.find(item => 
-      item.content.includes(startText) && item.content.includes(endText)
-    );
-  
-    if (apiText) {
-      const textIndex = apiResponse.findIndex(item => item === apiText);
-      const textElement = textRefs.current[textIndex];
-  
-      if (textElement) {
-        textElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        textElement.style.backgroundColor = 'lightblue'; // Change background color to light blue
-      }
-    } else {
-      console.log("No matching text found.");
-    }
-  };
+  useEffect(() => {
+    if (selected)
+      findFullString(0, selected, textRefs, setSelectedParagraphIndex, setShowBackground, setProgrammaticScroll);
+    console.log("selected", selected)
+    console.log("Nouveau useEffectg")
+  }, [isTextShown, selected]);
   
 
   return (
@@ -768,64 +802,66 @@ useOutsideClick(modalRef, handleClickOutside);
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
-          width={widthScreen}
-          height={heightScreen}
-          // style={{ border: "1px solid black" }}
-        />
+          width={dimensions.width}
+          height={dimensions.height}
+          style={{ width: '100%', height: '100%', border: "1px solid black" }}
+          />
       </div>
     
       {isTextShown && (
       <div
         id="modal-backdrop"
-        className="fixed inset-0 bg-black bg-opacity-75 flex justify-center px-4" // Reduced outer padding
+        className="fixed inset-0 bg-[rgba(34,63,67,0.98)]  bg-opacity-75 flex justify-center px-4"
         
       >
-        <div className="flex w-full max-w-[1100px] gap-5 mr-[150px]"> {/* Constrain width and center horizontally */}
-          {/* Sidebar for the boxes with its own scroll */}
-          <div className="flex flex-col overflow-auto px-5 py-3" style={{ flex:2 ,width: '300px', maxHeight: '100vh' }}> {/* Adjusted sidebar dimensions and spacing */}
-            {console.log("this is selected = ", selected)}
-            {console.log("this is selected.bounding = ", selected.bounding)}
+        <div className="flex w-full max-w-[1100px] gap-5 mr-[150px]">
+          <div className="flex flex-col overflow-auto px-5 py-3" style={{ flex:2 ,width: '300px', maxHeight: '100vh' }}>
             {selected.bounding.map((offset: any, index: number) => (
-              <div key={index} className="flex justify-between items-center my-[80px] gap-3"> {/* Evenly space and align items */}
+              <div key={index} className="flex justify-between items-center my-[80px] gap-3">
                 <div className="bg-gray-200 rounded-lg text-black text-sm p-3 flex-grow cursor-pointer"
                   onMouseEnter={() => setHoveredIndex(index)} 
                   onMouseLeave={() => setHoveredIndex(null)} 
-                  onClick={() => findFullString(index)}
+                  onClick={() => findFullString(index,selected, textRefs, setSelectedParagraphIndex, setShowBackground, setProgrammaticScroll)}
                 > 
                   <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '220px' }}>
                     {MapObject[0]?.title}
                   </div>
-                  <h1 className="text-center">P.{offset}</h1>
+                  <h1 className="text-center">P.{"XX"}</h1>
                 </div>
                 <div className="bg-gray-200 rounded-lg text-black text-sm px-3 py-1 min-w-[40px] text-center"
                 onMouseEnter={() => setHoveredIndex(index)} 
                 onMouseLeave={() => setHoveredIndex(null)} 
-                > {/* Consistent sizing for letters */}
+                >
                   {String.fromCharCode(65 + index)}
                 </div>
               </div>
             ))}
           </div>
           <div 
-  ref={modalRef} 
-  className="bg-white rounded-lg shadow-lg overflow-auto p-5 custom-scrollbar" 
-  style={{ flex: 5, maxHeight: '100vh' }}>
-            {apiResponse.map((item, index) => {
-              const hasRole = item.role && item.role !== "pageNumber";
-              const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
-              const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
-              const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
+            ref={modalRef} 
+            className="bg-white rounded-lg shadow-lg overflow-auto custom-scrollbar" 
+            style={{ flex: 5, maxHeight: '100vh'}}>
+              <div style={{backgroundColor: showBackground ? "rgba(34, 63, 67, 0.5)" : "transparent"}}>
+              {apiResponse.map((item, index) => {
+                const hasRole = item.role && item.role !== "pageNumber";
+                const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
+                const isParagraphSelected = index === selectedParagraphIndex;
+                const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
+                const backgroundColor = isParagraphSelected ? 'white' : '';  // Highlight selected and shade others
 
-              return (
-                <div key={index} ref={el => {textRefs.current[index] = el; }}>
-                  {item.content.length >= 100 || hasRole ? (
-                    <p ref={containsSelected && !selectedRef.current ? selectedRef : null} className={`${textStyle} ${colorStyle} pt-7`}>
-                      {item.content}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            })}
+
+                return (
+                  <div key={index} ref={el => {textRefs.current[index] = el; }}>
+                    {item.content.length >= 100 || hasRole ? (
+                      <p className={`${textStyle} p-5`} style={{ backgroundColor }}>
+                        {item.content}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })}
+
+            </div>
           </div>
         </div>
       </div>
@@ -891,7 +927,7 @@ useOutsideClick(modalRef, handleClickOutside);
 }
 
 
-      <h1>This is pistacheTab length = {pistacheTab.length}</h1>
+      {/* <h1>This is pistacheTab length = {pistacheTab.length}</h1>
       <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
       <h1>This is number of pages = {pageCount}</h1>
       <div>
@@ -899,7 +935,7 @@ useOutsideClick(modalRef, handleClickOutside);
           return <div key={id}>{JSON.stringify(item)}</div>;
         })}
         This is count = {count};
-      </div>
+      </div> */}
 
 {/* 
     {apiResponse.map((item, index) => (
