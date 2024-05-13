@@ -30,7 +30,6 @@ const CanvasDrawing = () => {
   let count = 0;
   let branchNb = 0;
   let localeTab: Array<any> = [];
-  let pdf = "";
   
   function processNestedObject(
     obj: NestedObject,
@@ -123,12 +122,12 @@ const CanvasDrawing = () => {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   function setCamera(obj: any) {
-    const centerX = obj.x + 350 / 2;
-    const centerY = obj.y * 160 + 100 / 2;
+    const centerX = obj.x + 3500 / 2;
+    const centerY = obj.y * 1600 + 1000 / 2;
     // console.log("obj.y", obj.y);
     const centerViewportX = widthScreen / 2;
     const centerViewportY = heightScreen / 2;
-    const newZoomLevel = 0.3;
+    const newZoomLevel = 0.02;
 
     const panX = (centerX * newZoomLevel - centerViewportX) * -1;
     const panY = (centerY * newZoomLevel - centerViewportY) * -1;
@@ -141,7 +140,6 @@ const CanvasDrawing = () => {
   function ChangeXandY(tab: Array<any>) {
     let midBranch = 0;
     let midCount = 0;
-    let maxCount = 0;
 
     tab.forEach((obj) => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
@@ -196,45 +194,13 @@ const CanvasDrawing = () => {
     });
 
     tab.forEach((obj) => {
-      obj.y = obj.y * 160;
-      obj.x = obj.x * 550;
+      obj.y = obj.y * 1250;
+      obj.x = obj.x * 6000;
       obj.hover = false;
       obj.hide = false;
       obj.occurence = 2;
     });
   }
-
-  /////
-  /////
-  /////word
-
-//   const [htmlContent, setHtmlContent] = useState("");
-
-//   useEffect(() => {
-//     const analyzeDocument = async () => {
-//         try {
-//             console.log("\n\nthis is htmlcontent before\n\n");
-//             const response = await fetch(`${window.location.origin}/api/analyzeDocument`, {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify({ filePath: "./pages/api/textMap.pdf" }), // Ensure this is accessible server-side
-//             });
-//             const data = await response.json();
-//             console.log("\n\nthis is htmlcontent, c'est une reussite\n\n");
-
-//             setHtmlContent(data);
-//             console.log("this is htmlcontent in useEffect = ", data);
-
-//         } catch (error) {
-//             console.error('Error fetching analysis results:', error);
-//         }
-//     };
-
-//     analyzeDocument();
-// }, []);
- 
 
   /////
   /////
@@ -244,10 +210,9 @@ const CanvasDrawing = () => {
   /////
 
   function Color(tab: Array<any>) {
-    const randomNumber = Math.random();
     const color = [
       "#000229",
-      "#FA463E",
+      "#B22920",
       "#01B577",
       "#F39D4C",
       "#E2C524",
@@ -285,12 +250,9 @@ const CanvasDrawing = () => {
   const selectedRef = useRef<HTMLDivElement>(null);
   const modalRef   = useRef<HTMLDivElement>(null);
 
-  type Quartet = [string, string, string, string];
-
-  const [selectedText, setSelectedText] = useState<string | null>(null);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isZooming, setIsZooming] = useState(false);
-  const [zoomFraction, setZoomFraction] = useState<number>(0.35);
+  const [zoomFraction, setZoomFraction] = useState<number>(0.60); //
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -309,9 +271,9 @@ const CanvasDrawing = () => {
     y: 0,
   });
   const [zoomLevel, setZoomLevel] = useState(1);
-  const maxZoom = 0.7;
+  const maxZoom = 0.10;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const minZoom = 0.15;
+  const minZoom = 0.02;
   const widthScreen = 1500;
   const heightScreen = 500;
 
@@ -358,9 +320,9 @@ const CanvasDrawing = () => {
 
         if (
           adjustedX >= obj.x &&
-          adjustedX <= obj.x + 350 &&
-          adjustedY >= obj.y - 50 &&
-          adjustedY <= obj.y + 100
+          adjustedX <= obj.x + 3500 &&
+          adjustedY >= obj.y - 500 &&
+          adjustedY <= obj.y + 1000
         ) {
           obj.hover = true;
           isHovering = true;
@@ -434,11 +396,10 @@ const CanvasDrawing = () => {
     const handleWheel = (e: WheelEvent) => {
       if (searchValue && e.clientX < 220 && e.clientX < 435) return;
       if (showPistacheTab && e.clientX > 1140 && e.clientX < 1500) return;
-      console.log("e.clientX dans handlewheel = ", e.clientX)
       if (isTextShown) return;
       e.preventDefault();
 
-      const zoomIntensity = 0.03;
+      const zoomIntensity = 0.003;
       const direction = e.deltaY < 0 ? 1 : -1;
       const newZoomLevel = Math.min(
         maxZoom,
@@ -522,12 +483,10 @@ const CanvasDrawing = () => {
 
         if (
           adjustedX >= obj.x &&
-          adjustedX <= obj.x + 350 &&
+          adjustedX <= obj.x + 3500 &&
           adjustedY >= obj.y &&
-          adjustedY <= obj.y + 100
+          adjustedY <= obj.y + 1000
         ) {
-          if (obj.bounding)
-          // console.log("this is setSelected ", selected);
           if (obj.bounding) 
           {
             setSelected(obj);
@@ -535,17 +494,17 @@ const CanvasDrawing = () => {
           }
         }
         if (
-          adjustedX >= obj.x + 15 &&
-          adjustedX <= obj.x + 70 &&
-          adjustedY >= obj.y - 40 &&
+          adjustedX >= obj.x + 150 &&
+          adjustedX <= obj.x + 700 &&
+          adjustedY >= obj.y - 400 &&
           adjustedY <= obj.y
         ) {
           obj.hideRoot = !obj.hideRoot;
           hideCases(localTab, obj);
         } else if (
-          adjustedX >= obj.x + 290 &&
-          adjustedX <= obj.x + 350 &&
-          adjustedY >= obj.y - 40 &&
+          adjustedX >= obj.x + 2900 &&
+          adjustedX <= obj.x + 3500 &&
+          adjustedY >= obj.y - 400 &&
           adjustedY <= obj.y
         ) {
           if (isPistacheOpen == false)
@@ -556,10 +515,10 @@ const CanvasDrawing = () => {
           redrawCanvas();
         }
         if (obj.isPistache &&
-          adjustedX >= obj.x + 400 &&
-          adjustedX <= obj.x + 750 &&
-          adjustedY >= obj.y - 120 &&
-          adjustedY <= obj.y + 260)
+          adjustedX >= obj.x + 4000 &&
+          adjustedX <= obj.x + 7500 &&
+          adjustedY >= obj.y - 1200 &&
+          adjustedY <= obj.y + 2600)
           setPistacheTab(CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab));
           redrawCanvas();
       });
@@ -638,12 +597,12 @@ const CanvasDrawing = () => {
 
   const zoomToValue = useCallback(
     (obj: any) => {
-      const centerX = obj.x + 350 / 2;
-      const centerY = obj.y + 100 / 2;
+      const centerX = obj.x + 3500 / 2;
+      const centerY = obj.y + 1000 / 2;
 
       const centerViewportX = widthScreen / 2;
       const centerViewportY = heightScreen / 2;
-      const newZoomLevel = 0.5;
+      const newZoomLevel = 0.05;
 
       const panX = (centerX * newZoomLevel - centerViewportX) * -1;
       const panY = (centerY * newZoomLevel - centerViewportY) * -1;
@@ -675,7 +634,6 @@ const CanvasDrawing = () => {
   }, [selected]);
 
   const togglePistacheTab = () => {
-    console.log("Nouvelle func")
     setShowPistacheTab(!showPistacheTab);
   };
 
@@ -687,9 +645,7 @@ const CanvasDrawing = () => {
         setShowPistacheTab(false);
     }
     const newLocalTab = localTab.map(item => {
-      console.log("dans 2eme aprtie de remove")
         if (item.value === targetItem.value) {
-          console.log("dans 2eme aprtie de remove")
 
             const updatedItem = { ...item, pistacheType: undefined, pistacheColor: undefined };
             return updatedItem;
@@ -702,7 +658,6 @@ const CanvasDrawing = () => {
 
 
 const handleClickOutside = () => {
-  console.log('Modal should close now');
   if (hoveredIndex == null)
     setIsTextShown(false);
 };
@@ -716,26 +671,21 @@ useOutsideClick(modalRef, handleClickOutside);
   const scrollNeeded = dynamicHeight > maxHeight;
 
   const findFullString = (index:number) => {
-    console.log("Index clicked:", index);
     const searchText = String(selected.bounding[index]);
-    console.log("Search Text:", searchText);
   
     if (!searchText.includes("... —> ...")) {
-      console.error("Search text does not contain expected separator.");
       return;
     }
   
     const parts = searchText.split("... —> ...");
     const startText = parts[0];
     const endText = parts[1];
-    console.log("Start text:", startText, "End text:", endText);
   
     const apiText = apiResponse.find(item => 
       item.content.includes(startText) && item.content.includes(endText)
     );
   
     if (apiText) {
-      console.log("Full text found:", apiText.content);
       const textIndex = apiResponse.findIndex(item => item === apiText);
       const textElement = textRefs.current[textIndex];
   
@@ -867,7 +817,7 @@ useOutsideClick(modalRef, handleClickOutside);
               const colorStyle = containsSelected ? 'text-blue-500 opacity-50' : '';
 
               return (
-                <div key={index} ref={el => textRefs.current[index] = el}>
+                <div key={index} ref={el => {textRefs.current[index] = el; }}>
                   {item.content.length >= 100 || hasRole ? (
                     <p ref={containsSelected && !selectedRef.current ? selectedRef : null} className={`${textStyle} ${colorStyle} pt-7`}>
                       {item.content}
@@ -913,11 +863,9 @@ useOutsideClick(modalRef, handleClickOutside);
           style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}
           onClick={() => removeItem(item)}
           onMouseEnter={() => {  
-            console.log("Mouse enter at index:", index);
             setHoveredIndex(index);
           }} 
           onMouseLeave={() => {
-            console.log("Mouse sortie at index:", index);
             setHoveredIndex(null);
           }}  
         >

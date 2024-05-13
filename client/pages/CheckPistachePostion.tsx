@@ -26,56 +26,56 @@ function updatePistacheTab(obj: any, pistacheTab: any) {
 
 function CheckNum (adjustedX:number, obj:any)
 {
-    if (adjustedX >= obj.x + 395 && adjustedX <= obj.x + 435)
+    if (adjustedX >= obj.x + 3950 && adjustedX <= obj.x + 4350)
     obj.pistacheNum = 1
-    else if (adjustedX >= obj.x + 440 && adjustedX <= obj.x + 475)
+    else if (adjustedX >= obj.x + 4400 && adjustedX <= obj.x + 4750)
     obj.pistacheNum = 2
-    else if (adjustedX >= obj.x + 490 && adjustedX <= obj.x + 520)
+    else if (adjustedX >= obj.x + 4900 && adjustedX <= obj.x + 5200)
     obj.pistacheNum = 3
-    else if (adjustedX >= obj.x + 530 && adjustedX <= obj.x + 575)
+    else if (adjustedX >= obj.x + 5300 && adjustedX <= obj.x + 5750)
     obj.pistacheNum = 4
-    else if (adjustedX >= obj.x + 580 && adjustedX <= obj.x + 610)
+    else if (adjustedX >= obj.x + 5800 && adjustedX <= obj.x + 6100)
     obj.pistacheNum = 5
-    else if (adjustedX >= obj.x + 625 && adjustedX <= obj.x + 655)
+    else if (adjustedX >= obj.x + 6250 && adjustedX <= obj.x + 6550)
     obj.pistacheNum = 6
-    else if (adjustedX >= obj.x + 670 && adjustedX <= obj.x + 700)
+    else if (adjustedX >= obj.x + 6700 && adjustedX <= obj.x + 7000)
     obj.pistacheNum = 7
 
 }
 
 function CheckColor (adjustedX:number, obj:any)
 {
-    if (adjustedX >= obj.x + 395 && adjustedX <= obj.x + 435)
+    if (adjustedX >= obj.x + 3950 && adjustedX <= obj.x + 4350)
         obj.pistacheColor = "#FF9E43" // #FF9E43
-    if (adjustedX >= obj.x + 440 && adjustedX <= obj.x + 475)
+    if (adjustedX >= obj.x + 4400 && adjustedX <= obj.x + 4750)
         obj.pistacheColor = "#FF4748" //orange
-    else if (adjustedX >= obj.x + 490 && adjustedX <= obj.x + 520)
+    else if (adjustedX >= obj.x + 4900 && adjustedX <= obj.x + 5200)
         obj.pistacheColor = "#F1C700" //jaune
-    else if (adjustedX >= obj.x + 530 && adjustedX <= obj.x + 575)
+    else if (adjustedX >= obj.x + 5300 && adjustedX <= obj.x + 5750)
         obj.pistacheColor = "#1EC07C" // vert
-    else if (adjustedX >= obj.x + 580 && adjustedX <= obj.x + 610)
+    else if (adjustedX >= obj.x + 5800 && adjustedX <= obj.x + 6100)
         obj.pistacheColor = "#577CFF" // bleue
-    else if (adjustedX >= obj.x + 625 && adjustedX <= obj.x + 655)
+    else if (adjustedX >= obj.x + 6250 && adjustedX <= obj.x + 6550)
         obj.pistacheColor = "#6B4BCD" // violet
-    else if (adjustedX >= obj.x + 670 && adjustedX <= obj.x + 700)
+    else if (adjustedX >= obj.x + 6700 && adjustedX <= obj.x + 7000)
         obj.pistacheColor = "#9D9DA0" // gris
 }
 
 function CheckPistachePosition(obj:any, adjustedX:number, adjustedY:number, pistacheTab:any) {
-    if (adjustedY >= obj.y - 80 && adjustedY <= obj.y - 40) {
+    if (adjustedY >= obj.y - 800 && adjustedY <= obj.y - 400) {
       CheckColor(adjustedX, obj);
       obj.pistacheType = "etiquette";
-    } else if (adjustedY >= obj.y - 5 && adjustedY <= obj.y + 35) {
+    } else if (adjustedY >= obj.y - 50 && adjustedY <= obj.y + 350) {
       CheckColor(adjustedX, obj);
       obj.pistacheType = "priorité";
       CheckNum(adjustedX, obj);
-    } else if (adjustedY >= obj.y + 80 && adjustedY <= obj.y + 110) {
+    } else if (adjustedY >= obj.y + 800 && adjustedY <= obj.y + 1100) {
       CheckColor(adjustedX, obj);
       obj.pistacheType = "tache";
       CheckNum(adjustedX, obj);
       console.log("pistacheNum = ", obj.pistacheNum)
       obj.pistacheColor = "#1EC07C" 
-    } else if (adjustedY >= obj.y + 150 && adjustedY <= obj.y + 190) {
+    } else if (adjustedY >= obj.y + 1500 && adjustedY <= obj.y + 1900) {
       CheckColor(adjustedX, obj);
       obj.pistacheType = "flag";
     } else {

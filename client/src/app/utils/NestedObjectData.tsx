@@ -3,7 +3,7 @@
 
 const nestedObjectData = {
   Blockchain: {
-    Application: {
+    Applications: {
       Définition: {
         item1: {
           value: "Block & Chain",
