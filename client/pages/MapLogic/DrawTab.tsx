@@ -314,65 +314,60 @@ function DrawCurveLine(
 
 
 function eyeShape(ctx: CanvasRenderingContext2D, obj: any) {
-  ctx.save(); // Sauvegarde l'état actuel du contexte
+  ctx.save();
 
-  const x = obj.x + 400;
-  const y = obj.y - 200;
-  // console.log("okokok")
+  const x = obj.x + 360;
+  const y = obj.y - 160;
 
-  const startX = x - 200; // Début de la courbe à gauche
-  const endX = x + 200; // Fin de la courbe à droite
+  const startX = x - 180; 
+  const endX = x + 180; 
 
-  // Dessine le contour supérieur de l'œil
   ctx.beginPath();
-  ctx.lineWidth = 10;
-  ctx.moveTo(startX, y); // Commence à gauche
-  ctx.quadraticCurveTo(x, y - 200, endX, y); // Courbe supérieure
-  ctx.strokeStyle = "black"; // Assurez-vous de définir la couleur de contour
+  ctx.lineWidth = 9;
+  ctx.moveTo(startX, y);
+  ctx.quadraticCurveTo(x, y - 180, endX, y);
+  ctx.strokeStyle = "black";
   ctx.stroke();
 
-  // Dessine le contour inférieur de l'œil
   ctx.beginPath();
-  ctx.moveTo(startX, y); // Re-commence à gauche
-  ctx.quadraticCurveTo(x, y + 200, endX, y); // Courbe inférieure
-  ctx.strokeStyle = "black"; // Assurez-vous de définir la couleur de contour
+  ctx.moveTo(startX, y);
+  ctx.quadraticCurveTo(x, y + 180, endX, y);
+  ctx.strokeStyle = "black";
   ctx.stroke();
 
-  // Dessine l'iris
   ctx.beginPath();
-  ctx.arc(x, y, 75, 0, 2 * Math.PI);
+  ctx.arc(x, y, 68, 0, 2 * Math.PI);
   ctx.fillStyle = "white";
   ctx.fill();
   ctx.strokeStyle = "black";
   ctx.stroke();
 
-  // Dessine la pupille
   ctx.beginPath();
-  ctx.arc(x, y, 40, 0, 2 * Math.PI);
+  ctx.arc(x, y, 36, 0, 2 * Math.PI);
   ctx.fillStyle = "black";
   ctx.fill();
   ctx.stroke();
-    // Code qui s'exécute seulement côté client
+
   if (obj.hideRoot) {
     ctx.beginPath();
-    ctx.moveTo(startX, y + 200);
-    ctx.lineTo(endX, y - 200);
+    ctx.moveTo(startX, y + 180);
+    ctx.lineTo(endX, y - 180);
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 30;
+    ctx.lineWidth = 27;
     ctx.stroke();
   }
 
-  ctx.restore(); // Restaure l'état initial du contexte
+  ctx.restore();
 }
 
 
 
 
 function drawMagicWand(ctx: CanvasRenderingContext2D, obj: any) {
-  let startX = obj.x + 2900;
-  let startY = obj.y;
+  let startX = obj.x + 2950;
+  let startY = obj.y+20;
   let color = "black";
-  let length = 300;
+  let length = 240;
   ctx.save();
   ctx.translate(startX + length / 2, startY + length / 2);
   ctx.rotate(Math.PI / 4);
@@ -382,13 +377,10 @@ function drawMagicWand(ctx: CanvasRenderingContext2D, obj: any) {
   ctx.moveTo(startX, startY);
   ctx.lineTo(startX, startY - length);
   ctx.strokeStyle = color;
-  ctx.lineWidth = 50;
+  ctx.lineWidth = 35;
   ctx.stroke();
-
-  // Dessine l'étoile à l'extrémité de la baguette
-  drawStar(ctx, startX, startY - length, 7, 100, 40, color);
-
-  ctx.restore(); // Restaure les transformations
+  drawStar(ctx, startX, startY - length, 7, 70, 30, color);
+  ctx.restore();
 };
 
 const drawStar = (
@@ -447,8 +439,6 @@ function DrawBubble(
       ctx.lineWidth = 10;
       ctx.strokeStyle = "black";
       ctx.stroke();
-
-      // console.log("obj.offset", obj.offset)
       
         ctx.fillStyle = "black";
         ctx.font = "170px Arial";
@@ -519,7 +509,7 @@ function drawFlag(ctx: CanvasRenderingContext2D, x:number, y:number, size:number
   ctx.fillStyle = "white";
   ctx.fillRect(x - poleWidth / 2, y - size, poleWidth, poleHeight);
   ctx.fillRect(x, y - size, flagWidth, flagHeight);
-  ctx.fillRect(x + size * 0.5, y - size / 1.6, flagWidth * 0.8, flagHeight * 0.8);
+  ctx.fillRect(x + size * 0.5, y - size / 1.4, flagWidth * 0.8, flagHeight * 0.8);
 }
 
 function Pistache(ctx: CanvasRenderingContext2D, obj:any, caseWidth:number, caseHeight:number) {

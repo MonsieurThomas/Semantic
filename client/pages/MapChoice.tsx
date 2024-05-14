@@ -1,11 +1,24 @@
-import React, { useEffect } from "react";
-import  MapObject  from "../src/app/utils/MapObject";
+import React, { useEffect, useState } from "react";
+import { fetchUserData, User } from "./api/auth/fetchUserData";
+import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import "../src/app/styles/style.css";
 
 function MapChoice() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const userData = await fetchUserData();
+      setUser(userData);
+      console.log("ca a recuperer dans mapChoice = ", {userData})
+    };
+
+    getUserData();
+  }, []);
+
   const sortedMapObject = MapObject.sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
@@ -13,14 +26,11 @@ function MapChoice() {
   let dateTmp = "";
 
   return (
-    <div className="  flex w-screen gap-2 mt-10 ">
-      <div
-        className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl  "
-        style={{ flex: 3 }}
-      >
+    <div className="flex w-screen gap-2 mt-10">
+      <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
         <div className="flex gap-2 ml-auto pr-10 pt-5">
-          <h1>Ph</h1>
-          <h1> UserLogged</h1>
+          <h1>{user ? user.username.charAt(0) : 'N'}</h1>
+          <h1>{user ? user.username : 'No User'}</h1>
         </div>
         <div className="pl-12 pt-10 overflow-auto">
           {sortedMapObject.map((obj, key) => {
@@ -33,7 +43,7 @@ function MapChoice() {
             const displayDate = currentDate !== dateTmp;
             dateTmp = currentDate;
             return (
-              <ul key={key} className="">
+              <ul key={key}>
                 {displayDate && (
                   <li className="text-xs pt-3 font-e">{currentDate}</li>
                 )}
@@ -50,11 +60,8 @@ function MapChoice() {
           })}
         </div>
       </div>
-      <div
-        className=" flex-5 h-[80vh] flex flex-col overflow-auto"
-        style={{ flex: 10 }}
-      >
-        <div className="flex items-center rounded-xl bg-[#F2F2F2] w-[420px] py-2 ">
+      <div className="flex-5 h-[80vh] flex flex-col overflow-auto" style={{ flex: 10 }}>
+        <div className="flex items-center rounded-xl bg-[#F2F2F2] w-[420px] py-2">
           <SearchOutlinedIcon className="cursor-pointer" />
           <input
             type="text"
@@ -63,7 +70,7 @@ function MapChoice() {
           />
           <CloseOutlinedIcon className="cursor-pointer" />
         </div>
-        <div className=" w-[75vw] mt-10 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
+        <div className="w-[75vw] mt-10 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
           {MapObject.map((obj, key) => (
             <div key={key} className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl">
               <div className="flex justify-between">

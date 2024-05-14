@@ -18,6 +18,8 @@ import task5 from "../public/task5.png"
 import task6 from "../public/task6.png"
 import Image from "next/image";
 import { RxCross1 } from "react-icons/rx";
+import { FaFontAwesomeFlag } from "react-icons/fa";
+
 // import findFullString from "./BoundingToParagraphe";
 // import "../src/app/styles/style.css"
 
@@ -205,7 +207,7 @@ const CanvasDrawing = () => {
     });
 
     tab.forEach((obj) => {
-      obj.y = obj.y * 1250;
+      obj.y = obj.y * 1300;
       obj.x = obj.x * 6000;
       obj.hover = false;
       obj.hide = false;
@@ -268,9 +270,12 @@ const CanvasDrawing = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({
-    width: 1000,
-    height: 1000
+    width: 10000,
+    height: 10000
   });
+  // const { innerWidth, innerHeight } = window;
+  // setDimensions({ width: innerWidth, height: innerHeight });
+
 
 
   const [localTab, setLocalTab] = useState<Array<any>>([]);
@@ -372,7 +377,7 @@ const CanvasDrawing = () => {
         if (
           adjustedX >= obj.x &&
           adjustedX <= obj.x + 3500 &&
-          adjustedY >= obj.y - 500 &&
+          adjustedY >= obj.y - 300 &&
           adjustedY <= obj.y + 1000
         ) {
           obj.hover = true;
@@ -386,6 +391,28 @@ const CanvasDrawing = () => {
     },
     [zoomLevel, panOffset.x, panOffset.y, localTab, redrawCanvas]
   );
+
+  useEffect(() => {
+    const handleResize = () => {
+      const innerWidth = window.innerWidth;
+      const innerHeight = window.innerHeight;
+
+      console.log("Window resized");
+      setDimensions({ width: innerWidth, height: innerHeight });
+
+      if (canvasRef.current) {
+        canvasRef.current.width = innerWidth;
+        canvasRef.current.height = innerHeight;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Call it initially
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -523,7 +550,6 @@ const CanvasDrawing = () => {
           {
             setSelected(obj);
             setIsTextShown(true);
-            console.log("selected")
           }
         }
         if (
@@ -556,16 +582,6 @@ const CanvasDrawing = () => {
           redrawCanvas();
       });
     };
-
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-      console.log("handkeresize", handleResize)
-    };
-    // handleResize();
-
     const handleScroll = () => {
       if (!programmaticScroll) 
         setShowBackground(false); 
@@ -580,7 +596,7 @@ const CanvasDrawing = () => {
     }
     const modal = modalRef.current;
 
-    window.addEventListener('resize', handleResize);
+    // window.addEventListener('resize', handleResize);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
@@ -593,9 +609,9 @@ const CanvasDrawing = () => {
     if (modal) modal.addEventListener('scroll', handleScroll);
     if (zoomHandle) zoomHandle.addEventListener("mousedown", onMouseDown);
     canvas?.addEventListener("mousedown", onMouseDown);
-
+    // handleResize();
     return () => {
-      window.removeEventListener('resize', handleResize);
+      // window.removeEventListener('resize', handleResize);
       if (modal) modal.removeEventListener('scroll', handleScroll);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
@@ -705,21 +721,12 @@ const CanvasDrawing = () => {
     setLocalTab(newLocalTab);
 }
 
-useEffect(() => {
-  if (canvasRef.current) {
-    canvasRef.current.width = dimensions.width;
-    canvasRef.current.height = dimensions.height;
-  }
-}, [dimensions]);
-
-
 const handleClickOutside = () => {
   if (hoveredIndex == null)
     setIsTextShown(false);
 };
 
 useOutsideClick(modalRef, handleClickOutside);
-  
 
   const itemHeight = 70;
   const maxHeight = itemHeight * 4;
@@ -729,8 +736,6 @@ useOutsideClick(modalRef, handleClickOutside);
   useEffect(() => {
     if (selected)
       findFullString(0, selected, textRefs, setSelectedParagraphIndex, setShowBackground, setProgrammaticScroll);
-    console.log("selected", selected)
-    console.log("Nouveau useEffectg")
   }, [isTextShown, selected]);
   
 
@@ -833,12 +838,12 @@ useOutsideClick(modalRef, handleClickOutside);
         </div>
       )}
       <div className=" flex justify-center">
-        <canvas
-          ref={canvasRef}
-          width={dimensions.width}
-          height={dimensions.height}
-          style={{  border: "1px solid black" }}
-          />
+      <canvas
+      ref={canvasRef}
+      width={dimensions.width}
+      height={dimensions.height}
+      style={{width:"100%", height:"100%", border: "1px solid black" }}
+    />
       </div>
     
       {isTextShown && (
@@ -874,13 +879,12 @@ useOutsideClick(modalRef, handleClickOutside);
             ref={modalRef} 
             className="bg-white rounded-lg shadow-lg overflow-auto custom-scrollbar" 
             style={{ flex: 5, maxHeight: '100vh'}}>
-              <div style={{backgroundColor: showBackground ? "rgba(0, 0, 0, 0.2)" : "transparent"}}>
+              <div style={{backgroundColor: showBackground ? "rgba(0, 0, 40, 0.45)" : "transparent"}}>
               {apiResponse.map((item, index) => {
                 const hasRole = item.role && item.role !== "pageNumber";
                 const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
                 const isParagraphSelected = index === selectedParagraphIndex;
-                const containsSelected = item.content.toLowerCase().includes(selected.value.toLowerCase());
-                const backgroundColor = isParagraphSelected ? 'white' : '';  // Highlight selected and shade others
+                const backgroundColor = isParagraphSelected ? 'white' : '';
 
 
                 return (
@@ -916,33 +920,63 @@ useOutsideClick(modalRef, handleClickOutside);
     >
     {
   pistacheTab.map((item:any, index:number) => (
-    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', }}>
+    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', }}
+    >
       {item.pistacheType === "tache" ? (
-        <>
-          {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-          {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-        </>
-      ) : (
+        <div>
+            {/* Images pour les taches */}
+            {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+        </div>
+    ) : item.pistacheType === "priorité" ? (
+        // Bouton pour priorité avec le numéro à l'intérieur
         <button
-          style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, }}
+          style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
           onClick={() => removeItem(item)}
-          onMouseEnter={() => {  
-            setHoveredIndex(index);
-          }} 
-          onMouseLeave={() => {
-            setHoveredIndex(null);
-          }}  
+          onMouseEnter={() => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(null)}
         >
-          <div style={{width: '20px',height: '20px',display: hoveredIndex === index ? 'flex' : 'none',alignItems: 'center',justifyContent: 'center',}}>
-            <RxCross1 style={{ color: 'white' }} />
-          </div>
+            <span style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', fontFamily: "Lexend", zIndex: 1, position: 'relative' }}>
+                {item.pistacheNum}
+            </span>
+            <div style={{ width: '20px', height: '20px', display: hoveredIndex === index ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 2   }}>
+                <RxCross1 style={{ color: 'white', width:"35px", height:"35px" }} />
+            </div>
         </button>
-      )}
+
+    ) : item.pistacheType === "flag" ? (
+      // Bouton pour priorité avec le numéro à l'intérieur
+      <button
+        style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
+        onClick={() => removeItem(item)}
+        onMouseEnter={() => setHoveredIndex(index)}
+        onMouseLeave={() => setHoveredIndex(null)}
+      >
+          <span style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', fontFamily: "Lexend", zIndex: 1, position: 'relative' }}>
+            <FaFontAwesomeFlag style={{ fontSize: '16px' }}   />
+          </span>
+          <div style={{ width: '20px', height: '20px', display: hoveredIndex === index ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 2   }}>
+              <RxCross1 style={{ color: 'white', width:"35px", height:"35px" }} />
+          </div>
+      </button>
+
+    ) : (
+          <button
+                style={{position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,}}
+                onClick={() => removeItem(item)}
+                onMouseEnter={() => setHoveredIndex(index)} 
+                onMouseLeave={() => setHoveredIndex(null)}
+            >
+            <div style={{width: '20px',height: '20px',display: hoveredIndex === index ? 'flex' : 'none',alignItems: 'center',justifyContent: 'center',}}>
+              <RxCross1 style={{ color: 'white', width:"35px", height:"35px" }} />
+            </div>
+            </button>
+    )}
   
       <div
         style={{color: 'white',backgroundColor: item.color,padding: '10px',borderRadius: '20px',fontWeight: "500",whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flexGrow: 1,}}
