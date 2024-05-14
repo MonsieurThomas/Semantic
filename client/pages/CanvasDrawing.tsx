@@ -268,8 +268,8 @@ const CanvasDrawing = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({
-    width: 300,
-    height: 300
+    width: 1000,
+    height: 1000
   });
 
 
@@ -837,14 +837,14 @@ useOutsideClick(modalRef, handleClickOutside);
           ref={canvasRef}
           width={dimensions.width}
           height={dimensions.height}
-          style={{ width: '100%', height: '100%', border: "1px solid black" }}
+          style={{  border: "1px solid black" }}
           />
       </div>
     
       {isTextShown && (
       <div
         id="modal-backdrop"
-        className="fixed inset-0 bg-[rgba(34,63,67,0.98)]  bg-opacity-75 flex justify-center px-4"
+        className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4"
         
       >
         <div className="flex w-full max-w-[1100px] gap-5 mr-[150px]">
@@ -874,7 +874,7 @@ useOutsideClick(modalRef, handleClickOutside);
             ref={modalRef} 
             className="bg-white rounded-lg shadow-lg overflow-auto custom-scrollbar" 
             style={{ flex: 5, maxHeight: '100vh'}}>
-              <div style={{backgroundColor: showBackground ? "rgba(34, 63, 67, 0.5)" : "transparent"}}>
+              <div style={{backgroundColor: showBackground ? "rgba(0, 0, 0, 0.2)" : "transparent"}}>
               {apiResponse.map((item, index) => {
                 const hasRole = item.role && item.role !== "pageNumber";
                 const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
