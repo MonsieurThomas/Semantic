@@ -304,7 +304,7 @@ const CanvasDrawing = () => {
 
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isZooming, setIsZooming] = useState(false);
-  const [zoomFraction, setZoomFraction] = useState<number>(0.60); //
+  const [zoomFraction, setZoomFraction] = useState<number>(0.00); //
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -320,22 +320,21 @@ const CanvasDrawing = () => {
   const [pageCount, setPageCount] = useState(0);
   const [showBackground, setShowBackground] = useState(false);
   const [programmaticScroll, setProgrammaticScroll] = useState(false);
-  const [startPan, setStartPan] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
+  const [startPan, setStartPan] = useState<{ x: number; y: number }>({ x: 0, y: 0, });
   const [lastClickedIndex, setLastClickedIndex] = useState<number>(0);
   const [zoomLevel, setZoomLevel] = useState(1);
   const maxZoom = 0.10;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const minZoom = 0.02;
   const [selectedParagraphIndex,setSelectedParagraphIndex] =useState<number>(0);
+  const [disableClicks, setDisableClicks] = useState(false);
   const widthScreen = 1500;
   const heightScreen = 500;
 
   const onZoomHandleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
+      
       setIsZooming(true);
     },
     []
@@ -437,26 +436,36 @@ const CanvasDrawing = () => {
         const rect = zoomHandle.parentElement!.getBoundingClientRect();
         const handleWidth = zoomHandle.offsetWidth;
         const newPositionX = e.clientX - rect.left - handleWidth / 2;
-        const newLeft = Math.max(
-          0,
-          Math.min(newPositionX, rect.width - handleWidth)
-        );
+        const newLeft = Math.max(0, Math.min(newPositionX, rect.width - handleWidth));
         zoomHandle.style.left = `${newLeft}px`;
+      
         if (newPositionX >= 0 && newPositionX < rect.width - 4) {
-          setZoomFraction(newPositionX / (rect.width - zoomHandle.offsetWidth));
+          const zoomFraction = newPositionX / (rect.width - zoomHandle.offsetWidth);
+          setZoomFraction(zoomFraction);
+      
           if (canvas) {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            const canvasX = (centerX - panOffset.x) / zoomLevel;
-            const canvasY = (centerY - panOffset.y) / zoomLevel;
+            console.log("canvas.width = ", canvas.width)
+            console.log("canvas.height = ", canvas.height)
+            const minZoom = 0.02; 
+            const maxZoom = 0.1;
             const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
-            const newPanOffsetX = centerX - canvasX * newZoomLevel;
-            const newPanOffsetY = centerY - canvasY * newZoomLevel;
+            console.log("panOffset.x = ", panOffset.x)
+            console.log("panOffset.y = ", panOffset.y)
+
+            const newPanOffsetX = panOffset.x + (centerX - (centerX * newZoomLevel / zoomLevel));
+            const newPanOffsetY = panOffset.y + (centerY - (centerY * newZoomLevel / zoomLevel));
+
             setZoomLevel(newZoomLevel);
             setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
+      
+            console.log("Ca zoom");
           }
         }
-      } else if (isPanning && canvas) {
+      }
+      
+       else if (isPanning && canvas) {
         const dx = e.clientX - startPan.x;
         const dy = e.clientY - startPan.y;
         setPanOffset({ x: dx, y: dy });
@@ -546,7 +555,7 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 1000
         ) {
-          if (obj.bounding && !isTextShown) 
+          if (obj.bounding && !isTextShown && !disableClicks) 
           {
             setSelected(obj);
             setIsTextShown(true);
@@ -657,12 +666,14 @@ const CanvasDrawing = () => {
   };
 
   function getOpacity(obj: any) {
-    const calculatedOpacity = (10 - (Math.abs(obj.x / 550) - 1) * 1.5) / 10;
-    return Math.max(calculatedOpacity, 0.5);
+    const calculatedOpacity = 1 - ((obj.path.length-0.5)/10);
+  const opacity = Math.max(calculatedOpacity, 0.1);
+    return Math.max(opacity);
   }
 
   const zoomToValue = useCallback(
     (obj: any) => {
+      setDisableClicks(true);
       const centerX = obj.x + 3500 / 2;
       const centerY = obj.y + 1000 / 2;
 
@@ -675,9 +686,12 @@ const CanvasDrawing = () => {
 
       setPanOffset({ x: panX, y: panY });
       setZoomLevel(newZoomLevel);
+      console.log("setDisableClicks = ", disableClicks)
+      setTimeout(() => setDisableClicks(false), 300);
+      console.log("setDisableClicks apres = ", disableClicks)
       redrawCanvas();
     },
-    [widthScreen, heightScreen, setPanOffset, setZoomLevel, redrawCanvas]
+    [widthScreen, heightScreen, setPanOffset, setZoomLevel, redrawCanvas, disableClicks]
   );
 
   function hideCases(localTab: any, objPath: any) {
@@ -728,9 +742,9 @@ const handleClickOutside = () => {
 
 useOutsideClick(modalRef, handleClickOutside);
 
-  const itemHeight = 70;
+  const itemHeight = 52;
   const maxHeight = itemHeight * 4;
-  const dynamicHeight = itemHeight * pistacheTab.length;
+  const dynamicHeight = itemHeight * pistacheTab.length+12;
   const scrollNeeded = dynamicHeight > maxHeight;
 
   useEffect(() => {
@@ -739,8 +753,15 @@ useOutsideClick(modalRef, handleClickOutside);
   }, [isTextShown, selected]);
   
 
-  const findFullString = (index:number, selected:any, textRefs:any, setSelectedParagraphIndex:any, setShowBackground:any, setProgrammaticScroll:any) => {
-    console.log("this selected", selected)
+  const findFullString = (
+    index: number,
+    selected: any,
+    textRefs: any,
+    setSelectedParagraphIndex: any,
+    setShowBackground: any,
+    setProgrammaticScroll: any
+  ) => {
+    console.log("this selected", selected);
     const searchText = String(selected.bounding[index]);
   
     if (!searchText.includes("... —> ...")) {
@@ -751,24 +772,41 @@ useOutsideClick(modalRef, handleClickOutside);
     const startText = parts[0];
     const endText = parts[1];
   
-    const apiText = apiResponse.find(item => 
-      item.content.includes(startText) && item.content.includes(endText)
+    const apiText = apiResponse.find(
+      (item) => item.content.includes(startText) && item.content.includes(endText)
     );
   
     if (apiText) {
-      const textIndex = apiResponse.findIndex((item:any) => item === apiText);
+      const textIndex = apiResponse.findIndex((item: any) => item === apiText);
       setSelectedParagraphIndex(textIndex);
       setShowBackground(true);
-      setProgrammaticScroll(true); 
+      setProgrammaticScroll(true);
       const textElement = textRefs.current[textIndex];
   
       if (textElement) {
-        textElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => setProgrammaticScroll(false), 1000);      }
+        let blockPosition: ScrollLogicalPosition = 'center';
+        if (index === 0) {
+          blockPosition = 'start'; 
+        } else if (index === 1) {
+          blockPosition = 'center';
+        } else if (index === 2) {
+          blockPosition = 'end';
+        }
+  
+        textElement.scrollIntoView({ behavior: 'smooth', block: blockPosition });
+        console.log("This is fin de func = ", blockPosition)
+        if (!textRefs)
+          console.log("pas de ref")
+        else
+        console.log("textRefs = ", textRefs)
+
+      }
     } else {
       console.log("No matching text found.");
     }
   };
+  
+
 
 
   return (
@@ -784,7 +822,7 @@ useOutsideClick(modalRef, handleClickOutside);
             <SearchOutlinedIcon className="cursor-pointer" />
             <input
               type="text"
-              placeholder="rechercher"
+              placeholder="Rechercher"
               // placeholder={searchValue ? searchValue : "rechercher"}
               className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
               onChange={handleInputChange}
@@ -801,7 +839,7 @@ useOutsideClick(modalRef, handleClickOutside);
               ref={zoomHandleRef}
               onMouseDown={onZoomHandleMouseDown}
               className="absolute w-2 h-2 bg-[#DCDCDC] cursor-pointer border-lg rounded-xl"
-              style={{ top: "-3px", left: "50px" }}
+              style={{ top: "-3px" }}
             />
             <div
               className="ml-[160px] mt-[-8px] fixed font-[#ddd] text-xs text-[#a3a3a3]"
@@ -813,24 +851,28 @@ useOutsideClick(modalRef, handleClickOutside);
         </>
       )}
       {searchValue && (
-        <div className="w-[182px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
-          <div>
+        <div className="w-[250px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
+          <div className="p-2">
             {localTab
               .filter((obj) => obj.value.toLowerCase().startsWith(searchValue.toLowerCase()))
               .map((obj, index) => (
                 <div
                   key={index}
-                  className="ml-3 mb-1 inline-block rounded-md bg-white"
+                  className="mx-1 mb-1 inline-block rounded-md bg-white"
                 >
                   <div
-                    className=" rounded-md text-xs p-1 cursor-pointer"
-                    style={{
-                      backgroundColor: obj.color,
-                      opacity: `${getOpacity(obj)}`,
-                    }}
+                    className="relative rounded-md cursor-pointer"
                     onClick={() => zoomToValue(obj)}
+                    style={{ position: 'relative', padding: '0px 12px', boxSizing: 'border-box', borderRadius: 'inherit', }}
                   >
-                    {obj.value}
+                    <div
+                      style={{ backgroundColor: obj.color, opacity: getOpacity(obj), position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 'inherit', zIndex: 1, fontFamily: "Lexend", boxSizing: 'border-box', }}
+                    />
+                    <span
+                      style={{ position: 'relative', zIndex: 2, opacity: 1, fontFamily: "Lexend", fontSize: "16px", fontWeight: obj.path.length >=3 ? 500: 600, color: obj.path.length >3 ? "black": "#F0FFFF", }}
+                    >
+                      {obj.value}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -842,7 +884,7 @@ useOutsideClick(modalRef, handleClickOutside);
       ref={canvasRef}
       width={dimensions.width}
       height={dimensions.height}
-      style={{width:"100%", height:"100%", border: "1px solid black" }}
+      style={{width:"100%", height:"100%"}}
     />
       </div>
     
@@ -852,21 +894,21 @@ useOutsideClick(modalRef, handleClickOutside);
         className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4"
         
       >
-        <div className="flex w-full max-w-[1100px] gap-5 mr-[150px]">
+        <div className="flex w-full max-w-[1000px] mr-[300px]">
           <div className="flex flex-col overflow-auto px-5 py-3" style={{ flex:2 ,width: '300px', maxHeight: '100vh' }}>
             {selected.bounding.map((offset: any, index: number) => (
               <div key={index} className="flex justify-between items-center my-[80px] gap-3">
-                <div className="bg-gray-200 rounded-lg text-black text-sm p-3 flex-grow cursor-pointer"
+                <div className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
                   onMouseEnter={() => setHoveredIndex(index)} 
                   onMouseLeave={() => setHoveredIndex(null)} 
                   onClick={() => findFullString(index,selected, textRefs, setSelectedParagraphIndex, setShowBackground, setProgrammaticScroll)}
                 > 
-                  <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '220px' }}>
+                  <div className="whitespace-nowrap overflow-hidden text-ellipsis text-center" style={{ maxWidth: '320px', fontFamily:"Lexend" }}>
                     {MapObject[0]?.title}
                   </div>
                   <h1 className="text-center">P.{"XX"}</h1>
                 </div>
-                <div className="bg-gray-200 rounded-lg text-black text-sm px-3 py-1 min-w-[40px] text-center"
+                <div className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
                 onMouseEnter={() => setHoveredIndex(index)} 
                 onMouseLeave={() => setHoveredIndex(null)} 
                 >
@@ -879,7 +921,7 @@ useOutsideClick(modalRef, handleClickOutside);
             ref={modalRef} 
             className="bg-white rounded-lg shadow-lg overflow-auto custom-scrollbar" 
             style={{ flex: 5, maxHeight: '100vh'}}>
-              <div style={{backgroundColor: showBackground ? "rgba(0, 0, 40, 0.45)" : "transparent"}}>
+              <div style={{backgroundColor: showBackground ? "rgba(0, 0, 40, 0.45)" : "transparent", fontFamily:"Lexend", textAlign: "justify"}}>
               {apiResponse.map((item, index) => {
                 const hasRole = item.role && item.role !== "pageNumber";
                 const textStyle = hasRole ? 'text-lg font-bold' : 'text-base font-normal';
@@ -909,39 +951,38 @@ useOutsideClick(modalRef, handleClickOutside);
 
     {
       pistacheTab.length > 0 && (
-        <Image src={MarquePage} alt="no image" className="fixed top-20 w-20 h-20 cursor-pointer" style={{ userSelect: "none", right: showPistacheTab ? "280px" : "-15px" }} onClick={togglePistacheTab}/>
+        <Image src={MarquePage} alt="no image" className="fixed top-[84px] w-20 h-16 cursor-pointer" style={{ userSelect: "none", right: showPistacheTab ? "275px" : "-15px" }} onClick={togglePistacheTab}/>
       )
     } 
       {
   showPistacheTab && (
     <div 
-      className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl p-4"
-      style={{height: `${scrollNeeded ? maxHeight : dynamicHeight}px`, overflowY: scrollNeeded ? 'auto' : 'hidden' }}
+      className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl py-4"
+      style={{height: `${scrollNeeded ? maxHeight : dynamicHeight}px`, overflowY: scrollNeeded ? 'auto' : 'hidden', borderTopLeftRadius: '1rem',borderBottomLeftRadius: '1rem',borderTopRightRadius: '0', borderBottomRightRadius: '0' }}
     >
     {
   pistacheTab.map((item:any, index:number) => (
-    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', }}
+    <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', fontFamily:"Lexend", fontSize:"17px" }}
     >
       {item.pistacheType === "tache" ? (
         <div>
             {/* Images pour les taches */}
-            {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 2 && <Image src={task1} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
-            {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', marginRight: '10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 1 && <Image src={task0} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 3 && <Image src={task2} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 4 && <Image src={task3} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 5 && <Image src={task4} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 6 && <Image src={task5} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
+            {item.pistacheNum === 7 && <Image src={task6} alt="Logo" style={{ height: '30px', width: '30px', margin: '0 20px 0 10px' }} onClick={() => removeItem(item)} />}
         </div>
     ) : item.pistacheType === "priorité" ? (
         // Bouton pour priorité avec le numéro à l'intérieur
         <button
-          style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
+          style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', margin: ' 0 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
           onClick={() => removeItem(item)}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
         >
-            <span style={{ color: 'white', fontSize: '26px', fontWeight: 'bold', fontFamily: "Lexend", zIndex: 1, position: 'relative' }}>
+            <span style={{ color: 'white', fontSize: '20px', fontWeight: 'bold', fontFamily: "Lexend", zIndex: 1, position: 'relative' }}>
                 {item.pistacheNum}
             </span>
             <div style={{ width: '20px', height: '20px', display: hoveredIndex === index ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 2   }}>
@@ -952,7 +993,7 @@ useOutsideClick(modalRef, handleClickOutside);
     ) : item.pistacheType === "flag" ? (
       // Bouton pour priorité avec le numéro à l'intérieur
       <button
-        style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
+        style={{ position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', margin: ' 0 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}
         onClick={() => removeItem(item)}
         onMouseEnter={() => setHoveredIndex(index)}
         onMouseLeave={() => setHoveredIndex(null)}
@@ -967,7 +1008,7 @@ useOutsideClick(modalRef, handleClickOutside);
 
     ) : (
           <button
-                style={{position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,}}
+                style={{position: 'relative', height: '30px', width: '30px', backgroundColor: item.pistacheColor, borderRadius: '50%', cursor: 'pointer', margin: '0 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,}}
                 onClick={() => removeItem(item)}
                 onMouseEnter={() => setHoveredIndex(index)} 
                 onMouseLeave={() => setHoveredIndex(null)}
@@ -979,7 +1020,7 @@ useOutsideClick(modalRef, handleClickOutside);
     )}
   
       <div
-        style={{color: 'white',backgroundColor: item.color,padding: '10px',borderRadius: '20px',fontWeight: "500",whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flexGrow: 1,}}
+        style={{ color: 'white', backgroundColor: item.color, padding: '6px 0 6px 10px', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px', borderTopRightRadius: '0', borderBottomRightRadius: '0', fontWeight: "500", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexGrow: 1, width: '100%' }}
         onClick={() => zoomToValue(item)}
       >
         {item.value}

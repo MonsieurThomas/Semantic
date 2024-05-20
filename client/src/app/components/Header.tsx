@@ -59,10 +59,10 @@ function Header() {
           <div className="flex items-center gap-2">
             <Image
               src={profilLogo}
-              alt="Logo"
+              alt="Profile Logo"
               className="w-[42px] h-[40px] hover:cursor-pointer"
             />
-            <span className="font-semibold">{user ? user.username : "no user"}</span>
+            <span className="font-semibold">{user ? user.username : "Invité"}</span>
           </div>
         </div>
       </div>

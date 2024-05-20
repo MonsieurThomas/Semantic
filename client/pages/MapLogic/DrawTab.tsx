@@ -103,50 +103,62 @@ function DrawLine(
 
 
 
-function wrapText(ctx: CanvasRenderingContext2D, obj:any, boxWidth:number) {
-    const boxHeight = 1500;
-    const words = obj.value.split(" ");
-    let fontSize = '380px';
-    const lineHeight = 350;
-    ctx.font = obj.path.length < 3 ? `bold ${fontSize} Lexend` : `${fontSize} Lexend`;
-  
-    let lines = [];
-    let line = "";
-    let boxX = obj.x;
-    let boxY = obj.y + 5;
-    if (obj.branch == 0)
-    {
-      boxX -= 500;
-      ctx.font = `bold 500px Lexend`;
-    }
-  
-    for (let i = 0; i < words.length && lines.length < 2; i++) {
-      const testLine = line + words[i] + " ";
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > boxWidth && i > 0) {
-        lines.push(line);
-        line = words[i] + " ";
-      } else {
-        line = testLine;
-      }
-    }
-    if (lines.length < 2) {
-      lines.push(line.trim());
-    } else {
-      lines[1] = line.trim() + "...";
-    }
-  
-    const totalTextHeight = lines.length * lineHeight;
-    let startY = boxY + (boxHeight - totalTextHeight) / 2;
-  
-    lines.forEach((ln) => {
-      const lineWidth = ctx.measureText(ln).width;
-      const startX = boxX + (boxWidth - lineWidth) / 2;
-      ctx.fillText(ln, startX, startY);
-      startY += lineHeight;
-    });
+function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
+  const boxHeight = 1500;
+  const words = obj.value.split(" ");
+  let fontSize = '380px';
+  const lineHeight = 350;
+  ctx.font = obj.path.length < 3 ? `bold ${fontSize} Lexend` : `${fontSize} Lexend`;
+
+  let lines: string[] = [];
+  let line = "";
+  let boxX = obj.x;
+  let boxY = obj.y + 5;
+
+  if (obj.branch == 0) {
+    boxX -= 500;
+    ctx.font = `bold 500px Lexend`;
   }
+
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + " ";
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > boxWidth) {
+      lines.push(line.trim());
+      line = words[i] + " ";
+    } else {
+      line = testLine;
+    }
+  }
+
+  // Push the last line
+  if (line.trim().length > 0) {
+    lines.push(line.trim());
+  }
+
+  // Check the number of lines and truncate if necessary
+  if (lines.length > 2) {
+    lines = lines.slice(0, 2);
+    while (ctx.measureText(lines[1] + "...").width > boxWidth) {
+      lines[1] = lines[1].slice(0, -1);
+    }
+    lines[1] = lines[1].trim() + "...";
+  }
+
+  const totalTextHeight = lines.length * lineHeight;
+  let startY = boxY + (boxHeight - totalTextHeight) / 2;
+
+  lines.forEach((ln) => {
+    const lineWidth = ctx.measureText(ln).width;
+    const startX = boxX + (boxWidth - lineWidth) / 2;
+    ctx.fillText(ln, startX, startY);
+    startY += lineHeight;
+  });
+}
+
+
   
 
 
@@ -220,10 +232,9 @@ function wrapText(ctx: CanvasRenderingContext2D, obj:any, boxWidth:number) {
 
   if (obj.path.length <= 3) ctx.fillStyle = "white";
   else ctx.fillStyle = "black";
-  // ctx.font = "30px Arial";
   if (obj.branch == 0) ctx.font = "80px Lexend";
   wrapText(ctx, obj, caseWidth); // affichage texte
-  if (obj.hover && obj.branch != 0) eyeShape(ctx, obj);
+  if (obj.hover && obj.branch != 0 && !obj.bounding) eyeShape(ctx, obj);
   if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj);
   if (obj.pistacheColor) // pistache part
   {
@@ -263,21 +274,21 @@ function DrawCurveLine(
 ) {
   ctx.beginPath();
 
-  if (obj2.x > 0) {
-    if (obj2.y > obj.y) {
-      ctx.moveTo(obj.x + 4000, obj.y + caseHeight);
+  if (obj2.x > 0) { 
+    if (obj2.y > obj.y) {// red
+      ctx.moveTo(obj.x + 3800, obj.y + caseHeight);
       ctx.quadraticCurveTo(
         obj.x + obj2.x,
         obj.y + (obj2.y - obj.y),
-        obj2.x,
+        obj2.x+100,
         obj2.y + caseHeight / 2
       );
-    } else {
-      ctx.moveTo(obj.x + 4000, obj.y);
+    } else { 
+      ctx.moveTo(obj.x + 3800, obj.y);
       ctx.quadraticCurveTo(
         obj.x,
         obj.y - (obj2.y - obj.y),
-        obj2.x,
+        obj2.x+100,
         obj2.y + caseHeight / 2
       );
     }
@@ -287,19 +298,19 @@ function DrawCurveLine(
   } else {
     // ctx.beginPath();
     if (obj2.y > obj.y) {
-      ctx.moveTo(obj.x + 500, obj.y + caseHeight + 500);
+      ctx.moveTo(obj.x + 500, obj.y + caseHeight + 400);
       ctx.quadraticCurveTo(
         obj.x + obj2.x / 2,
         obj.y + (obj2.y - obj.y),
-        obj2.x + caseWidth,
+        obj2.x + caseWidth-100,
         obj2.y + caseHeight / 2
       );
     } else {
-      ctx.moveTo(obj.x + 500, obj.y - 500);
+      ctx.moveTo(obj.x + 500, obj.y - 400);
       ctx.quadraticCurveTo(
         obj.x + obj2.x / 2,
         obj.y - (obj.y - obj2.y),
-        obj2.x + caseWidth,
+        obj2.x + caseWidth-100,
         obj2.y + caseHeight / 2
       );
     }
@@ -426,28 +437,33 @@ function DrawBubble(
   ctx.save();
 
   if (Array.isArray(obj.bounding) && obj.bounding.length > 0) {
+    if (obj.hide) return;
     if (zoom > 50) {
       let opacity = (zoom - 50) / 50;
       // let opacity = (99/70) * zoom - 41.3;
       ctx.globalAlpha = opacity;
 
       ctx.beginPath();
-      if (obj.x < 0) ctx.arc(obj.x - 200, obj.y + 500, 140, 0, 2 * Math.PI, false);
-      else ctx.arc(obj.x + 3700, obj.y + 500, 140, 0, 2 * Math.PI, false);
-      ctx.fillStyle = "white";
+      if (obj.x < 0) ctx.arc(obj.x - 600, obj.y + 500, 300, 0, 2 * Math.PI, false);
+      else ctx.arc(obj.x + 4100, obj.y + 500, 300, 0, 2 * Math.PI, false);
+      const opacityfill = Math.min(opacity, 0.05);
+  // console.log("opacity = ", opacity, " for ", obj.value);
+      ctx.globalAlpha = opacityfill;
+      ctx.fillStyle = obj.color;
       ctx.fill();
-      ctx.lineWidth = 10;
-      ctx.strokeStyle = "black";
+      ctx.globalAlpha = opacity;
+      ctx.lineWidth = 44;
+      ctx.strokeStyle = obj.color;
       ctx.stroke();
       
-        ctx.fillStyle = "black";
-        ctx.font = "170px Arial";
+        ctx.fillStyle = obj.color;
+        ctx.font = "450px Lexend";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         if (obj.x < 0) {
-          ctx.fillText(obj.bounding.length.toString(), obj.x - 200, obj.y + 510);
+          ctx.fillText(obj.bounding.length.toString(), obj.x - 600, obj.y + 515);
         } else {
-          ctx.fillText(obj.bounding.length.toString(), obj.x + 3700, obj.y + 510);
+          ctx.fillText(obj.bounding.length.toString(), obj.x + 4100, obj.y + 515);
         }
       }
   }
@@ -539,7 +555,7 @@ function Pistache(ctx: CanvasRenderingContext2D, obj:any, caseWidth:number, case
   labels.forEach((label, index) => {
     const labelPosY = posY - 3500 + (index + 5) * (caseHeight / labels.length);
     ctx.fillStyle = "black";
-    ctx.font = "160px Arial";
+    ctx.font = "160px Lexend";
     ctx.fillText(label, posX + 100, labelPosY);
     colors.forEach((color, num) => {
       ctx.beginPath();
@@ -549,7 +565,7 @@ function Pistache(ctx: CanvasRenderingContext2D, obj:any, caseWidth:number, case
       ctx.strokeStyle = color;
       ctx.stroke();
       if (index == 1){
-        ctx.font = "bold 260px Arial";
+        ctx.font = "bold 260px Lexend";
         ctx.fillStyle = "white"; // Ensure text color is black
         ctx.fillText(`${num + 1}`, posX-70 + (num + 1) * 450, labelPosY + 380);
       }
@@ -567,11 +583,11 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>, zoom: number) {
 
   let caseWidth = 3500;
   let caseHeight = 1000;
+  ParseLine(ctx, tab, caseWidth, caseHeight);
   tab.forEach((obj) => {
     DrawSquare(ctx, obj, caseWidth, caseHeight);
     DrawBubble(ctx, obj, zoom);
   });
-  ParseLine(ctx, tab, caseWidth, caseHeight);
   tab.forEach((obj) => {
     if (obj.isPistache) Pistache(ctx, obj, caseWidth, caseHeight + 2000);
   });

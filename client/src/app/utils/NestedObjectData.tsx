@@ -168,7 +168,7 @@ const nestedObjectData = {
           },
           item32: {
             value: "Risk",
-            bounding: ["3. Amélioration du parcours citoyen ou de ... —> ... ou une entreprise privée (site e-commerce) ;","Leur nombre devra être suffisant ... —> ... modèles économiques, investissement).","la plateforme Ethereum peut être déployée ... —> ... et de consommation d'énergie"]
+            bounding: ["3. Amélioration du parcours citoyen ou de ... —> ... ou une entreprise privée (site e-commerce) ;","Leur nombre devra être suffisant ... —> ... modèles économiques, investissement).","la plateforme Ethereum peut être déployée ... —> ... et de consommation d'énergie", "La blockchain du Bitcoin ... —> ... sans aucune autorité centrale."]
           }
         }
       },
