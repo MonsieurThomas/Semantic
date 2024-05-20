@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "client/.next"
+
+[build.environment]
+  DATABASE_URL = "postgresql://admin:1234@localhost:5432/semantic"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[context.production.environment]
+  DATABASE_URL = "postgresql://admin:1234@localhost:5432/semantic"
