@@ -1,8 +1,8 @@
 // pages/_app.tsx
 import { AppProps } from "next/app";
-import { SessionProvider } from "next-auth/react";
+// import { SessionProvider } from "next-auth/react";
 import { Session } from "next-auth";
-import Layout from "../src/app/layouts/layout";
+// import Layout from "../src/app/layouts/layout";
 import "../src/app/styles/globals.css";
 import Header from "../src/app/components/Header";
 import Head from 'next/head';
