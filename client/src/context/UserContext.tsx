@@ -23,12 +23,16 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get('/api/profile').then(response => {
-      setId(response.data.id);
-      setUsername(response.data.username);
-    }).catch(error => {
-      console.error('Failed to fetch profile:', error);
-    });
+    axios.get('/api/profile')
+      .then(response => {
+        if (response.data) {
+          setId(response.data.id);
+          setUsername(response.data.username);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch profileee:', error);
+      });
   }, []);
 
   return (

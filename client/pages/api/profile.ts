@@ -1,7 +1,7 @@
 // pages/api/profile.ts
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import prisma from '../../lib/prisma';
 

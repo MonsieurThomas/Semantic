@@ -1,26 +1,34 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext } from "react";
 import { UserContext } from '../src/context/UserContext';
 import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import { useSession } from "next-auth/react";
 import "../src/app/styles/style.css";
 
 function MapChoice() {
-
   const { username, id } = useContext(UserContext);
+
   const sortedMapObject = MapObject.sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
 
   let dateTmp = "";
 
+  const colors = ["#EB473D", "#1C49A7", "#507543", "#E6A763", "#755591"];
+
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
   return (
     <div className="flex w-screen gap-2 mt-10">
       <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
-        <div className="flex gap-2 ml-auto pr-10 pt-5">
-          <h1>{username ? username.charAt(0) : 'N'}</h1>
+        <div className="flex gap-2 ml-auto pr-10 pt-5 items-center">
+          <div
+            className="flex items-center justify-center w-10 h-10 rounded-full"
+            style={{ backgroundColor: randomColor, color: "white", fontWeight: "bold", fontSize:"22px" }}
+          >
+            <h1>{username ? username.charAt(0) : 'N'}</h1>
+          </div>
           <h1>{username ? username : 'No User'}</h1>
         </div>
         <div className="pl-12 pt-10 overflow-auto">

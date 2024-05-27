@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import "../styles/style.css";
 import Logo from "../../../public/logo.png";
 import Image from "next/image";
