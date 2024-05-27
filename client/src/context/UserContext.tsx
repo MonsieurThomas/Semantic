@@ -1,26 +1,39 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 
+// Define the shape of the context data
 interface UserContextType {
-  user: { username: string } | null;
-  setUser: React.Dispatch<React.SetStateAction<{ username: string } | null>>;
+  username: string | null;
+  setUsername: (username: string | null) => void;
+  id: string | null;
+  setId: (id: string | null) => void;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+// Create the context with an empty initial value
+export const UserContext = createContext<UserContextType>({
+  username: null,
+  setUsername: () => {},
+  id: null,
+  setId: () => {},
+});
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ username: string } | null>(null);
+// Define the provider component
+export const UserContextProvider = ({ children }: { children: ReactNode }) => {
+  const [username, setUsername] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
+
+  useEffect(() => {
+    axios.get('/api/profile').then(response => {
+      setId(response.data.id);
+      setUsername(response.data.username);
+    }).catch(error => {
+      console.error('Failed to fetch profile:', error);
+    });
+  }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ username, setUsername, id, setId }}>
       {children}
     </UserContext.Provider>
   );
-};
-
-export const useUser = () => {
-  const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-  return context;
 };

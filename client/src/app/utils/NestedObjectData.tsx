@@ -21,7 +21,7 @@ const nestedObjectData = {
         },
       },
       "Gaming industry": {
-        "Is BlockChain the solution to secure the skin market": {
+        "Blockchain and skin market": {
           item4: {
             value: "Marketplace",
             bounding: [974]
@@ -31,7 +31,7 @@ const nestedObjectData = {
             bounding: [2845]
           },
           item6: {
-            value: "For the author, blockchain can be a solution",
+            value: "A solution",
             bounding: [5270]
           }
         },
@@ -143,7 +143,7 @@ const nestedObjectData = {
     },
     "Author's life": {
       item27: {
-        value: "53- Blockchain, cryptomonnaies et NFTs: new tech a la portée de tous ?",
+        value: "New tech pour tous ?",
         bounding: ["La technologie de la ... —> ... d'applications décentralisées."]
       },
       "Gaming & Blockchain": {
@@ -183,7 +183,7 @@ const nestedObjectData = {
           value: "Générales",
           bounding: [1345]
         },
-        "Distinction permissionnées / non-permissionnées": {
+        "Permissionnées ou non ?": {
           item35: {
             value: "Non-permissionnées",
             bounding: [6578]
@@ -193,7 +193,7 @@ const nestedObjectData = {
             bounding: [3900]
           },
           item37: {
-            value: "Ethereum peut etre deployé dans les 2 modes",
+            value: "La particularité d’Ethereum",
             bounding: [2822]
           }
         }

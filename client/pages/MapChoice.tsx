@@ -1,24 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { fetchUserData, User } from "./api/auth/fetchUserData";
+import React, { useEffect, useState, useContext } from "react";
+import { UserContext } from '../src/context/UserContext';
 import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import { useSession } from "next-auth/react";
 import "../src/app/styles/style.css";
 
 function MapChoice() {
-  const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const getUserData = async () => {
-      const userData = await fetchUserData();
-      setUser(userData);
-      console.log("ca a recuperer dans mapChoice = ", {userData})
-    };
-
-    getUserData();
-  }, []);
-
+  const { username, id } = useContext(UserContext);
   const sortedMapObject = MapObject.sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
@@ -29,8 +20,8 @@ function MapChoice() {
     <div className="flex w-screen gap-2 mt-10">
       <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
         <div className="flex gap-2 ml-auto pr-10 pt-5">
-          <h1>{user ? user.username.charAt(0) : 'N'}</h1>
-          <h1>{user ? user.username : 'No User'}</h1>
+          <h1>{username ? username.charAt(0) : 'N'}</h1>
+          <h1>{username ? username : 'No User'}</h1>
         </div>
         <div className="pl-12 pt-10 overflow-auto">
           {sortedMapObject.map((obj, key) => {

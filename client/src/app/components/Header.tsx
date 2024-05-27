@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "../styles/style.css";
 import Logo from "../../../public/logo.png";
 import Image from "next/image";
 import profilLogo from "../../../public/profilLogo.png";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
-import { fetchUserData, User } from "../../../pages/api/auth/fetchUserData";
+import { useRouter } from "next/router";
+import { UserContext } from '../../context/UserContext';
+
 
 function Header() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const getUserData = async () => {
-      const userData = await fetchUserData();
-      setUser(userData);
-    };
-
-    getUserData();
-  }, []);
+  const { username, id } = useContext(UserContext);
+  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
+  const router = useRouter();
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -26,6 +21,12 @@ function Header() {
 
   const toggleToFalse = () => {
     setIsExpanded(false);
+  };
+
+  const handleSignOut = async () => {
+    router.push('/');
+    setContextUsername(null);
+    setContextId(null);
   };
 
   return (
@@ -62,7 +63,12 @@ function Header() {
               alt="Profile Logo"
               className="w-[42px] h-[40px] hover:cursor-pointer"
             />
-            <span className="font-semibold">{user ? user.username : "Invité"}</span>
+            {    (
+              <button onClick={handleSignOut} className="ml-4 bg-red-500 text-white p-2 rounded-lg">
+                Déconnexion
+              </button>
+            )}
+            {username ? username: "no username"}
           </div>
         </div>
       </div>

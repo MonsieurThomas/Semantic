@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useRouter } from "next/router";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import { useRouter } from "next/router";
+import { UserContext } from '../src/context/UserContext';
+
 
 function Auth() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -12,6 +14,8 @@ function Auth() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
+
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -20,22 +24,33 @@ function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("/api/users/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, email, password }),
-    });
+    console.log("JSON.stringify({ username, email, password })", JSON.stringify({ username, email, password }))
 
-    if (res.ok) {
-      router.push("/MapChoice");
-    } else {
-      console.log("Dans Auth")
-      const errorData = await res.json();
-      console.log("Error dans Auth.tsx", errorData.error)
-      setError(errorData.error);
-    }
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, email, password }),
+        });
+    
+        if (!res.ok) {
+          console.log("erreur Auth.tsx !res.ok")
+          const data = await res.json();
+          setError(data.message);
+          return;
+        }
+    
+        const data = await res.json();
+        console.log('User registered dans Auth.tsx:', data);
+        setContextUsername(data.username);
+        setContextId(data.id);
+        router.push('/MapChoice');
+      } catch (error) {
+        setError('An error occurred. Please try again.');
+      }
   };
 
   return (

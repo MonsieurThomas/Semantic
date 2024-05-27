@@ -3,8 +3,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import prisma from '../../lib/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -32,7 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    res.status(200).json({ id: user.id, username: user.username });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ token, username: user.username, id: user.id });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }

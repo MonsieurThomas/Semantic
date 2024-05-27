@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useUser } from "../src/context/UserContext";
+import { UserContext } from "../src/context/UserContext";
 
 function Login() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -13,7 +13,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setUser } = useUser();
+  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -22,22 +22,30 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (res.ok) {
-      const userData = await res.json();
-      setUser({ username: userData.username }); // Assuming the API returns the username in the response
-      router.push("/MapChoice");
-    } else {
-      console.log("Dans Login")
-      const errorData = await res.json();
-      setError(errorData.error);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message);
+        return;
+      }
+
+      const data = await res.json();
+
+      // Update the context with the logged-in user information
+      setContextUsername(data.username);
+      setContextId(data.id);
+
+      router.push('/MapChoice');
+    } catch (error) {
+      setError('An error occurred. Please try again.');
     }
   };
 
