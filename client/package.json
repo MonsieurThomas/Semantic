@@ -36,6 +36,7 @@
     "react-icons": "^5.2.0",
     "sharp": "^0.33.3"
   },
+  "type": "module",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/formidable": "^3.4.5",
