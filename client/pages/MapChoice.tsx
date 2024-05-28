@@ -1,85 +1,115 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
-import mindMappingImage from "../public/mindMappingImage.png";
-import MindMap2 from "../public/MindMap2.png";
+import React, { useContext } from "react";
+import { UserContext } from '../src/context/UserContext';
+import MapObject from "../src/app/utils/MapObject";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import "../src/app/styles/style.css";
+import { useRouter } from "next/router";
 
-const tabs = [
-  {
-    title: "L'information, structurée et clarifiée",
-    content: (
-      <div className="bg-gray-100 p-8 rounded-xl flex my-6 items-center justify-center gap-10">
-        <div className="flex-1 text-center">
-          <h2 className="text-2xl font-semibold mb-12">L&apos;information, structurée et clarifiée</h2>
-          <p className="text-justify" style={{fontSize:"16px"}}>
-            Le mind mapping simplifie la visualisation des idées complexes en les structurant sous forme d&apos;arbre, à partir de mots-clés.
-          </p>
-          <p className="text-justify" style={{fontSize:"16px"}}>
-            Ce faisant, la mind map permet de regrouper des éléments sous forme thématique en facilitant la navigation à travers une large quantité d&apos;informations.
-          </p>
-          <p className="text-justify" style={{fontSize:"16px"}}>
-            Idéal pour professionnels gérant de nombreux documents, il transforme la recherche en une expérience claire et rapide.
-          </p>
-        </div>
-        <div className="flex-1">
-          <Image src={mindMappingImage} alt="Mind map example" width={500} height={300} />
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Le mind mapping à la sauce Semantic",
-    content: (
-      <div className="bg-gray-100 px-8 py-8 rounded-xl flex my-6 items-center justify-center gap-10">
-        <div className="flex-1">
-          <Image src={MindMap2} alt="Semantic mind map example" width={500} height={300} />
-        </div>
-        <div className="flex-1 text-center">
-          <h2 className="text-2xl font-semibold mb-12">Le mind mapping à la sauce Semantic</h2>
-          <p className="text-justify " style={{fontSize:"16px"}}>
-            Notre intuition a été d&apos;utiliser les mind maps non pas comme outil d&apos;apprentissage mais comme un outil de navigation pour naviguer clairement dans une grande quantité d&apos;informations.
-          </p>
-          <p className="text-justify" style={{fontSize:"16px"}}>
-            Sur Semantic, suivre une branche de la map, c&apos;est trouver le chemin le plus rapide vers les parties de vos documents qui vous intéressent vraiment.
-          </p>
-          <p className="text-justify" style={{fontSize:"16px"}}>
-            Aucun scroll, aucun Ctrl+Tab pour changer de document, laissez vous guider par les mots-clés et trouvez directement toute l&apos;information disponible et pertinente.
-          </p>
-        </div>
-      </div>
-    ),
-  },
-];
 
-const MindMapping = () => {
-  const [activeTab, setActiveTab] = useState(0);
+function MapChoice() {
+  const { username, id } = useContext(UserContext);
+
+  const sortedMapObject = MapObject.sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+  );
+
+  let dateTmp = "";
+  const router = useRouter();
+  const colors = ["#EB473D", "#1C49A7", "#507543", "#E6A763", "#755591"];
+
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+  const handleButtonClick = () => {
+    router.push('/testApi');
+  };
 
   return (
-    <div style={{ fontFamily: 'Lexend', fontSize: "18px" }} className=" px-[200px]">
-      <h1 className="text-5xl font-bold mb-6 text-center pt-10">Le génie du mind mapping</h1>
-
-    <h3 className='p-3 font-bold'>Le mind mapping en chiffres</h3>
-    <p>En moyenne, les sondés ont fait état d&apos;une augmentation de 30 % de leur productivité grâce à l’utilisation de mind maps dans leur environnement professionnel.
-    Plus de 35% d&apos;entre eux ont déclaré que le mind mapping les aide à gérer “significativement” la surcharge d&apos;informations dans leurs métiers.
-    Plus surprenant encore, plus de 59 % des personnes interrogées ont indiqué qu&apos;elles ne seraient pas en mesure de créer la même qualité de travail si elles ne disposaient pas d&apos;un logiciel de cartographie mentale.</p>
-    <p className='p-1 '>Source :  Mind Mapping Software Trends Survey, 2021</p>
-      
-      <div className="flex justify-center">
-        {tabs.map((tab, index) => (
-          <button
-            key={index}
-            className={`px-4 pt-8 font-semibold ${index === activeTab ? 'border-b-2 border-blue-500' : ''}`}
-            onClick={() => setActiveTab(index)}
+    <div className="flex w-screen gap-2 mt-10">
+      <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
+        <div className="flex gap-2 ml-auto pr-10 pt-5 items-center">
+          <div
+            className="flex items-center justify-center w-10 h-10 rounded-full"
+            style={{ backgroundColor: randomColor, color: "white", fontWeight: "bold", fontSize:"22px" }}
           >
-            {tab.title}
-          </button>
-        ))}
+            <h1>{username ? username.charAt(0) : 'N'}</h1>
+          </div>
+          <h1>{username ? username : 'No User'}</h1>
+        </div>
+        <div className="pl-12 pt-10 overflow-auto">
+          {sortedMapObject.map((obj, key) => {
+            const currentDate = obj.date.toLocaleDateString("fr-FR", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+
+            const displayDate = currentDate !== dateTmp;
+            dateTmp = currentDate;
+            return (
+              <ul key={key}>
+                {displayDate && (
+                  <li className="text-xs pt-3 font-e">{currentDate}</li>
+                )}
+                <li>
+                  <span
+                    className="px-3 py-[2px] text-white rounded-2xl text-sm font-semibold"
+                    style={{ backgroundColor: obj.color }}
+                  >
+                    {obj.title}
+                  </span>
+                </li>
+              </ul>
+            );
+          })}
+        </div>
       </div>
-      
-      <div className="">
-        {tabs[activeTab].content}
+      <div className="flex-5 h-[80vh] flex flex-col overflow-auto" style={{ flex: 10 }}>
+        <div className="flex items-center rounded-xl bg-[#F2F2F2] w-[420px] py-2">
+          <SearchOutlinedIcon className="cursor-pointer" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom, par date.."
+            className="w-[400px] bg-[#F2F2F2] pl-2"
+          />
+          <CloseOutlinedIcon className="cursor-pointer" />
+        </div>
+        <div className="w-[75vw] mt-10 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
+          {MapObject.map((obj, key) => (
+            <div key={key} className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl">
+              <div className="flex justify-between">
+                <p className="pb-10 p-4">
+                  {`${obj.date.toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}, ${obj.date.toLocaleTimeString("fr-FR", {
+                    hour: "numeric",
+                    minute: "numeric",
+                  })}`}
+                  <span
+                    className="mx-2 px-2 py-1 text-white rounded-2xl"
+                    style={{ backgroundColor: obj.color }}
+                  >
+                    {obj.title}
+                  </span>
+                </p>
+                <RemoveRedEyeIcon className="mx-7 my-2" />
+              </div>
+              <ul className="pl-[50px]">
+                {obj.theme.map((item, themeKey) => (
+                  <li key={themeKey}> ◯ {item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <button className="bg-blue-500" onClick={handleButtonClick}>Get to testApi</button>
       </div>
     </div>
   );
-};
+}
 
-export default MindMapping;
+export default MapChoice;
