@@ -42,12 +42,11 @@ function Header() {
           </span>
         </div>
         {isExpanded && (
-          <div className="absolute left-[170px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium">
-            <p>Nos offres</p>
-            <p>Mind mapping</p>
+          <div className="absolute left-[170px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
+            <p >Nos offres</p>
+            <Link href="/MindMapping"><p>Mind mapping</p></Link>
             <p>FAQ</p>
-            <p>Contacts</p>
-          </div>
+            <Link href="/Contact"><p>Contact</p></Link>          </div>
         )}
         <div className="flex justify-center text-center gap-[150px]">
           <Link

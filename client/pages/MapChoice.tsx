@@ -5,6 +5,8 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import "../src/app/styles/style.css";
+import { useRouter } from "next/router";
+
 
 function MapChoice() {
   const { username, id } = useContext(UserContext);
@@ -14,10 +16,14 @@ function MapChoice() {
   );
 
   let dateTmp = "";
-
+  const router = useRouter();
   const colors = ["#EB473D", "#1C49A7", "#507543", "#E6A763", "#755591"];
 
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+  const handleButtonClick = () => {
+    router.push('/testApi');
+  };
 
   return (
     <div className="flex w-screen gap-2 mt-10">
@@ -100,6 +106,7 @@ function MapChoice() {
             </div>
           ))}
         </div>
+        <button className="bg-blue-500" onClick={handleButtonClick}>Get to testApi</button>
       </div>
     </div>
   );
