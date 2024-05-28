@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import prisma from '../../lib/prisma';
-
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
