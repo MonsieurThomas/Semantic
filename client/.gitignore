@@ -6,6 +6,7 @@
 .pnp.js
 .yarn/install-state.gz
 
+key_google_drive.json
 # testing
 /coverage
 
@@ -30,6 +31,7 @@ yarn-error.log*
 .env
 # vercel
 .vercel
+
 
 # typescript
 *.tsbuildinfo

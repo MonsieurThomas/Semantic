@@ -2,8 +2,39 @@ import React from "react";
 import LogoExpand from "../public/logoExpand.png";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
+
 
 const MapCreate = () => {
+
+  const handleCreateMap = async () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.click();
+
+    fileInput.onchange = async () => {
+      const file = fileInput.files?.[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+      
+        try {
+          const response = await axios.post("/api/upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          console.log("Fichier téléversé avec l'ID :", response.data.id);
+        } catch (error:any) {
+          console.error("Erreur lors du téléversement du fichier :", error.message);
+        }
+      } else {
+        console.error("Aucun fichier sélectionné");
+      }
+    };
+  };
+
+
   return (
     <div className="flex flex-col items-center gap-[50px] mt-[70px]" style={{fontFamily:"Lexend"}}>
       <div>
@@ -12,13 +43,13 @@ const MapCreate = () => {
         </h1>
       </div>
       <div className="flex flex-col items-center">
-        <Link
-          href="/CanvasDrawing"
+        <div
           className="text-4xl bg-[#003642] text-white p-3 font-semibold w-[240px] rounded-[40px]"
+          onClick={handleCreateMap}
         >
           <h1 className="text-center">Crée ta</h1>
           <h1 className="text-center">mind map</h1>
-        </Link>
+        </div>
         <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
           {" "}
           2go maximum{" "}
