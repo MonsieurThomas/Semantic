@@ -30,27 +30,28 @@ function Header() {
   };
 
   return (
-    <div className="flex mx-10 items-center py-6" style={{ userSelect: "none" }}>
+    <div className="flex mx-10 items-center py-6" style={{ userSelect: "none", fontFamily:"Lexend" }}>
       <Link href="/">
         <Image src={Logo} alt="Logo" className="w-[300px] hover:cursor-pointer" />
       </Link>
       <div className="relative flex w-full justify-between ml-[100px]">
         <div className="flex items-center hover:cursor-pointer" onClick={handleToggle}>
-          <h2 className="font-semibold">Pourquoi Semantic ?</h2>
+          <h2 className="font-semibold text-xl">Pourquoi Semantic ?</h2>
           <span className={`transform transition-transform duration-300 ${isExpanded ? "-rotate-90" : "rotate-0"}`}>
             <ExpandMoreIcon />
           </span>
         </div>
         {isExpanded && (
-          <div className="absolute left-[170px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
-            <p >Nos offres</p>
+          <div className="absolute left-[200px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
+            <Link href="/Offer"><p>Nos offres</p></Link>
             <Link href="/MindMapping"><p>Mind mapping</p></Link>
-            <p>FAQ</p>
-            <Link href="/Contact"><p>Contact</p></Link>          </div>
+            <Link href="/FAQ"><p>FAQ</p></Link>
+            <Link href="/Contact"><p>Contact</p></Link>
+          </div>
         )}
         <div className="flex justify-center text-center gap-[150px]">
           <Link
-            href="/CanvasDrawing"
+            href="/MapCreate"
             onClick={toggleToFalse}
             className="bg-[#F56600] text-white p-2 font-semibold rounded-[14px] hover:cursor-pointer"
           >

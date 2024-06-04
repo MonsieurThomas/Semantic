@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const MapCreate = () => {
   return (
-    <div className="flex flex-col items-center gap-[50px] mt-[70px]">
+    <div className="flex flex-col items-center gap-[50px] mt-[70px]" style={{fontFamily:"Lexend"}}>
       <div>
         <h1 className="text-5xl font-bold w-[600px] text-center">
           Speed Up your research with mind maps

@@ -26,14 +26,14 @@ function MapChoice() {
   };
 
   return (
-    <div className="flex w-screen gap-2 mt-10">
+    <div className="flex w-screen gap-2 mt-10" style={{fontFamily:"Lexend", fontSize:"17px"}}>
       <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
         <div className="flex gap-2 ml-auto pr-10 pt-5 items-center">
           <div
             className="flex items-center justify-center w-10 h-10 rounded-full"
             style={{ backgroundColor: randomColor, color: "white", fontWeight: "bold", fontSize:"22px" }}
           >
-            <h1>{username ? username.charAt(0) : 'N'}</h1>
+            <h1>{username ? username.charAt(0).toUpperCase() : 'N'}</h1>
           </div>
           <h1>{username ? username : 'No User'}</h1>
         </div>
@@ -54,8 +54,14 @@ function MapChoice() {
                 )}
                 <li>
                   <span
-                    className="px-3 py-[2px] text-white rounded-2xl text-sm font-semibold"
+                    className="px-3 py-[2px] text-white rounded-2xl text-sm font-semibold cursor-pointer"
                     style={{ backgroundColor: obj.color }}
+                    onClick={() => {
+                      const element = document.getElementById(`scroll-${key}`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
                   >
                     {obj.title}
                   </span>
@@ -77,7 +83,7 @@ function MapChoice() {
         </div>
         <div className="w-[75vw] mt-10 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
           {MapObject.map((obj, key) => (
-            <div key={key} className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl">
+            <div key={key} id={`scroll-${key}`} className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl">
               <div className="flex justify-between">
                 <p className="pb-10 p-4">
                   {`${obj.date.toLocaleDateString("fr-FR", {

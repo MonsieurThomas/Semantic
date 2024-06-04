@@ -50,7 +50,7 @@ function Login() {
   };
 
   return (
-    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10">
+    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10" style={{fontFamily:"Lexend", fontSize:"17px"}}>
       <form onSubmit={handleSubmit} className="w-[450px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>
