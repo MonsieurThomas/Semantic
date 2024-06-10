@@ -1,5 +1,3 @@
-
-
 function DrawLine(
   ctx: CanvasRenderingContext2D,
   obj: any,

@@ -6,13 +6,14 @@ import profilLogo from "../../../public/profilLogo.png";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { UserContext } from '../../context/UserContext';
-
+import { UserContext } from "../../context/UserContext";
 
 function Header() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isProfileHovered, setIsProfileHovered] = useState(false);
   const { username, id } = useContext(UserContext);
-  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
+  const { setUsername: setContextUsername, setId: setContextId } =
+    useContext(UserContext);
   const router = useRouter();
 
   const handleToggle = () => {
@@ -24,51 +25,94 @@ function Header() {
   };
 
   const handleSignOut = async () => {
-    router.push('/');
+    router.push("/");
     setContextUsername(null);
     setContextId(null);
   };
 
+  const handleProfileHover = () => {
+    setIsProfileHovered(true);
+  };
+
+  const handleProfileLeave = () => {
+    setIsProfileHovered(false);
+  };
+
   return (
-    <div className="flex mx-10 items-center py-6" style={{ userSelect: "none", fontFamily:"Lexend" }}>
+    <div
+      className="flex mx-10 items-center py-6"
+      style={{ userSelect: "none" }}
+      // style={{ userSelect: "none", fontFamily: "Lexend" }}
+    >
       <Link href="/">
-        <Image src={Logo} alt="Logo" className="w-[300px] hover:cursor-pointer" />
+        <Image
+          src={Logo}
+          alt="Logo"
+          className="w-[300px] hover:cursor-pointer"
+        />
       </Link>
       <div className="relative flex w-full justify-between ml-[100px]">
-        <div className="flex items-center hover:cursor-pointer" onClick={handleToggle}>
+        <div
+          className="flex items-center hover:cursor-pointer"
+          onClick={handleToggle}
+        >
           <h2 className="font-semibold text-xl">Pourquoi Semantic ?</h2>
-          <span className={`transform transition-transform duration-300 ${isExpanded ? "-rotate-90" : "rotate-0"}`}>
+          <span
+            className={`transform transition-transform duration-300 ${
+              isExpanded ? "-rotate-90" : "rotate-0"
+            }`}
+          >
             <ExpandMoreIcon />
           </span>
         </div>
         {isExpanded && (
-          <div className="absolute left-[200px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
-            <Link href="/Offer"><p>Nos offres</p></Link>
-            <Link href="/MindMapping"><p>Mind mapping</p></Link>
-            <Link href="/FAQ"><p>FAQ</p></Link>
-            <Link href="/Contact"><p>Contact</p></Link>
+          <div className="absolute left-[210px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
+            <Link href="/Offer">
+              <p>Nos offres</p>
+            </Link>
+            <Link href="/MindMapping">
+              <p>Mind mapping</p>
+            </Link>
+            <Link href="/FAQ">
+              <p>FAQ</p>
+            </Link>
+            <Link href="/Contact">
+              <p>Contact</p>
+            </Link>
           </div>
         )}
         <div className="flex justify-center text-center gap-[150px]">
-          <Link
-            href="/MapCreate"
-            onClick={toggleToFalse}
-            className="bg-[#F56600] text-white p-2 font-semibold rounded-[14px] hover:cursor-pointer"
+          <div
+            onMouseEnter={handleProfileHover}
+            // onMouseLeave={handleProfileLeave}
+            className="relative"
           >
-            Commencer l&apos;essai gratuit
-          </Link>
-          <div className="flex items-center gap-2">
-            <Image
-              src={profilLogo}
-              alt="Profile Logo"
-              className="w-[42px] h-[40px] hover:cursor-pointer"
-            />
-            {    (
-              <button onClick={handleSignOut} className="ml-4 bg-red-500 text-white p-2 rounded-lg">
-                Déconnexion
-              </button>
+            <Link href="/Login" className="flex items-center gap-2">
+              <Image
+                src={profilLogo}
+                alt="Profile Logo"
+                className="w-[42px] h-[40px] hover:cursor-pointer"
+              />
+            </Link>
+            {isProfileHovered && (
+              <div
+                className="absolute right-0 mt-2 w-[150px] text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer"
+                onMouseEnter={handleProfileHover}
+                onMouseLeave={handleProfileLeave}
+              >
+                <Link href="/MapChoice">
+                  <p>Ma bibliothèque</p>
+                </Link>
+                <p onClick={handleSignOut} className="cursor-pointer">
+                  Se déconnecter
+                </p>
+                {router.pathname === "/CanvasDrawing" && (
+                  <Link href="/Save">
+                    <p>Enregistrer</p>
+                  </Link>
+                )}
+              </div>
             )}
-            {username ? username: "no username"}
           </div>
         </div>
       </div>

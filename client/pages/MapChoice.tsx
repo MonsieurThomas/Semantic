@@ -1,12 +1,11 @@
 import React, { useContext } from "react";
-import { UserContext } from '../src/context/UserContext';
+import { UserContext } from "../src/context/UserContext";
 import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import "../src/app/styles/style.css";
 import { useRouter } from "next/router";
-
 
 function MapChoice() {
   const { username, id } = useContext(UserContext);
@@ -19,23 +18,32 @@ function MapChoice() {
   const router = useRouter();
   const colors = ["#EB473D", "#1C49A7", "#507543", "#E6A763", "#755591"];
 
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
   const handleButtonClick = () => {
-    router.push('/testApi');
+    router.push("/testApi");
   };
 
   return (
-    <div className="flex w-screen gap-2 mt-10" style={{fontFamily:"Lexend", fontSize:"17px"}}>
-      <div className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl" style={{ flex: 3 }}>
-        <div className="flex gap-2 ml-auto pr-10 pt-5 items-center">
+    <div
+      className="flex w-screen gap-2 mt-10"
+      style={{ fontFamily: "Lexend", fontSize: "17px" }}
+    >
+      <div
+        className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl"
+        style={{ flex: 3 }}
+      >
+        <div className="flex gap-2 m-2 rounded-xl pr-10 items-center bg-gray-200">
           <div
-            className="flex items-center justify-center w-10 h-10 rounded-full"
-            style={{ backgroundColor: randomColor, color: "white", fontWeight: "bold", fontSize:"22px" }}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300"
+            style={{
+              // fontWeight: "bold",
+              fontSize: "22px",
+            }}
           >
-            <h1>{username ? username.charAt(0).toUpperCase() : 'N'}</h1>
+            <h1>{username ? username.charAt(0).toUpperCase() : "N"}</h1>
           </div>
-          <h1>{username ? username : 'No User'}</h1>
+          <div className="flex-1 flex justify-center">
+            <h1 className="px-[60px]">{username ? username : "No User"}</h1>
+          </div>
         </div>
         <div className="pl-12 pt-10 overflow-auto">
           {sortedMapObject.map((obj, key) => {
@@ -59,7 +67,7 @@ function MapChoice() {
                     onClick={() => {
                       const element = document.getElementById(`scroll-${key}`);
                       if (element) {
-                        element.scrollIntoView({ behavior: 'smooth' });
+                        element.scrollIntoView({ behavior: "smooth" });
                       }
                     }}
                   >
@@ -71,7 +79,10 @@ function MapChoice() {
           })}
         </div>
       </div>
-      <div className="flex-5 h-[80vh] flex flex-col overflow-auto" style={{ flex: 10 }}>
+      <div
+        className="flex-5 h-[80vh] flex flex-col overflow-auto"
+        style={{ flex: 10 }}
+      >
         <div className="flex items-center rounded-xl bg-[#F2F2F2] w-[420px] py-2">
           <SearchOutlinedIcon className="cursor-pointer" />
           <input
@@ -81,19 +92,20 @@ function MapChoice() {
           />
           <CloseOutlinedIcon className="cursor-pointer" />
         </div>
-        <div className="w-[75vw] mt-10 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
+        <div className="w-[75vw] mt-2 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
           {MapObject.map((obj, key) => (
-            <div key={key} id={`scroll-${key}`} className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl">
+            <div
+              key={key}
+              id={`scroll-${key}`}
+              className="bg-[#F2F2F2] mb-3 pb-3 rounded-2xl"
+            >
               <div className="flex justify-between">
-                <p className="pb-10 p-4">
+                <p className="pb-10 p-4 font-bold">
                   {`${obj.date.toLocaleDateString("fr-FR", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
                     day: "numeric",
-                  })}, ${obj.date.toLocaleTimeString("fr-FR", {
-                    hour: "numeric",
-                    minute: "numeric",
                   })}`}
                   <span
                     className="mx-2 px-2 py-1 text-white rounded-2xl"
@@ -112,7 +124,7 @@ function MapChoice() {
             </div>
           ))}
         </div>
-        <button className="bg-blue-500" onClick={handleButtonClick}>Get to testApi</button>
+        {/* <button className="bg-blue-500" onClick={handleButtonClick}>Get to testApi</button> */}
       </div>
     </div>
   );
