@@ -4,8 +4,7 @@ import React, { useState, useContext } from "react";
 import { useRouter } from "next/router";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import { UserContext } from '../src/context/UserContext';
-
+import { UserContext } from "../src/context/UserContext";
 
 function Auth() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -14,8 +13,8 @@ function Auth() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
-
+  const { setUsername: setContextUsername, setId: setContextId } =
+    useContext(UserContext);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -24,38 +23,43 @@ function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("JSON.stringify({ username, email, password })", JSON.stringify({ username, email, password }))
+    console.log(
+      "JSON.stringify({ username, email, password })",
+      JSON.stringify({ username, email, password })
+    );
 
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-      try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, email, password }),
-        });
-    
-        if (!res.ok) {
-          console.log("erreur Auth.tsx !res.ok")
-          const data = await res.json();
-          setError(data.message);
-          return;
-        }
-    
+      if (!res.ok) {
+        console.log("erreur Auth.tsx !res.ok");
         const data = await res.json();
-        console.log('User registered dans Auth.tsx:', data);
-        setContextUsername(data.username);
-        setContextId(data.id);
-        router.push('/MapChoice');
-      } catch (error) {
-        setError('An error occurred. Please try again.');
+        setError(data.message);
+        return;
       }
+
+      const data = await res.json();
+      console.log("User registered dans Auth.tsx:", data);
+      setContextUsername(data.username);
+      setContextId(data.id);
+      router.push("/CanvasDrawing");
+    } catch (error) {
+      setError("An error occurred. Please try again.");
+    }
   };
 
   return (
-    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10" style={{fontFamily:"Lexend"}}>
-      <form onSubmit={handleSubmit} className="w-[450px] flex flex-col gap-10">
+    <div
+      className="flex flex-col h-[85vh] items-center pt-20 gap-10"
+      // style={{ fontFamily: "Lexend" }}
+    >
+      <form onSubmit={handleSubmit} className="w-[520px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>
           <input
@@ -63,7 +67,7 @@ function Auth() {
             placeholder="Your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-[450px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
+            className="w-[520px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
             required
           />
         </div>
@@ -74,19 +78,19 @@ function Auth() {
             placeholder="Your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-[450px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
+            className="w-[520px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
             required
           />
         </div>
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre mot de passe</h1>
-          <div className="flex items-center w-[450px] bg-[#F2F2F2] rounded-lg h-8 p-4">
+          <div className="flex items-center w-[520px] bg-[#F2F2F2] rounded-lg h-8 p-4">
             <input
               type={passwordShown ? "text" : "password"}
               placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="font-medium bg-[#F2F2F2] w-[390px] focus:outline-none"
+              className="font-medium bg-[#F2F2F2] w-[520px] focus:outline-none"
               required
             />
             <button type="button" onClick={togglePasswordVisibility}>
@@ -97,11 +101,26 @@ function Auth() {
         {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
-          className="bg-[#003642] text-white py-[8px] font-bold px-8 rounded-xl text-xl"
+          className="bg-[#FCA310] text-white py-[8px] font-bold w-[170px] mx-auto rounded-xl text-xl"
         >
           Créer un compte
         </button>
       </form>
+      <div>
+        <h3 className="text-[#C8C8C8] font-semibold">
+          Veuillez lire attentivement les{" "}
+          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
+            conditions d&apos;utilisation
+          </span>{" "}
+          et la{" "}
+          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
+            politique de confidentialite.
+          </span>
+        </h3>
+        <h3 className="text-[#C8C8C8] font-semibold text-center">
+          En continuant, vous indiquez votre accord.
+        </h3>
+      </div>
     </div>
   );
 }

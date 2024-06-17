@@ -47,7 +47,7 @@ function Offer() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center pt-10 bg-[#fff9e0]">
+    <div className="flex flex-col items-center justify-center pt-10 bg-[#fff9f4]">
       <button
         onClick={handleToggle}
         className={`relative flex items-center justify-between w-40 h-10 bg-white border border-black rounded-full cursor-pointer transition-colors duration-300`}

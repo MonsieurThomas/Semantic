@@ -13,7 +13,8 @@ function Login() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setUsername: setContextUsername, setId: setContextId } = useContext(UserContext);
+  const { setUsername: setContextUsername, setId: setContextId } =
+    useContext(UserContext);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -23,10 +24,10 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
+      const res = await fetch("/api/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
       });
@@ -43,15 +44,15 @@ function Login() {
       setContextUsername(data.username);
       setContextId(data.id);
 
-      router.push('/MapChoice');
+      router.push("/CanvasDrawing");
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      setError("An error occurred. Please try again.");
     }
   };
 
   return (
-    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10" style={{fontFamily:"Lexend", fontSize:"17px"}}>
-      <form onSubmit={handleSubmit} className="w-[450px] flex flex-col gap-10">
+    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10">
+      <form onSubmit={handleSubmit} className="w-[520px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>
           <input
@@ -59,19 +60,19 @@ function Login() {
             placeholder="Your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-[450px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
+            className="w-[520px] bg-[#F2F2F2] rounded-lg h-8 p-4 font-medium focus:outline-none"
             required
           />
         </div>
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre mot de passe</h1>
-          <div className="flex items-center w-[450px] bg-[#F2F2F2] rounded-lg h-8 p-4">
+          <div className="flex items-center w-[520px] bg-[#F2F2F2] rounded-lg h-8 p-4">
             <input
               type={passwordShown ? "text" : "password"}
               placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="font-medium bg-[#F2F2F2] w-[390px] focus:outline-none"
+              className="font-medium bg-[#F2F2F2] w-[480px] focus:outline-none"
               required
             />
             <button type="button" onClick={togglePasswordVisibility}>
@@ -82,19 +83,19 @@ function Login() {
         {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
-          className="bg-[#003642] text-white py-[8px] font-bold px-8 rounded-xl text-xl"
+          className="bg-[#FCA310] text-white py-[8px] font-bold w-[170px] mx-auto rounded-xl text-xl"
         >
-          Se Connecter
+          Se connecter
         </button>
       </form>
       <div>
         <h3 className="text-[#C8C8C8] font-semibold">
           Veuillez lire attentivement les{" "}
-          <span className="text-[#F67A22] underline font-semibold cursor-pointer">
+          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
             conditions d&apos;utilisation
           </span>{" "}
           et la{" "}
-          <span className="text-[#F67A22] underline font-semibold cursor-pointer">
+          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
             politique de confidentialite.
           </span>
         </h3>
@@ -103,8 +104,10 @@ function Login() {
         </h3>
       </div>
       <div className="flex gap-[250px] font-semibold underline">
-        <h3>Mot de passe oublié ?</h3>
-        <Link href="/Auth">
+        <Link href={"/Auth"} className="cursor-pointer">
+          Mot de passe oublié ?
+        </Link>
+        <Link href="/Auth" className="cursor-pointer">
           <h3>Créer un compte</h3>
         </Link>
       </div>
