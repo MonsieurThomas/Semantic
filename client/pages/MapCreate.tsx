@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import LogoExpand from "../public/logoExpand.png";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,12 +6,13 @@ import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
 
 const MapCreate = () => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   useEffect(() => {
     // Désactiver le défilement sur html et body
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
-    // Restaurer le défilement lorsque le composant est démonté
     return () => {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
@@ -19,33 +20,42 @@ const MapCreate = () => {
   }, []);
 
   const handleCreateMap = async () => {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
-    fileInput.onchange = async () => {
-      const file = fileInput.files?.[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
 
-        try {
-          const response = await axios.post("/api/upload", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-          console.log("Fichier téléversé avec l'ID :", response.data.id);
-        } catch (error: any) {
-          console.error(
-            "Erreur lors du téléversement du fichier :",
-            error.message
-          );
+      try {
+        console.log("ici");
+        const response = await axios.post("/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log("Response from server:", response.data);
+        if (response.data.success && response.data.document) {
+          console.log("File uploaded with ID:", response.data.document.id);
+        } else {
+          console.error("Upload failed:", response.data);
         }
-      } else {
-        console.error("Aucun fichier sélectionné");
+        console.log("Fichier téléversé avec l'ID :", response.data.document.id);
+      } catch (error: any) {
+        console.error(
+          "Erreur lors du téléversement du fichier :",
+          error.message
+        );
       }
-    };
+    } else {
+      console.error("Aucun fichier sélectionné");
+    }
   };
 
   return (
@@ -59,14 +69,20 @@ const MapCreate = () => {
         </h1>
       </div>
       <div className="flex flex-col items-center">
-        <Link
-          href="/CanvasDrawing"
+        <button
+          onClick={handleCreateMap}
           className="relative text-4xl bg-[#FCA310] text-white p-3 font-semibold w-[280px] rounded-[40px] hover:bg-[#FFE3B7]"
         >
           <h1 className="text-center">Crée ta</h1>
           <h1 className="text-center">mind map</h1>
           <IoMdAddCircle className="absolute top-2 right-5 w-6" />
-        </Link>
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
         <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
           {" "}
           2go maximum{" "}

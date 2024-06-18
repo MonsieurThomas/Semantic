@@ -87,13 +87,21 @@ function Header() {
             // onMouseLeave={handleProfileLeave}
             className="relative"
           >
-            <Link href="/Login" className="flex items-center gap-2">
-              <Image
-                src={profilLogo}
-                alt="Profile Logo"
-                className="w-[42px] h-[40px] hover:cursor-pointer"
-              />
-            </Link>
+            {username ? (
+              <div className="flex items-center gap-2">
+                <span className=" flex items-center justify-center text-xl font-semibold rounded-full bg-gray-200 w-10 h-10">
+                  {username.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            ) : (
+              <Link href="/Login" className="flex items-center gap-2">
+                <Image
+                  src={profilLogo}
+                  alt="Profile Logo"
+                  className="w-[42px] h-[40px] hover:cursor-pointer"
+                />
+              </Link>
+            )}
             {isProfileHovered && (
               <div
                 className="absolute right-0 mt-2 w-[150px] text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer"
@@ -107,7 +115,7 @@ function Header() {
                   Se déconnecter
                 </p>
                 {router.pathname === "/CanvasDrawing" && (
-                  <Link href="/Save">
+                  <Link href="/MapChoice">
                     <p>Enregistrer</p>
                   </Link>
                 )}

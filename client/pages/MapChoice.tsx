@@ -20,10 +20,6 @@ function MapChoice() {
   let dateTmp = "";
   const router = useRouter();
 
-  const handleButtonClick = () => {
-    router.push("/testApi");
-  };
-
   return (
     <div className="flex w-[110%] gap-4 mt-10">
       <div

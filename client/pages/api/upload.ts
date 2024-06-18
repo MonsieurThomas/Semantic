@@ -1,37 +1,88 @@
-import { google } from "googleapis";
-import fs from "fs";
+import { NextApiRequest, NextApiResponse } from "next";
+import multer from "multer";
+import prisma from "../../lib/prisma";
+import { IncomingMessage, ServerResponse } from "http";
+import { promises as fs } from "fs"; // Importer le module fs
 
-// Chemin vers le fichier JSON contenant les clés d'authentification
-const KEYFILE_PATH = "../../key_google_drive.json";
+// Configure Multer
+const upload = multer({ dest: "uploads/" });
 
-// Charger les clés d'authentification depuis le fichier JSON
-const keys = require(KEYFILE_PATH);
+// Middleware pour Multer
+const uploadMiddleware = upload.single("file");
 
-// Authentifier le client
-const auth = new google.auth.GoogleAuth({
-  credentials: keys,
-  scopes: ["https://www.googleapis.com/auth/drive.file"],
-});
+// Promisify le middleware Multer pour l'utiliser avec async/await
+const runMiddleware = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  fn: Function
+) => {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+};
 
-// Créer un client Drive
-const drive = google.drive({ version: "v3", auth });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  console.log("Request received");
+  if (req.method !== "POST") {
+    return res
+      .status(405)
+      .json({ error: `Method '${req.method}' Not Allowed` });
+  }
 
-// Téléverser un fichier sur Google Drive
-async function uploadFile() {
   try {
-    const response = await drive.files.create({
-      requestBody: {
-        name: "MonFichier.txt", // Nom du fichier sur Google Drive
-      },
-      media: {
-        mimeType: "text/plain", // Type MIME du fichier
-        body: fs.createReadStream("../textMap.pdf"), // Chemin vers le fichier local à téléverser
+    console.log("Running middleware");
+    await runMiddleware(req, res, uploadMiddleware);
+    console.log("Middleware complete");
+
+    const file = (req as any).file;
+    if (!file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
+    }
+
+    const { originalname, mimetype, path } = file;
+
+    // Récupérer la taille du fichier
+    const stats = await fs.stat(path);
+    const fileSizeInBytes = stats.size;
+
+    console.log("Saving file info to the database");
+    const newDocument = await prisma.document.create({
+      data: {
+        name: originalname,
+        mimeType: mimetype,
+        path: path,
+        size: fileSizeInBytes, // Enregistrer la taille du fichier
+        date: new Date(),
+        color: "",
+        title: "",
+        url: "",
+        theme: [],
+        page: 0,
+        createdAt: new Date(),
       },
     });
-    console.log("Fichier téléversé avec l'ID :", response.data.id);
+
+    console.log("Document saved:", newDocument);
+
+    res.status(200).json({ success: true, document: newDocument });
   } catch (error: any) {
-    console.error("Erreur lors du téléversement du fichier :", error.message);
+    console.error("Error during file upload:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 }
 
-uploadFile();
+export const config = {
+  api: {
+    bodyParser: false, // Désactiver le bodyParser intégré de Next.js
+  },
+};

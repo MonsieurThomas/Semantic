@@ -1,10 +1,12 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// schema.prisma
 
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -15,11 +17,24 @@ model User {
 }
 
 model Document {
-  id       Int      @id @default(autoincrement())
-  date     DateTime
-  color    String
-  title    String
-  url      String
-  theme    String[]
-  page     Int
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now())
+  name      String
+  color     String
+  title     String
+  url       String
+  theme     String[]
+  page      Int
+  mimeType  String
+  path      String
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  name      String
+  mimeType  String
+  path      String
+  createdAt DateTime @default(now())
 }
