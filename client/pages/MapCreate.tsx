@@ -67,7 +67,7 @@ const MapCreate = () => {
           <h1 className="text-center">mind map</h1>
           <IoMdAddCircle className="absolute top-2 right-5 w-6" />
         </Link>
-        {/* <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
+        <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
           {" "}
           2go maximum{" "}
           <Link
@@ -81,7 +81,7 @@ const MapCreate = () => {
             alt="Expand"
             className=" inline-block w-4 h-4 cursor-pointer"
           />
-        </h4> */}
+        </h4>
       </div>
       <div>
         <h3 className=" font-semibold text-center mt-[30px] w-[750px]">

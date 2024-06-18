@@ -48,7 +48,7 @@ function Auth() {
       console.log("User registered dans Auth.tsx:", data);
       setContextUsername(data.username);
       setContextId(data.id);
-      router.push("/CanvasDrawing");
+      router.push("/MapCreate");
     } catch (error) {
       setError("An error occurred. Please try again.");
     }
