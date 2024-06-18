@@ -3,7 +3,7 @@ import { UserContext } from "../src/context/UserContext";
 import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import "../src/app/styles/style.css";
+// import "../src/app/styles/style.css";
 import { useRouter } from "next/router";
 
 const capitalizeFirstLetter = (string: string) => {
