@@ -1,10 +1,25 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../src/context/UserContext";
-import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-// import "../src/app/styles/style.css";
 import { useRouter } from "next/router";
+import axios from "axios";
+
+interface Document {
+  id: number;
+  date: string;
+  name: string;
+  color: string;
+  title: string;
+  url: string;
+  theme: string[];
+  themeSize: number[];
+  page: number;
+  mimeType: string;
+  path: string;
+  size: number;
+  createdAt: string;
+}
 
 const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -12,13 +27,38 @@ const capitalizeFirstLetter = (string: string) => {
 
 function MapChoice() {
   const { username } = useContext(UserContext);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const router = useRouter();
 
-  const sortedMapObject = MapObject.sort(
-    (a, b) => b.date.getTime() - a.date.getTime()
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await axios.get("/api/getDocuments");
+        setDocuments(response.data);
+      } catch (error: any) {
+        console.error("Error fetching documents in mapchoice:", error.message);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
+
+  const sortedDocuments = documents.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   let dateTmp = "";
-  const router = useRouter();
+
+  const handleButtonClick = async () => {
+    const filePath = "text.pdf";
+    try {
+      console.log("ici map Choice");
+      const response = await axios.post("/api/analyzeDocument", { filePath });
+      console.log("Result:", response.data);
+    } catch (error: any) {
+      console.error("Error during file analysis:", error.message);
+    }
+  };
 
   return (
     <div className="flex w-[110%] gap-4 mt-10">
@@ -38,8 +78,8 @@ function MapChoice() {
           </div>
         </div>
         <div className="pl-12 pt-10 overflow-auto">
-          {sortedMapObject.map((obj, key) => {
-            const currentDate = obj.date.toLocaleDateString("fr-FR", {
+          {sortedDocuments.map((obj, key) => {
+            const currentDate = new Date(obj.date).toLocaleDateString("fr-FR", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -50,9 +90,9 @@ function MapChoice() {
             return (
               <ul key={key}>
                 {displayDate && (
-                  <li className="text-xs pt-3 pl-2 font-e">{currentDate}</li>
+                  <li className="text-xs pt-3 pl-2">{currentDate}</li>
                 )}
-                <li className="mt-[3px]">
+                <li className="mt-[8px]">
                   <span
                     className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer"
                     style={{ backgroundColor: obj.color }}
@@ -63,7 +103,7 @@ function MapChoice() {
                       }
                     }}
                   >
-                    {obj.title}
+                    {obj.name}
                   </span>
                 </li>
               </ul>
@@ -82,11 +122,10 @@ function MapChoice() {
             placeholder="Rechercher par nom, par date.."
             className="w-[400px] bg-[#E5E5E5] pl-2"
           />
-          {/* <CloseOutlinedIcon className="cursor-pointer" /> */}
         </div>
         <div className="w-[75vw] mt-2 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
-          {MapObject.map((obj, key) => {
-            const dateStr = obj.date.toLocaleDateString("fr-FR", {
+          {documents.map((obj, key) => {
+            const dateStr = new Date(obj.date).toLocaleDateString("fr-FR", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -108,25 +147,21 @@ function MapChoice() {
                       className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
                       style={{ backgroundColor: obj.color }}
                     >
-                      {obj.title}
+                      {obj.name}
                     </span>
                   </p>
                   <RemoveRedEyeIcon className="mr-[60px] my-2  w-8" />
                 </div>
                 <ul className="pl-[50px]">
-                  {obj.theme.map((item, themeKey) => (
+                  {obj.theme.map((name, themeKey) => (
                     <li key={themeKey} className="flex items-center">
                       <span
                         className="inline-block w-2 h-2 border border-black rounded-full mr-2"
                         style={{ backgroundColor: "transparent" }}
                       ></span>
                       <div className="flex flex-grow items-center justify-between">
-                        <span>
-                          {typeof item === "string" ? item : item.name}
-                        </span>
-                        <span className="mr-[65px]">
-                          {typeof item !== "string" && item.weight}
-                        </span>
+                        <span>{name}</span>
+                        <span className="mr-[65px]">{obj.themeSize[themeKey]} bytes</span>
                       </div>
                     </li>
                   ))}
@@ -135,7 +170,6 @@ function MapChoice() {
             );
           })}
         </div>
-        {/* <button className="bg-blue-500" onClick={handleButtonClick}>Get to testApi</button> */}
       </div>
     </div>
   );

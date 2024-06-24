@@ -1,23 +1,9 @@
-import React, { useEffect, useRef } from "react";
-import LogoExpand from "../public/logoExpand.png";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useRef } from "react";
 import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
 
 const MapCreate = () => {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    // Désactiver le défilement sur html et body
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, []);
+  const fileInputRef = useRef<any>(null);
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
@@ -25,16 +11,17 @@ const MapCreate = () => {
     }
   };
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
+  const handleFileChange = async (event: any) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
       const formData = new FormData();
-      formData.append("file", file);
+
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
 
       try {
-        console.log("ici");
+        console.log("Uploading files...");
         const response = await axios.post("/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -42,19 +29,15 @@ const MapCreate = () => {
         });
         console.log("Response from server:", response.data);
         if (response.data.success && response.data.document) {
-          console.log("File uploaded with ID:", response.data.document.id);
+          console.log("Files uploaded with ID:", response.data.document.id);
         } else {
           console.error("Upload failed:", response.data);
         }
-        console.log("Fichier téléversé avec l'ID :", response.data.document.id);
       } catch (error: any) {
-        console.error(
-          "Erreur lors du téléversement du fichier :",
-          error.message
-        );
+        console.error("Error during file upload:", error.message);
       }
     } else {
-      console.error("Aucun fichier sélectionné");
+      console.error("No files selected");
     }
   };
 
@@ -82,33 +65,33 @@ const MapCreate = () => {
           ref={fileInputRef}
           style={{ display: "none" }}
           onChange={handleFileChange}
+          multiple // Allow multiple file selection
         />
         <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
-          {" "}
           2go maximum{" "}
-          <Link
+          <a
             href={"/Offer"}
             className="text-[#F67A22] underline font-semibold cursor-pointer"
           >
             Starter{" "}
-          </Link>
-          <Image
-            src={LogoExpand}
+          </a>
+          <img
+            src="/logoExpand.png"
             alt="Expand"
-            className=" inline-block w-4 h-4 cursor-pointer"
+            className="inline-block w-4 h-4 cursor-pointer"
           />
         </h4>
       </div>
       <div>
-        <h3 className=" font-semibold text-center mt-[30px] w-[750px]">
+        <h3 className="font-semibold text-center mt-[30px] w-[750px]">
           Semantic accélère votre recherche d&apos;information sur les documents
           Word en presentant leur contenu de manière structurée sous forme de{" "}
-          <Link
+          <a
             href={"/MindMapping"}
             className="text-[#FCA310] underline font-semibold cursor-pointer"
           >
             mind maps
-          </Link>{" "}
+          </a>{" "}
           interactives.
         </h3>
       </div>

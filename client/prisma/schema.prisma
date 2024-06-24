@@ -24,12 +24,15 @@ model Document {
   title     String
   url       String
   theme     String[]
+  themeSize Int[]
   page      Int
   mimeType  String
   path      String
   size      Int
   createdAt DateTime @default(now())
 }
+
+
 
 model File {
   id        Int      @id @default(autoincrement())
