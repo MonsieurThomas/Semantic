@@ -49,15 +49,11 @@ function MapChoice() {
 
   let dateTmp = "";
 
-  const handleButtonClick = async () => {
-    const filePath = "text.pdf";
-    try {
-      console.log("ici map Choice");
-      const response = await axios.post("/api/analyzeDocument", { filePath });
-      console.log("Result:", response.data);
-    } catch (error: any) {
-      console.error("Error during file analysis:", error.message);
-    }
+  const handleDocumentClick = (document: Document) => {
+    router.push({
+      pathname: '/CanvasDrawing',
+      query: { id: document.id, openaiResponse: JSON.stringify(document.openaiResponse) },
+    });
   };
 
   return (
@@ -96,12 +92,7 @@ function MapChoice() {
                   <span
                     className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer"
                     style={{ backgroundColor: obj.color }}
-                    onClick={() => {
-                      const element = document.getElementById(`scroll-${key}`);
-                      if (element) {
-                        element.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }}
+                    onClick={() => handleDocumentClick(obj.id)}
                   >
                     {obj.name}
                   </span>
@@ -139,6 +130,7 @@ function MapChoice() {
                 key={key}
                 id={`scroll-${key}`}
                 className="bg-[#F2F2F2] mb-3 pb-6 rounded-2xl font-light"
+                onClick={() => handleDocumentClick(obj)}
               >
                 <div className="flex justify-between">
                   <p className="pb-4 p-4 font-bold">
@@ -150,7 +142,7 @@ function MapChoice() {
                       {obj.name}
                     </span>
                   </p>
-                  <RemoveRedEyeIcon className="mr-[60px] my-2  w-8" />
+                  <RemoveRedEyeIcon className="mr-[60px] my-2 w-8" />
                 </div>
                 <ul className="pl-[50px]">
                   {obj.theme.map((name, themeKey) => (
@@ -161,7 +153,9 @@ function MapChoice() {
                       ></span>
                       <div className="flex flex-grow items-center justify-between">
                         <span>{name}</span>
-                        <span className="mr-[65px]">{obj.themeSize[themeKey]} bytes</span>
+                        <span className="mr-[65px]">
+                          {obj.themeSize[themeKey]} bytes
+                        </span>
                       </div>
                     </li>
                   ))}

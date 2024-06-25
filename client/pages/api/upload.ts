@@ -2,21 +2,32 @@ import { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
 import prisma from "../../lib/prisma";
 import { IncomingMessage, ServerResponse } from "http";
-import { promises as fs } from "fs";
+import fs from "fs";
 import path from "path";
+import axios from "axios";
+import {
+  DocumentAnalysisClient,
+  AzureKeyCredential,
+} from "@azure/ai-form-recognizer";
+import dotenv from "dotenv";
+import Prompt from "@/app/utils/Prompt";
+import OpenAI from "openai";
+
+dotenv.config();
 
 interface Theme {
   name: string;
   weight: number;
 }
 
-// Configure Multer
-const upload = multer({ dest: "uploads/" });
+interface Paragraph {
+  content: string;
+  role?: string;
+}
 
-// Middleware pour Multer
+const upload = multer({ dest: "uploads/" });
 const uploadMiddleware = upload.array("files");
 
-// Promisify le middleware Multer pour l'utiliser avec async/await
 const runMiddleware = (
   req: IncomingMessage,
   res: ServerResponse,
@@ -32,23 +43,34 @@ const runMiddleware = (
   });
 };
 
+function concatenateLongParagraphs(paragraphs: Paragraph[]): string {
+  return paragraphs
+    .filter((paragraph) => paragraph.content.length > 100 || paragraph.role)
+    .map((paragraph) => paragraph.content)
+    .join(" ");
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   console.log("Request received");
   if (req.method !== "POST") {
-    return res.status(405).json({ error: `Method '${req.method}' Not Allowed` });
+    return res
+      .status(405)
+      .json({ error: `Method '${req.method}' Not Allowed` });
   }
 
   try {
-    console.log("Running middleware");
+    console.log("Running middleware in new Upload\n\n\n");
     await runMiddleware(req, res, uploadMiddleware);
     console.log("Middleware complete");
 
     const files = (req as any).files;
     if (!files || files.length === 0) {
-      return res.status(400).json({ success: false, message: "No files uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No files uploaded" });
     }
 
     const colors = [
@@ -58,16 +80,16 @@ export default async function handler(
       "#E6A763",
       "#755591",
       "#FCA618",
-      "#1BA024"
+      "#1BA024",
     ];
 
-    // Créer des tableaux pour les noms et les poids des fichiers
     const theme: string[] = files.map((file: any) => file.originalname);
     const themeSize: number[] = files.map((file: any) => file.size);
 
-    const color = colors[0]; // Choisir une couleur fixe ou une couleur pour l'ensemble
+    const timestamp = Date.now();
+    const colorIndex = timestamp % colors.length;
+    const color = colors[colorIndex];
 
-    // Créer un seul enregistrement dans la base de données avec tous les fichiers combinés
     const newDocument = await prisma.document.create({
       data: {
         name: files.map((file: any) => file.originalname).join(", "),
@@ -87,7 +109,77 @@ export default async function handler(
 
     console.log("Document saved:", newDocument);
 
-    res.status(200).json({ success: true, document: newDocument });
+    const filePath = path.join(process.cwd(), files[0].path);
+    if (!process.env.AZURE_ENDPOINT || !process.env.AZURE_API_KEY) {
+      throw new Error("Azure endpoint or API key not configured");
+    }
+
+    const readStream = fs.createReadStream(filePath);
+    const endpoint = process.env.AZURE_ENDPOINT;
+    const apiKey = process.env.AZURE_API_KEY;
+    const client = new DocumentAnalysisClient(
+      endpoint,
+      new AzureKeyCredential(apiKey)
+    );
+
+    const poller = await client.beginAnalyzeDocument(
+      "prebuilt-layout",
+      readStream
+    );
+    const result = await poller.pollUntilDone();
+
+    if (!result.paragraphs) {
+      throw new Error("No paragraphs found in document analysis result");
+    }
+
+    const concatenatedText = concatenateLongParagraphs(result.paragraphs);
+    const prompt = Prompt;
+
+    console.log("Debut open ia");
+    const openaiApiKey = process.env.OPENAI_KEY;
+    if (!openaiApiKey) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const openAIResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o",
+        max_tokens: 500,
+        n: 1,
+        stop: null,
+        temperature: 0.7,
+        messages: [
+          {
+            role: "user",
+            content: `${prompt} this is the text: \n\n\n ${concatenatedText}`,
+          },
+        ],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiApiKey}`,
+        },
+      }
+    );
+
+    const { choices } = openAIResponse.data;
+    console.log("OpenAI response choices:", choices);
+
+    // Update the document with the OpenAI response
+    const updatedDocument = await prisma.document.update({
+      where: { id: newDocument.id },
+      data: {
+        openaiResponse: choices[0].message.content,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      document: updatedDocument,
+      openaiResponse: choices[0].message.content,
+    });
   } catch (error: any) {
     console.error("Error during file upload:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -96,6 +188,6 @@ export default async function handler(
 
 export const config = {
   api: {
-    bodyParser: false, // Désactiver le bodyParser intégré de Next.js
+    bodyParser: false,
   },
 };

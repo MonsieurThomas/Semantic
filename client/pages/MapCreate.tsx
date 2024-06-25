@@ -1,9 +1,11 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
+import { UserContext } from "../src/context/UserContext";
 
 const MapCreate = () => {
   const fileInputRef = useRef<any>(null);
+  const { mindMapData, setMindMapData } = useContext(UserContext);
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
@@ -22,16 +24,21 @@ const MapCreate = () => {
 
       try {
         console.log("Uploading files...");
-        const response = await axios.post("/api/upload", formData, {
+        const uploadResponse = await axios.post("/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log("Response from server:", response.data);
-        if (response.data.success && response.data.document) {
-          console.log("Files uploaded with ID:", response.data.document.id);
+        console.log("Response from server:", uploadResponse.data);
+
+        if (uploadResponse.data.success) {
+          console.log("Files uploaded with ID:", uploadResponse.data.document.id);
+          console.log("OpenAI response:", uploadResponse.data.openaiResponse);
+
+          // Set mindMapData from the response
+          setMindMapData(uploadResponse.data.openaiResponse);
         } else {
-          console.error("Upload failed:", response.data);
+          console.error("Upload failed:", uploadResponse.data);
         }
       } catch (error: any) {
         console.error("Error during file upload:", error.message);
@@ -40,6 +47,13 @@ const MapCreate = () => {
       console.error("No files selected");
     }
   };
+
+  // Use useEffect to verify state update
+  useEffect(() => {
+    if (mindMapData) {
+      console.log("Updated mindMapData:", mindMapData);
+    }
+  }, [mindMapData]);
 
   return (
     <div

@@ -7,6 +7,8 @@ interface UserContextType {
   setUsername: (username: string | null) => void;
   id: string | null;
   setId: (id: string | null) => void;
+  mindMapData: any;
+  setMindMapData: (data: any) => void;
 }
 
 // Create the context with an empty initial value
@@ -15,12 +17,15 @@ export const UserContext = createContext<UserContextType>({
   setUsername: () => {},
   id: null,
   setId: () => {},
+  mindMapData: null,
+  setMindMapData: () => {},
 });
 
 // Define the provider component
 export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const [username, setUsername] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
+  const [mindMapData, setMindMapData] = useState<any>(null);
 
   useEffect(() => {
     axios.get('/api/profile')
@@ -31,12 +36,12 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
         }
       })
       .catch(error => {
-        console.error('Failed to fetch profileee:', error);
+        console.error('Failed to fetch profile:', error);
       });
   }, []);
 
   return (
-    <UserContext.Provider value={{ username, setUsername, id, setId }}>
+    <UserContext.Provider value={{ username, setUsername, id, setId, mindMapData, setMindMapData }}>
       {children}
     </UserContext.Provider>
   );
