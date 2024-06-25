@@ -19,6 +19,7 @@ interface Document {
   path: string;
   size: number;
   createdAt: string;
+  openaiResponse: any;
 }
 
 const capitalizeFirstLetter = (string: string) => {
@@ -51,8 +52,11 @@ function MapChoice() {
 
   const handleDocumentClick = (document: Document) => {
     router.push({
-      pathname: '/CanvasDrawing',
-      query: { id: document.id, openaiResponse: JSON.stringify(document.openaiResponse) },
+      pathname: "/CanvasDrawing",
+      query: {
+        id: document.id,
+        openaiResponse: JSON.stringify(document.openaiResponse),
+      },
     });
   };
 
@@ -92,7 +96,7 @@ function MapChoice() {
                   <span
                     className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer"
                     style={{ backgroundColor: obj.color }}
-                    onClick={() => handleDocumentClick(obj.id)}
+                    onClick={() => handleDocumentClick(obj)}
                   >
                     {obj.name}
                   </span>
