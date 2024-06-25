@@ -9,7 +9,7 @@
 key_google_drive.json
 # testing
 /coverage
-
+/uploads/
 # next.js
 /.next/
 /out/
