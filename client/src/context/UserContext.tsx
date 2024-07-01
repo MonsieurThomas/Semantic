@@ -1,17 +1,18 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
+import { createContext, useState, useEffect, ReactNode } from "react";
+import axios from "axios";
+import { parseCookies, setCookie, destroyCookie } from "nookies";
 
-// Define the shape of the context data
 interface UserContextType {
   username: string | null;
   setUsername: (username: string | null) => void;
-  id: string | null;
-  setId: (id: string | null) => void;
+  id: number | null;
+  setId: (id: number | null) => void;
   mindMapData: any;
   setMindMapData: (data: any) => void;
+  login: (token: string, user: { id: number; username: string }) => void;
+  logout: () => void;
 }
 
-// Create the context with an empty initial value
 export const UserContext = createContext<UserContextType>({
   username: null,
   setUsername: () => {},
@@ -19,29 +20,68 @@ export const UserContext = createContext<UserContextType>({
   setId: () => {},
   mindMapData: null,
   setMindMapData: () => {},
+  login: () => {},
+  logout: () => {},
 });
 
-// Define the provider component
 export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const [username, setUsername] = useState<string | null>(null);
-  const [id, setId] = useState<string | null>(null);
+  const [id, setId] = useState<number | null>(null);
   const [mindMapData, setMindMapData] = useState<any>(null);
 
+  const login = (token: string, user: { id: number; username: string }) => {
+    setCookie(null, "token", token, {
+      maxAge: 30 * 24 * 60 * 60,
+      path: "/",
+    });
+    setUsername(user.username);
+    setId(user.id);
+  };
+
+  const logout = () => {
+    destroyCookie(null, "token");
+    setUsername(null);
+    setId(null);
+  };
+
   useEffect(() => {
-    axios.get('/api/profile')
-      .then(response => {
-        if (response.data) {
-          setId(response.data.id);
-          setUsername(response.data.username);
+    const fetchProfile = async () => {
+      try {
+        const cookies = parseCookies();
+        const token = cookies.token;
+
+        if (token) {
+          const response = await axios.get("/api/profile", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.data) {
+            setId(response.data.id);
+            setUsername(response.data.username);
+          }
         }
-      })
-      .catch(error => {
-        console.error('Failed to fetch profile:', error);
-      });
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   return (
-    <UserContext.Provider value={{ username, setUsername, id, setId, mindMapData, setMindMapData }}>
+    <UserContext.Provider
+      value={{
+        username,
+        setUsername,
+        id,
+        setId,
+        mindMapData,
+        setMindMapData,
+        login,
+        logout,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,30 +8,31 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  username String  @unique
-  email    String  @unique
-  password String
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
+  email     String     @unique
+  password  String
+  documents Document[] // Relation to documents
 }
 
 model Document {
-  id        Int      @id @default(autoincrement())
-  date      DateTime @default(now())
-  name      String
-  color     String
-  title     String
-  url       String
-  theme     String[]
-  themeSize Int[]
-  page      Int
-  mimeType  String
-  path      String
-  size      Int
-  createdAt DateTime @default(now())
-  openaiResponse Json? 
+  id             Int      @id @default(autoincrement())
+  date           DateTime @default(now())
+  name           String
+  color          String
+  title          String
+  url            String
+  theme          String[]
+  themeSize      Int[]
+  page           Int
+  mimeType       String
+  path           String
+  size           Int
+  createdAt      DateTime @default(now())
+  openaiResponse Json?
+  userId         Int      // Foreign key
+  user           User     @relation(fields: [userId], references: [id])
 }
-
-
 
 model File {
   id        Int      @id @default(autoincrement())

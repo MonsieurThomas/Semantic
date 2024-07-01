@@ -11,7 +11,6 @@ import {
 } from "@azure/ai-form-recognizer";
 import dotenv from "dotenv";
 import Prompt from "@/app/utils/Prompt";
-import OpenAI from "openai";
 
 dotenv.config();
 
@@ -71,6 +70,14 @@ export default async function handler(
       return res
         .status(400)
         .json({ success: false, message: "No files uploaded" });
+    }
+
+    const userId = req.body.userId; // Retrieve userId from request body
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
     }
 
     const colors = [
@@ -145,7 +152,7 @@ export default async function handler(
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-4o",
-        max_tokens: 500,
+        // max_tokens: 500,
         n: 1,
         stop: null,
         temperature: 0.7,
@@ -165,7 +172,10 @@ export default async function handler(
     );
 
     const { choices } = openAIResponse.data;
-    console.log("OpenAI response choices:", choices);
+    console.log(
+      "OpenAI response choices[0].message.content:",
+      choices[0].message.content
+    );
 
     // Update the document with the OpenAI response
     const updatedDocument = await prisma.document.update({

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import nestedObjectData from "../src/app/utils/NestedObjectData";
 import apiResponse from "../src/app/utils/ApiJsonResponse";
 import MapObject from "../src/app/utils/MapObject";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -26,10 +25,6 @@ interface NestedObject {
   [key: string]: any;
 }
 
-// const CanvasDrawing = () => {
-
-//
-
 const CanvasDrawing = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -43,17 +38,20 @@ const CanvasDrawing = () => {
         try {
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
+          console.log("this is document = ", document)
           if (document.openaiResponse) {
-            const parsedResponse = JSON.parse(document.openaiResponse);
+            const cleanResponse = document.openaiResponse
+              .replace(/```json|```/g, "")
+              .trim();
+            const parsedResponse = JSON.parse(cleanResponse);
             setNestedObjectData(parsedResponse);
             console.log("On a un document.openaiResponse");
-            console.log(document.openaiResponse);
+            console.log(JSON.stringify(parsedResponse));
           }
         } catch (error) {
           console.error("Error fetching document:", error);
         }
       };
-
       fetchDocument();
     }
   }, [id]);
@@ -75,8 +73,23 @@ const CanvasDrawing = () => {
     const newObj: NestedObject = {};
     let index = 0;
 
+    // Initialize a map to track indices at each depth
+    const levelIndices = new Map<number, number>();
+
+    // console.log("Processing object:", obj);
+
     for (const key in obj) {
-      let currentPath = path ? `${path}.${index + 1}` : `${index + 1}`;
+      if (!levelIndices.has(depth)) {
+        levelIndices.set(depth, 1);
+      } else {
+        levelIndices.set(depth, levelIndices.get(depth)! + 1);
+      }
+
+      let currentPath = path
+        ? `${path}.${levelIndices.get(depth)}`
+        : `${levelIndices.get(depth)}`;
+      // console.log(`Current key: ${key}, depth: ${depth}, currentPath: ${currentPath}`);
+
       if (
         typeof obj[key] === "object" &&
         obj[key] !== null &&
@@ -88,7 +101,6 @@ const CanvasDrawing = () => {
           path = `${branchNb}`;
         }
         index++;
-        console.log("ok");
         const [processedObj, subCount, subSum] = processNestedObject(
           obj[key],
           depth + 1,
@@ -120,11 +132,26 @@ const CanvasDrawing = () => {
           count: count,
           bounding: obj[key].bounding,
         });
+        console.log("Added to localeTab:", localeTab[localeTab.length - 1]);
       } else if (obj[key] === null) {
         console.log(`Null value found at key: ${key}`);
-      }
-       else if (typeof obj[key] !== "object") {
-        console.log(typeof obj[key]);
+      } else if (typeof obj[key] !== "object") {
+        console.log(`Primitive value found at key: ${key}, value: ${obj[key]}`);
+        count++;
+        localCount++;
+        localSum += count;
+        localeTab.push({
+          x: depth,
+          y: count,
+          value: obj[key],
+          branch: branchNb,
+          path: currentPath.substring(2),
+          count: count,
+        });
+        console.log(
+          "Added primitive value to localeTab:",
+          localeTab[localeTab.length - 1]
+        );
       }
     }
 
@@ -137,6 +164,10 @@ const CanvasDrawing = () => {
         path: path.substring(2),
         count: count,
       });
+      console.log(
+        "Added parent key to localeTab:",
+        localeTab[localeTab.length - 1]
+      );
     }
     localSum += localSum / localCount;
     localCount++;
@@ -212,6 +243,7 @@ const CanvasDrawing = () => {
       obj.begin = false;
       tab.forEach((obj2) => {
         let localeNumObj2 = obj2.path[obj2.path.length - 1];
+        // if ( obj.path[obj.path.length - 1] == "1") obj.begin = true;
         if (obj.path.slice(0, -1) === obj2.path.slice(0, -1)) {
           diff++;
           if (localeNumObj2 > max) max = localeNumObj2;
@@ -251,6 +283,8 @@ const CanvasDrawing = () => {
       obj.hide = false;
       obj.occurence = 2;
     });
+
+    console.log("tab apres modif = ", tab);
   }
 
   function Color(tab: Array<any>) {
@@ -263,7 +297,11 @@ const CanvasDrawing = () => {
       "#47B8D4",
     ];
     tab.forEach((obj) => {
-      obj.color = color[obj.branch];
+      if (obj.branch === 0) {
+        obj.color = color[0];
+      } else {
+        obj.color = color[((obj.branch - 1) % (color.length - 1)) + 1];
+      }
     });
   }
 
@@ -279,11 +317,17 @@ const CanvasDrawing = () => {
 
   useEffect(() => {
     const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
+    console.log("this is nestedDummy before = ", nestedDummy);
     const tab = AddCoordinates(nestedDummy);
+    console.log("This is result from addCoordinate = ", tab);
     ChangeXandY(tab);
     Color(tab);
     setLocalTab(tab);
   }, [nestedObjectData]);
+
+  useEffect(() => {
+    console.log("This is localTab = ", localTab);
+  }, [localTab]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -789,20 +833,29 @@ const CanvasDrawing = () => {
     setShowBackground: any,
     setProgrammaticScroll: any
   ) => {
-    // console.log("this selected", selected);
-    const searchText = String(selected.bounding[index]);
+    // Regular expression to match all variations of the separator
+    const separatorRegex = /\.{3}\s*[-–—]>\s*\.{3}/;
+    let searchText = String(selected.bounding[index]);
 
-    if (!searchText.includes("... —> ...")) {
+    if (searchText.endsWith("...")) {
+      searchText = searchText.slice(0, -3);
+    }
+
+    if (!separatorRegex.test(searchText)) {
+      console.log("No separator found in searchText:", searchText);
       return;
     }
 
-    const parts = searchText.split("... —> ...");
+    const parts = searchText.split(separatorRegex);
     const startText = parts[0];
     const endText = parts[1];
+    console.log("startText", startText);
+    console.log("endText", endText);
 
+    console.log("apiResponse = ", apiResponse);
     const apiText = apiResponse.find(
-      (item) =>
-        item.content.includes(startText) && item.content.includes(endText)
+      (item) => item.content.includes(startText)
+      // item.content.includes(startText) && item.content.includes(endText)
     );
 
     if (apiText) {
@@ -826,11 +879,6 @@ const CanvasDrawing = () => {
           behavior: "smooth",
           block: blockPosition,
         });
-        // console.log("This is fin de func = ", blockPosition)
-        // if (!textRefs)
-        //   console.log("pas de ref")
-        // else
-        // console.log("textRefs = ", textRefs)
       }
     } else {
       console.log("No matching text found.");
@@ -851,7 +899,6 @@ const CanvasDrawing = () => {
             <input
               type="text"
               placeholder="Rechercher"
-              // placeholder={searchValue ? searchValue : "rechercher"}
               className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
               onChange={handleInputChange}
               value={searchValue}
@@ -977,7 +1024,7 @@ const CanvasDrawing = () => {
                       className="whitespace-nowrap overflow-hidden text-ellipsis text-center"
                       style={{ maxWidth: "320px", fontFamily: "Lexend" }}
                     >
-                      {MapObject[0]?.title}
+                      {selected.value}
                     </div>
                     <h1 className="text-center">P.{"XX"}</h1>
                   </div>

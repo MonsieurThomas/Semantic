@@ -1,12 +1,9 @@
-// pages/api/login.ts
-
 import { NextApiRequest, NextApiResponse } from 'next';
-// import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../../lib/prisma';
+import { serialize } from 'cookie';
 
-// const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -37,7 +34,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
-    res.status(200).json({ token, username: user.username, id: user.id });
+    res.setHeader('Set-Cookie', serialize('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600,
+      path: '/',
+    }));
+
+    res.status(200).json({ username: user.username, id: user.id });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }

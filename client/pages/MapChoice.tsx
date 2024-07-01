@@ -27,22 +27,37 @@ const capitalizeFirstLetter = (string: string) => {
 };
 
 function MapChoice() {
-  const { username } = useContext(UserContext);
+  const { username, id, setUsername, setId } = useContext(UserContext);
   const [documents, setDocuments] = useState<Document[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchDocuments = async () => {
+    const fetchProfileAndDocuments = async () => {
       try {
-        const response = await axios.get("/api/getDocuments");
-        setDocuments(response.data);
-      } catch (error: any) {
-        console.error("Error fetching documents in mapchoice:", error.message);
+        const cookies = parseCookies();
+        const token = cookies.token;
+
+        if (token) {
+          const profileResponse = await axios.get("/api/profile", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (profileResponse.data) {
+            setId(profileResponse.data.id);
+            setUsername(profileResponse.data.username);
+          }
+
+          const documentsResponse = await axios.get("/api/getDocuments");
+          setDocuments(documentsResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile and documents:", error);
       }
     };
 
-    fetchDocuments();
-  }, []);
+    fetchProfileAndDocuments();
+  }, [setId, setUsername]);
 
   const sortedDocuments = documents.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()

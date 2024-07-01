@@ -6,15 +6,14 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { UserContext } from "../src/context/UserContext";
 
-function Auth() {
+const Auth = () => {
   const [passwordShown, setPasswordShown] = useState(false);
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setUsername: setContextUsername, setId: setContextId } =
-    useContext(UserContext);
+  const { login } = useContext(UserContext);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -22,11 +21,6 @@ function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log(
-      "JSON.stringify({ username, email, password })",
-      JSON.stringify({ username, email, password })
-    );
 
     try {
       const res = await fetch("/api/register", {
@@ -38,27 +32,26 @@ function Auth() {
       });
 
       if (!res.ok) {
-        console.log("erreur Auth.tsx !res.ok");
         const data = await res.json();
-        setError(data.message);
+        setError(data.message || "Registration failed");
         return;
       }
 
       const data = await res.json();
-      console.log("User registered dans Auth.tsx:", data);
-      setContextUsername(data.username);
-      setContextId(data.id);
+      const { token, user } = data;
+      login(token, user);
+      console.log("Dans auth.tsx login vient de fonctionner avec");
+      console.log("token = ", token);
+      console.log("user = ", user);
+
       router.push("/MapCreate");
-    } catch (error) {
-      setError("An error occurred. Please try again.");
+    } catch (error: any) {
+      setError(error.message || "An error occurred. Please try again.");
     }
   };
 
   return (
-    <div
-      className="flex flex-col h-[85vh] items-center pt-20 gap-10"
-      // style={{ fontFamily: "Lexend" }}
-    >
+    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10">
       <form onSubmit={handleSubmit} className="w-[520px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>
@@ -90,7 +83,7 @@ function Auth() {
               placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="font-medium bg-[#F2F2F2] w-[520px] focus:outline-none"
+              className="font-medium bg-[#F2F2F2] w-[480px] focus:outline-none"
               required
             />
             <button type="button" onClick={togglePasswordVisibility}>
@@ -123,6 +116,6 @@ function Auth() {
       </div>
     </div>
   );
-}
+};
 
 export default Auth;

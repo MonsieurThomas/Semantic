@@ -44,7 +44,7 @@ function Login() {
       setContextUsername(data.username);
       setContextId(data.id);
 
-      router.push("/CanvasDrawing");
+      router.push("/MapChoice");
     } catch (error) {
       setError("An error occurred. Please try again.");
     }

@@ -5,7 +5,7 @@ import { UserContext } from "../src/context/UserContext";
 
 const MapCreate = () => {
   const fileInputRef = useRef<any>(null);
-  const { mindMapData, setMindMapData } = useContext(UserContext);
+  const { mindMapData, setMindMapData, id: userId } = useContext(UserContext);
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
@@ -21,7 +21,8 @@ const MapCreate = () => {
       for (let i = 0; i < files.length; i++) {
         formData.append("files", files[i]);
       }
-
+      console.log("this is userId", userId);
+      formData.append("userId", userId || "");
       try {
         console.log("Uploading files...");
         const uploadResponse = await axios.post("/api/upload", formData, {
