@@ -13,8 +13,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setUsername: setContextUsername, setId: setContextId } =
-    useContext(UserContext);
+  const { login } = useContext(UserContext);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -32,20 +31,22 @@ function Login() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
+        console.error("Login error:", data.message);
         setError(data.message);
         return;
       }
 
-      const data = await res.json();
-
       // Update the context with the logged-in user information
-      setContextUsername(data.username);
-      setContextId(data.id);
-
+      login(data.token, { id: data.id, username: data.username });
+      console.log("data.token = ", data.token);
+      console.log("data.id = ", data.id);
+      console.log("data.username = ", data.username);
       router.push("/MapChoice");
     } catch (error) {
+      console.error("An error occurred:", error);
       setError("An error occurred. Please try again.");
     }
   };

@@ -5,8 +5,7 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { parseCookies } from "nookies";
-import { cookies } from 'next/headers'
-
+import { cookies } from "next/headers";
 
 interface Document {
   id: number;
@@ -40,8 +39,8 @@ function MapChoice() {
         const cookies = parseCookies();
         const token = cookies.token;
 
-        console.log("cookies in mapchoice = ", cookies)
-        console.log("token in mapchoice = ", token)
+        console.log("cookies in mapchoice = ", cookies);
+        console.log("token in mapchoice = ", token);
 
         if (token) {
           const profileResponse = await axios.get("/api/profile", {
@@ -52,13 +51,21 @@ function MapChoice() {
           if (profileResponse.data) {
             setId(profileResponse.data.id);
             setUsername(profileResponse.data.username);
-            
+
             const documentsResponse = await axios.get("/api/getUserDocuments", {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
             setDocuments(documentsResponse.data);
+            const openaiResponse = documentsResponse.data[0].openaiResponse;
+            console.log("openaiResponse =", openaiResponse);
+
+            const firstLevelKeys = Object.keys(JSON.parse(openaiResponse));
+            console.log("firstLevelKeys =", firstLevelKeys);
+
+            const firstTitle = firstLevelKeys[0];
+            console.log("this is firstTitle =", firstTitle);
           }
         }
       } catch (error) {
@@ -123,7 +130,7 @@ function MapChoice() {
                     style={{ backgroundColor: obj.color }}
                     onClick={() => handleDocumentClick(obj)}
                   >
-                    {obj.name}
+                     {Object.keys(JSON.parse(obj.openaiResponse))[0]}
                   </span>
                 </li>
               </ul>
@@ -168,7 +175,7 @@ function MapChoice() {
                       className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
                       style={{ backgroundColor: obj.color }}
                     >
-                      {obj.name}
+                      {Object.keys(JSON.parse(obj.openaiResponse))[0]}
                     </span>
                   </p>
                   <RemoveRedEyeIcon className="mr-[60px] my-2 w-8" />
