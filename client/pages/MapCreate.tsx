@@ -22,7 +22,7 @@ const MapCreate = () => {
         formData.append("files", files[i]);
       }
       console.log("this is userId", userId);
-      formData.append("userId", userId || "");
+      formData.append("userId", String(userId || ""));
       try {
         console.log("Uploading files...");
         const uploadResponse = await axios.post("/api/upload", formData, {

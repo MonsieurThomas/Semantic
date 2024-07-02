@@ -10,7 +10,8 @@ import {
   AzureKeyCredential,
 } from "@azure/ai-form-recognizer";
 import dotenv from "dotenv";
-import Prompt from "@/app/utils/Prompt";
+import jwt from "jsonwebtoken";
+import { parseCookies } from "nookies";
 
 dotenv.config();
 
@@ -55,9 +56,7 @@ export default async function handler(
 ) {
   console.log("Request received");
   if (req.method !== "POST") {
-    return res
-      .status(405)
-      .json({ error: `Method '${req.method}' Not Allowed` });
+    return res.status(405).json({ error: `Method '${req.method}' Not Allowed` });
   }
 
   try {
@@ -67,17 +66,22 @@ export default async function handler(
 
     const files = (req as any).files;
     if (!files || files.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No files uploaded" });
+      return res.status(400).json({ success: false, message: "No files uploaded" });
     }
 
-    const userId = req.body.userId; // Retrieve userId from request body
+    // Extract user ID from token
+    const cookies = parseCookies({ req });
+    const token = cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User ID is required" });
+    let userId: number;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret") as { userId: number };
+      userId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid token" });
     }
 
     const colors = [
@@ -111,6 +115,7 @@ export default async function handler(
         themeSize: themeSize,
         page: 0,
         createdAt: new Date(),
+        userId: userId, // Include the userId here
       },
     });
 
@@ -140,7 +145,7 @@ export default async function handler(
     }
 
     const concatenatedText = concatenateLongParagraphs(result.paragraphs);
-    const prompt = Prompt;
+    const prompt = "Your prompt here";
 
     console.log("Debut open ia");
     const openaiApiKey = process.env.OPENAI_KEY;
@@ -151,8 +156,8 @@ export default async function handler(
     const openAIResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4o",
-        // max_tokens: 500,
+        model: "gpt-4",
+        max_tokens: 500,
         n: 1,
         stop: null,
         temperature: 0.7,

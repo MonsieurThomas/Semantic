@@ -4,6 +4,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { parseCookies } from "nookies";
 
 interface Document {
   id: number;
