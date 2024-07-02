@@ -123,30 +123,35 @@ export default async function handler(
 
     console.log("Document saved:", newDocument);
 
-    const filePath = path.join(process.cwd(), files[0].path);
     if (!process.env.AZURE_ENDPOINT || !process.env.AZURE_API_KEY) {
       throw new Error("Azure endpoint or API key not configured");
     }
 
-    const readStream = fs.createReadStream(filePath);
-    const endpoint = process.env.AZURE_ENDPOINT;
-    const apiKey = process.env.AZURE_API_KEY;
-    const client = new DocumentAnalysisClient(
-      endpoint,
-      new AzureKeyCredential(apiKey)
-    );
+    let concatenatedText = "";
 
-    const poller = await client.beginAnalyzeDocument(
-      "prebuilt-layout",
-      readStream
-    );
-    const result = await poller.pollUntilDone();
+    for (const file of files) {
+      const filePath = path.join(process.cwd(), file.path);
+      const readStream = fs.createReadStream(filePath);
+      const endpoint = process.env.AZURE_ENDPOINT;
+      const apiKey = process.env.AZURE_API_KEY;
+      const client = new DocumentAnalysisClient(
+        endpoint,
+        new AzureKeyCredential(apiKey)
+      );
 
-    if (!result.paragraphs) {
-      throw new Error("No paragraphs found in document analysis result");
+      const poller = await client.beginAnalyzeDocument(
+        "prebuilt-layout",
+        readStream
+      );
+      const result = await poller.pollUntilDone();
+
+      if (!result.paragraphs) {
+        throw new Error(`No paragraphs found in document analysis result for file ${file.originalname}`);
+      }
+
+      concatenatedText += concatenateLongParagraphs(result.paragraphs) + "\n\n";
     }
 
-    const concatenatedText = concatenateLongParagraphs(result.paragraphs);
     const prompt = Prompt;
 
     console.log("Debut open ia");
