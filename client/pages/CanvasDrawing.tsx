@@ -225,11 +225,11 @@ const CanvasDrawing = () => {
       // // changement de position pour la gauche
 
       if (obj.branch >= midBranch) {
-        console.log("This is obj.y avant la magouille midbranch", obj.y);
-        console.log("This is midCount", midCount);
+        // console.log("This is obj.y avant la magouille midbranch", obj.y);
+        // console.log("This is midCount", midCount);
         obj.y = obj.y - midCount;
         // obj.y = (obj.y - (midCount - (count - midCount))) / 2;
-        console.log("\n\nThis is obj.y dans la magouille midbranch", obj.y);
+        // console.log("\n\nThis is obj.y dans la magouille midbranch", obj.y);
         obj.x = -obj.x;
       }
     });

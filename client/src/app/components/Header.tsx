@@ -11,7 +11,7 @@ import { UserContext } from "../../context/UserContext";
 function Header() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProfileHovered, setIsProfileHovered] = useState(false);
-  const { username, id } = useContext(UserContext);
+  const { username, logout } = useContext(UserContext);
   const { setUsername: setContextUsername, setId: setContextId } =
     useContext(UserContext);
   const router = useRouter();
@@ -25,9 +25,8 @@ function Header() {
   };
 
   const handleSignOut = async () => {
+    logout();
     router.push("/");
-    setContextUsername(null);
-    setContextId(null);
   };
 
   const handleProfileHover = () => {
@@ -108,12 +107,22 @@ function Header() {
                 onMouseEnter={handleProfileHover}
                 onMouseLeave={handleProfileLeave}
               >
-                <Link href="/MapChoice">
+                {username ? (
+                  <Link href="/MapChoice">
                   <p>Ma bibliothèque</p>
                 </Link>
-                <p onClick={handleSignOut} className="cursor-pointer">
-                  Se déconnecter
-                </p>
+                  ): (
+                    <Link href="/Login">
+                    <p>Ma bibliothèque</p>
+                  </Link>
+                  )}
+                {username ? (
+                  <p onClick={handleSignOut} className="cursor-pointer">
+                    Se déconnecter
+                  </p>
+                ) : (
+                  <Link href="/Login">Se connecter</Link>
+                )}
                 {router.pathname === "/CanvasDrawing" && (
                   <Link href="/MapChoice">
                     <p>Enregistrer</p>
