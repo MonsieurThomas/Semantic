@@ -64,46 +64,41 @@ Voici un exemple de la structure désirée :
 
 {
   "Titre Global": {
-    item 1: {
-      value: "titre du bloc"
-        item 1.1: { 
-          value: "titre du sous-bloc"
-          bounding: ["Début de citation... —> ...fin de citation."]
+    "titre du bloc 1": {
+      "item 1.1": { 
+        "value": "titre du sous-bloc",
+        "bounding": ["Début de citation... —> ...fin de citation."]
       },
-      value: "titre du bloc"
-        item 1.2: {
-          value: "titre du sous-bloc"
-          bounding : ["Début de citation... —> ...fin de citation."]
+      "item 1.2": {
+        "value": "titre du sous-bloc",
+        "bounding": ["Début de citation... —> ...fin de citation."]
       }
     },
-    item 2: {
-      value: "titre du bloc",
-         item 2.1: {
-           value: "titre du sous-bloc",
-             item 2.1.1: {
-             value: "titre du sous-sous bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+    "titre du bloc 2": {
+      "titre du sous-bloc 2.1": {
+        "item 2.1.1": {
+          "value": "titre du sous-sous bloc",
+          "bounding": ["Début de citation... —> ...fin de citation."]
         },
-            item 2.1.2: {
-             value: "titre du sous-sous-bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+        "item 2.1.2": {
+          "value": "titre du sous-sous-bloc",
+          "bounding": ["Début de citation... —> ...fin de citation."]
         }
       },
-         item 2.2: {
-           value: "titre du sous-bloc",
-             item 2.2.1: {
-             value: "titre du sous-sous bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+      "titre du sous-bloc 2.2": {
+        "item 2.2.1": {
+          "value": "titre du sous-sous bloc",
+          "bounding": ["Début de citation... —> ...fin de citation."]
         },
-             item 2.2.2: {
-             value: "titre du sous-sous-bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
-     }
-    },
-      item 3 // Structure similaire pour d'autres catégories et blocs
+        "item 2.2.2": {
+          "value": "titre du sous-sous-bloc",
+          "bounding": ["Début de citation... —> ...fin de citation."]
+        }
+      }
     }
   }
 }
+// Structure similaire pour d'autres catégories et blocs
 
 Les titres de catégorie ne doivent pas dépasser 5 mots. 
 
@@ -117,3 +112,47 @@ En élaborant le format JSON pour chaque partie de texte, identifie les les déb
 </thinking>`;
 
 export default Prompt;
+
+
+// {
+//   "Titre Global": {
+//     item 1: {
+//       value: "titre du bloc"
+//         item 1.1: { 
+//           value: "titre du sous-bloc"
+//           bounding: ["Début de citation... —> ...fin de citation."]
+//       },
+//       value: "titre du bloc"
+//         item 1.2: {
+//           value: "titre du sous-bloc"
+//           bounding : ["Début de citation... —> ...fin de citation."]
+//       }
+//     },
+//     item 2: {
+//       value: "titre du bloc",
+//          item 2.1: {
+//            value: "titre du sous-bloc",
+//              item 2.1.1: {
+//              value: "titre du sous-sous bloc",
+//              bounding: ["Début de citation... —> ...fin de citation."]
+//         },
+//             item 2.1.2: {
+//              value: "titre du sous-sous-bloc",
+//              bounding: ["Début de citation... —> ...fin de citation."]
+//         }
+//       },
+//          item 2.2: {
+//            value: "titre du sous-bloc",
+//              item 2.2.1: {
+//              value: "titre du sous-sous bloc",
+//              bounding: ["Début de citation... —> ...fin de citation."]
+//         },
+//              item 2.2.2: {
+//              value: "titre du sous-sous-bloc",
+//              bounding: ["Début de citation... —> ...fin de citation."]
+//      }
+//     },
+//       item 3 // Structure similaire pour d'autres catégories et blocs
+//     }
+//   }
+// }

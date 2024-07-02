@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import prisma from "../../lib/prisma";
 import jwt from "jsonwebtoken";
 import { serialize } from "cookie";
+import { cookies } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
@@ -40,14 +41,15 @@ export default async function handler(
     res.setHeader(
       "Set-Cookie",
       serialize("token", token, {
-        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 3600,
+        maxAge: 315360000,
         path: "/",
       })
     );
 
-    res.status(201).json({ token, user: { id: user.id, username: user.username } });
+    res
+      .status(201)
+      .json({ token, user: { id: user.id, username: user.username } });
   } catch (error) {
     if (error) {
       return res.status(409).json({ message: "User already exists" });

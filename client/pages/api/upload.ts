@@ -12,6 +12,8 @@ import {
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { parseCookies } from "nookies";
+import Prompt from "@/app/utils/Prompt";
+
 
 dotenv.config();
 
@@ -145,7 +147,7 @@ export default async function handler(
     }
 
     const concatenatedText = concatenateLongParagraphs(result.paragraphs);
-    const prompt = "Your prompt here";
+    const prompt = Prompt;
 
     console.log("Debut open ia");
     const openaiApiKey = process.env.OPENAI_KEY;
@@ -156,8 +158,7 @@ export default async function handler(
     const openAIResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4",
-        max_tokens: 500,
+        model: "gpt-4o",
         n: 1,
         stop: null,
         temperature: 0.7,

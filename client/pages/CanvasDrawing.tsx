@@ -36,13 +36,15 @@ const CanvasDrawing = () => {
     if (id) {
       const fetchDocument = async () => {
         try {
+          console.log("try de canvasDrawing = ");
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
-          console.log("this is document = ", document)
+          console.log("this is document = ", document);
           if (document.openaiResponse) {
             const cleanResponse = document.openaiResponse
               .replace(/```json|```/g, "")
               .trim();
+            console.log("this is cleanResponse = ", cleanResponse);
             const parsedResponse = JSON.parse(cleanResponse);
             setNestedObjectData(parsedResponse);
             console.log("On a un document.openaiResponse");
@@ -73,28 +75,13 @@ const CanvasDrawing = () => {
     const newObj: NestedObject = {};
     let index = 0;
 
-    // Initialize a map to track indices at each depth
-    const levelIndices = new Map<number, number>();
-
-    // console.log("Processing object:", obj);
-
     for (const key in obj) {
-      if (!levelIndices.has(depth)) {
-        levelIndices.set(depth, 1);
-      } else {
-        levelIndices.set(depth, levelIndices.get(depth)! + 1);
-      }
-
-      let currentPath = path
-        ? `${path}.${levelIndices.get(depth)}`
-        : `${levelIndices.get(depth)}`;
-      // console.log(`Current key: ${key}, depth: ${depth}, currentPath: ${currentPath}`);
-
+      let currentPath = path ? `${path}.${index + 1}` : `${index + 1}`;
       if (
         typeof obj[key] === "object" &&
         obj[key] !== null &&
         !Array.isArray(obj[key]) &&
-        !("value" in obj[key])
+        !("value" in obj[key]) // Check if it's not a terminal node
       ) {
         if (depth === 1) {
           branchNb++;
@@ -111,11 +98,8 @@ const CanvasDrawing = () => {
         newObj[key] = { ...processedObj };
         localCount += subCount;
         localSum += subSum;
-      } else if (
-        obj[key] &&
-        typeof obj[key] === "object" &&
-        "value" in obj[key]
-      ) {
+      } else if ("value" in obj[key]) {
+        // Handle terminal nodes with value and offset
         if (depth === 1) {
           branchNb++;
         }
@@ -132,26 +116,6 @@ const CanvasDrawing = () => {
           count: count,
           bounding: obj[key].bounding,
         });
-        console.log("Added to localeTab:", localeTab[localeTab.length - 1]);
-      } else if (obj[key] === null) {
-        console.log(`Null value found at key: ${key}`);
-      } else if (typeof obj[key] !== "object") {
-        console.log(`Primitive value found at key: ${key}, value: ${obj[key]}`);
-        count++;
-        localCount++;
-        localSum += count;
-        localeTab.push({
-          x: depth,
-          y: count,
-          value: obj[key],
-          branch: branchNb,
-          path: currentPath.substring(2),
-          count: count,
-        });
-        console.log(
-          "Added primitive value to localeTab:",
-          localeTab[localeTab.length - 1]
-        );
       }
     }
 
@@ -164,10 +128,6 @@ const CanvasDrawing = () => {
         path: path.substring(2),
         count: count,
       });
-      console.log(
-        "Added parent key to localeTab:",
-        localeTab[localeTab.length - 1]
-      );
     }
     localSum += localSum / localCount;
     localCount++;
@@ -230,10 +190,13 @@ const CanvasDrawing = () => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
+    console.log("midBranch = ", midBranch);
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
     });
+    console.log("midCount = ", midCount);
+    console.log("count = ", count);
 
     tab.forEach((obj) => {
       // creating obj.end for drawing arc
@@ -262,7 +225,11 @@ const CanvasDrawing = () => {
       // // changement de position pour la gauche
 
       if (obj.branch >= midBranch) {
-        obj.y = obj.y - midCount + (count - midCount) / 2 - 3;
+        console.log("This is obj.y avant la magouille midbranch", obj.y);
+        console.log("This is midCount", midCount);
+        obj.y = obj.y - midCount;
+        // obj.y = (obj.y - (midCount - (count - midCount))) / 2;
+        console.log("\n\nThis is obj.y dans la magouille midbranch", obj.y);
         obj.x = -obj.x;
       }
     });

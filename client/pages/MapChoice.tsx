@@ -5,6 +5,8 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { parseCookies } from "nookies";
+import { cookies } from 'next/headers'
+
 
 interface Document {
   id: number;
@@ -38,6 +40,9 @@ function MapChoice() {
         const cookies = parseCookies();
         const token = cookies.token;
 
+        console.log("cookies in mapchoice = ", cookies)
+        console.log("token in mapchoice = ", token)
+
         if (token) {
           const profileResponse = await axios.get("/api/profile", {
             headers: {
@@ -47,10 +52,14 @@ function MapChoice() {
           if (profileResponse.data) {
             setId(profileResponse.data.id);
             setUsername(profileResponse.data.username);
+            
+            const documentsResponse = await axios.get("/api/getUserDocuments", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            setDocuments(documentsResponse.data);
           }
-
-          const documentsResponse = await axios.get("/api/getDocuments");
-          setDocuments(documentsResponse.data);
         }
       } catch (error) {
         console.error("Error fetching profile and documents:", error);
