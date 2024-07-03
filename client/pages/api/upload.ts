@@ -13,19 +13,9 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { parseCookies } from "nookies";
 import Prompt from "@/app/utils/Prompt";
-
+import mammoth from "mammoth";
 
 dotenv.config();
-
-interface Theme {
-  name: string;
-  weight: number;
-}
-
-interface Paragraph {
-  content: string;
-  role?: string;
-}
 
 const upload = multer({ dest: "uploads/" });
 const uploadMiddleware = upload.array("files");
@@ -45,7 +35,12 @@ const runMiddleware = (
   });
 };
 
-function concatenateLongParagraphs(paragraphs: Paragraph[]): string {
+const convertDocxToText = async (filePath: string): Promise<string> => {
+  const result = await mammoth.extractRawText({ path: filePath });
+  return result.value;
+};
+
+function concatenateLongParagraphs(paragraphs: any[]): string {
   return paragraphs
     .filter((paragraph) => paragraph.content.length > 100 || paragraph.role)
     .map((paragraph) => paragraph.content)
@@ -56,9 +51,13 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
+  
   console.log("Request received");
   if (req.method !== "POST") {
-    return res.status(405).json({ error: `Method '${req.method}' Not Allowed` });
+    return res
+      .status(405)
+      .json({ error: `Method '${req.method}' Not Allowed` });
   }
 
   try {
@@ -68,10 +67,11 @@ export default async function handler(
 
     const files = (req as any).files;
     if (!files || files.length === 0) {
-      return res.status(400).json({ success: false, message: "No files uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No files uploaded" });
     }
 
-    // Extract user ID from token
     const cookies = parseCookies({ req });
     const token = cookies.token;
     if (!token) {
@@ -80,7 +80,10 @@ export default async function handler(
 
     let userId: number;
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret") as { userId: number };
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "your_jwt_secret"
+      ) as { userId: number };
       userId = decoded.userId;
     } catch (err) {
       return res.status(401).json({ message: "Invalid token" });
@@ -103,6 +106,50 @@ export default async function handler(
     const colorIndex = timestamp % colors.length;
     const color = colors[colorIndex];
 
+    let concatenatedText = "";
+    let paragraph = "";
+
+    if (!process.env.AZURE_ENDPOINT || !process.env.AZURE_API_KEY) {
+      throw new Error("Azure endpoint or API key not configured");
+    }
+
+    for (const file of files) {
+      const filePath = path.join(process.cwd(), file.path);
+      let extractedText = "";
+
+      if (
+        file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        extractedText = await convertDocxToText(filePath);
+        paragraph += extractedText
+      } else {
+        const readStream = fs.createReadStream(filePath);
+        const endpoint = process.env.AZURE_ENDPOINT;
+        const apiKey = process.env.AZURE_API_KEY;
+        const client = new DocumentAnalysisClient(
+          endpoint,
+          new AzureKeyCredential(apiKey)
+        );
+
+        const poller = await client.beginAnalyzeDocument(
+          "prebuilt-layout",
+          readStream
+        );
+        const result = await poller.pollUntilDone();
+
+        if (!result.paragraphs) {
+          throw new Error(
+            `No paragraphs found in document analysis result for file ${file.originalname}`
+          );
+        }
+        paragraph += JSON.stringify(result.paragraphs)
+        extractedText = concatenateLongParagraphs(result.paragraphs);
+      }
+
+      concatenatedText += extractedText + "\n\n";
+    }
+
     const newDocument = await prisma.document.create({
       data: {
         name: files.map((file: any) => file.originalname).join(", "),
@@ -117,40 +164,18 @@ export default async function handler(
         themeSize: themeSize,
         page: 0,
         createdAt: new Date(),
-        userId: userId, // Include the userId here
+        userId: userId,
       },
     });
 
     console.log("Document saved:", newDocument);
 
-    if (!process.env.AZURE_ENDPOINT || !process.env.AZURE_API_KEY) {
-      throw new Error("Azure endpoint or API key not configured");
-    }
-
-    let concatenatedText = "";
-
-    for (const file of files) {
-      const filePath = path.join(process.cwd(), file.path);
-      const readStream = fs.createReadStream(filePath);
-      const endpoint = process.env.AZURE_ENDPOINT;
-      const apiKey = process.env.AZURE_API_KEY;
-      const client = new DocumentAnalysisClient(
-        endpoint,
-        new AzureKeyCredential(apiKey)
-      );
-
-      const poller = await client.beginAnalyzeDocument(
-        "prebuilt-layout",
-        readStream
-      );
-      const result = await poller.pollUntilDone();
-
-      if (!result.paragraphs) {
-        throw new Error(`No paragraphs found in document analysis result for file ${file.originalname}`);
-      }
-
-      concatenatedText += concatenateLongParagraphs(result.paragraphs) + "\n\n";
-    }
+    const updatedDocument = await prisma.document.update({
+      where: { id: newDocument.id },
+      data: {
+        rawText: paragraph,
+      },
+    });
 
     const prompt = Prompt;
 
@@ -188,8 +213,7 @@ export default async function handler(
       choices[0].message.content
     );
 
-    // Update the document with the OpenAI response
-    const updatedDocument = await prisma.document.update({
+    await prisma.document.update({
       where: { id: newDocument.id },
       data: {
         openaiResponse: choices[0].message.content,

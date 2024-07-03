@@ -22,13 +22,14 @@ interface Document {
   size: number;
   createdAt: string;
   openaiResponse: any;
+  rawText: any;
 }
 
 const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-const isJSON = (str:any) => {
+const isJSON = (str: any) => {
   if (!str) return false;
   try {
     JSON.parse(str);
@@ -103,9 +104,9 @@ function MapChoice() {
   };
 
   return (
-    <div className="flex w-[110%] gap-4 mt-10">
+    <div className="flex w-[100%] gap-4 mt-10 overflow-x-hidden">
       <div
-        className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl"
+        className="bg-[#F2F2F2] flex flex-col h-[400px] rounded-xl overflow-x-hidden"
         style={{ flex: 3 }}
       >
         <div className="flex gap-2 m-2 mx-6 rounded-xl pr-10 items-center bg-gray-200">
@@ -119,7 +120,7 @@ function MapChoice() {
             <h1 className="px-[60px]">{username ? username : "No User"}</h1>
           </div>
         </div>
-        <div className="pl-12 pt-10 overflow-auto">
+        <div className="pl-12 pt-10 overflow-auto no-scrollbar">
           {sortedDocuments.map((obj, key) => {
             const currentDate = new Date(obj.date).toLocaleDateString("fr-FR", {
               year: "numeric",
@@ -136,7 +137,7 @@ function MapChoice() {
                 )}
                 <li className="mt-[8px]">
                   <span
-                    className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer"
+                    className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
                     style={{ backgroundColor: obj.color }}
                     onClick={() => handleDocumentClick(obj)}
                   >
@@ -153,15 +154,15 @@ function MapChoice() {
         className="flex-5 h-[80vh] flex flex-col overflow-auto"
         style={{ flex: 10 }}
       >
-        <div className="flex items-center rounded-xl bg-[#E5E5E5] w-[1420px] py-3">
+        <div className="flex items-center rounded-xl bg-[#E5E5E5] w-[1080px] py-3">
           <SearchOutlinedIcon className="cursor-pointer ml-2" />
           <input
             type="text"
             placeholder="Rechercher par nom, par date.."
-            className="w-[400px] bg-[#E5E5E5] pl-2"
+            className="w-[400px] bg-[#E5E5E5] pl-2 outline-none"
           />
         </div>
-        <div className="w-[75vw] mt-2 rounded-xl overflow-auto h-[500px] pt-1 cursor-pointer">
+        <div className="w-[75vw] mt-2 rounded-xl overflow-auto no-scrollbar h-[500px] pt-1 cursor-pointer">
           {documents.map((obj, key) => {
             const dateStr = new Date(obj.date).toLocaleDateString("fr-FR", {
               weekday: "long",
@@ -187,7 +188,7 @@ function MapChoice() {
                       style={{ backgroundColor: obj.color }}
                     >
                       {isJSON(obj.openaiResponse) &&
-                      Object.keys(JSON.parse(obj.openaiResponse))[0]}
+                        Object.keys(JSON.parse(obj.openaiResponse))[0]}
                     </span>
                   </p>
                   <RemoveRedEyeIcon className="mr-[60px] my-2 w-8" />

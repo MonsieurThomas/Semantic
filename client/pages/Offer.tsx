@@ -65,7 +65,7 @@ function Offer() {
         </span>
       </button>
 
-      <div className="grid grid-cols-3 gap-4 mt-8  w-[1100px] ">
+      <div className="grid grid-cols-3 gap-4 mt-8  w-[1100px]" style={{fontFamily:"Lexend"}}>
         {plans.map((plan, index) => (
           <div
             key={index}

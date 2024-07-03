@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import apiResponse from "../src/app/utils/ApiJsonResponse";
-import MapObject from "../src/app/utils/MapObject";
+// import apiResponse from "../src/app/utils/ApiJsonResponse";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
 import CheckPistachePostion from "./CheckPistachePostion";
 import MarquePage from "../public/MarquePage.png";
 import useOutsideClick from "../src/hooks/useOutsideClick";
+import useInsideClick from "../src/hooks/useInsideClick";
 import task0 from "../public/task0.png";
 import task1 from "../public/task1.png";
 import task2 from "../public/task2.png";
@@ -25,12 +25,20 @@ interface NestedObject {
   [key: string]: any;
 }
 
+function textToParagraphs(text:string) {
+  return text
+    .split('\n\n') // Split the text by double new lines to get paragraphs
+    .filter(paragraph => paragraph.trim() !== '') // Filter out any empty paragraphs
+    .map(paragraph => ({ content: paragraph.trim() })); // Trim and map to an object
+}
+
 const CanvasDrawing = () => {
   const router = useRouter();
   const { id } = router.query;
   const [nestedObjectData, setNestedObjectData] = useState<NestedObject | null>(
     null
   );
+  const [apiResponse, setApiResponse] = useState<NestedObject | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -39,16 +47,27 @@ const CanvasDrawing = () => {
           console.log("try de canvasDrawing = ");
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
-          console.log("this is document = ", document);
+          // console.log("this is document = ", document);
           if (document.openaiResponse) {
             const cleanResponse = document.openaiResponse
               .replace(/```json|```/g, "")
               .trim();
-            console.log("this is cleanResponse = ", cleanResponse);
+            // console.log("this is cleanResponse = ", cleanResponse);
             const parsedResponse = JSON.parse(cleanResponse);
             setNestedObjectData(parsedResponse);
             console.log("On a un document.openaiResponse");
             console.log(JSON.stringify(parsedResponse));
+          }
+          if (document.rawText) {
+            console.log(
+              "This is document.rawText",
+              document.rawText
+            );
+            try {
+              setApiResponse(JSON.parse(document.rawText));
+            } catch (error) {
+              setApiResponse(textToParagraphs(document.rawText));
+            }
           }
         } catch (error) {
           console.error("Error fetching document:", error);
@@ -57,7 +76,13 @@ const CanvasDrawing = () => {
       fetchDocument();
     }
   }, [id]);
-
+  
+  useEffect(() => {
+    console.log(
+      "This is ApiResponse = ",
+      apiResponse
+    );
+  }, [apiResponse]);
   //
   let count = 0;
   let branchNb = 0;
@@ -190,13 +215,13 @@ const CanvasDrawing = () => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
-    console.log("midBranch = ", midBranch);
+    // console.log("midBranch = ", midBranch);
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
     });
-    console.log("midCount = ", midCount);
-    console.log("count = ", count);
+    // console.log("midCount = ", midCount);
+    // console.log("count = ", count);
 
     tab.forEach((obj) => {
       // creating obj.end for drawing arc
@@ -251,7 +276,7 @@ const CanvasDrawing = () => {
       obj.occurence = 2;
     });
 
-    console.log("tab apres modif = ", tab);
+    // console.log("tab apres modif = ", tab);
   }
 
   function Color(tab: Array<any>) {
@@ -284,17 +309,17 @@ const CanvasDrawing = () => {
 
   useEffect(() => {
     const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-    console.log("this is nestedDummy before = ", nestedDummy);
+    // console.log("this is nestedDummy before = ", nestedDummy);
     const tab = AddCoordinates(nestedDummy);
-    console.log("This is result from addCoordinate = ", tab);
+    // console.log("This is result from addCoordinate = ", tab);
     ChangeXandY(tab);
     Color(tab);
     setLocalTab(tab);
   }, [nestedObjectData]);
 
-  useEffect(() => {
-    console.log("This is localTab = ", localTab);
-  }, [localTab]);
+  // useEffect(() => {
+  //   console.log("This is localTab = ", localTab);
+  // }, [localTab]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -609,6 +634,7 @@ const CanvasDrawing = () => {
       });
     };
     const handleScroll = () => {
+      // console.log("programmaticScroll", programmaticScroll);
       if (!programmaticScroll) setShowBackground(false);
     };
 
@@ -771,9 +797,16 @@ const CanvasDrawing = () => {
 
   const handleClickOutside = () => {
     if (hoveredIndex == null) setIsTextShown(false);
+    else setShowBackground(false);
+  };
+
+  const handleClickInside = () => {
+    setShowBackground(false);
+    console.log("ici");
   };
 
   useOutsideClick(modalRef, handleClickOutside);
+  useInsideClick(modalRef, handleClickInside);
 
   const itemHeight = 52;
   const maxHeight = itemHeight * 4;
@@ -819,14 +852,14 @@ const CanvasDrawing = () => {
     console.log("startText", startText);
     console.log("endText", endText);
 
-    console.log("apiResponse = ", apiResponse);
-    const apiText = apiResponse.find(
-      (item) => item.content.includes(startText)
+    // console.log("apiResponse = ", apiResponse);
+    const apiText = apiResponse?.find(
+      (item: any) => item.content.includes(startText)
       // item.content.includes(startText) && item.content.includes(endText)
     );
 
     if (apiText) {
-      const textIndex = apiResponse.findIndex((item: any) => item === apiText);
+      const textIndex = apiResponse?.findIndex((item: any) => item === apiText);
       setSelectedParagraphIndex(textIndex);
       setShowBackground(true);
       setProgrammaticScroll(true);
@@ -835,7 +868,7 @@ const CanvasDrawing = () => {
       if (textElement) {
         let blockPosition: ScrollLogicalPosition = "center";
         if (index === 0) {
-          blockPosition = "start";
+          blockPosition = "center";
         } else if (index === 1) {
           blockPosition = "center";
         } else if (index === 2) {
@@ -846,6 +879,9 @@ const CanvasDrawing = () => {
           behavior: "smooth",
           block: blockPosition,
         });
+        setTimeout(() => {
+          setProgrammaticScroll(false);
+        }, 1000);
       }
     } else {
       console.log("No matching text found.");
@@ -1019,7 +1055,7 @@ const CanvasDrawing = () => {
                   textAlign: "justify",
                 }}
               >
-                {apiResponse.map((item, index) => {
+                {apiResponse?.map((item: any, index: number) => {
                   const hasRole = item.role && item.role !== "pageNumber";
                   const textStyle = hasRole
                     ? "text-lg font-bold"
@@ -1325,28 +1361,6 @@ const CanvasDrawing = () => {
           ))}
         </div>
       )}
-
-      {/* <h1>This is pistacheTab length = {pistacheTab.length}</h1>
-      <h1>This is number of scrollPercentage = {scrollPercentage}</h1>
-      <h1>This is number of pages = {pageCount}</h1>
-      <div>
-        {localTab.map((item, id) => {
-          return <div key={id}>{JSON.stringify(item)}</div>;
-        })}
-        This is count = {count};
-      </div> */}
-
-      {/* 
-    {apiResponse.map((item, index) => (
-      <div key={index} className="p-0">
-        {item.role && <p className="font-semibold p-6">Role: {item.role}</p>}
-        {(item.content.length >= 100 || (item.role && item.role !=="pageNumber"))&& (
-          <p className={`${item.role ? 'text-lg font-bold pt-7' : 'text-base font-normal pt-2'}`}>
-          {item.content}
-          </p>
-        )}
-      </div>
-    ))} */}
     </>
   );
 };

@@ -30,9 +30,11 @@ model Document {
   size           Int
   createdAt      DateTime @default(now())
   openaiResponse Json?
+  rawText        String?  // Ajout du nouveau champ rawText
   userId         Int      // Foreign key
   user           User     @relation(fields: [userId], references: [id])
 }
+
 
 model File {
   id        Int      @id @default(autoincrement())
