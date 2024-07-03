@@ -28,6 +28,16 @@ const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
+const isJSON = (str:any) => {
+  if (!str) return false;
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
 function MapChoice() {
   const { username, id, setUsername, setId } = useContext(UserContext);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -61,11 +71,11 @@ function MapChoice() {
             const openaiResponse = documentsResponse.data[0].openaiResponse;
             console.log("openaiResponse =", openaiResponse);
 
-            const firstLevelKeys = Object.keys(JSON.parse(openaiResponse));
-            console.log("firstLevelKeys =", firstLevelKeys);
+            // const firstLevelKeys = Object.keys(JSON.parse(openaiResponse));
+            // console.log("firstLevelKeys =", firstLevelKeys);
 
-            const firstTitle = firstLevelKeys[0];
-            console.log("this is firstTitle =", firstTitle);
+            // const firstTitle = firstLevelKeys[0];
+            // console.log("this is firstTitle =", firstTitle);
           }
         }
       } catch (error) {
@@ -130,7 +140,8 @@ function MapChoice() {
                     style={{ backgroundColor: obj.color }}
                     onClick={() => handleDocumentClick(obj)}
                   >
-                     {Object.keys(JSON.parse(obj.openaiResponse))[0]}
+                    {isJSON(obj.openaiResponse) &&
+                      Object.keys(JSON.parse(obj.openaiResponse))[0]}
                   </span>
                 </li>
               </ul>
@@ -175,7 +186,8 @@ function MapChoice() {
                       className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
                       style={{ backgroundColor: obj.color }}
                     >
-                      {Object.keys(JSON.parse(obj.openaiResponse))[0]}
+                      {isJSON(obj.openaiResponse) &&
+                      Object.keys(JSON.parse(obj.openaiResponse))[0]}
                     </span>
                   </p>
                   <RemoveRedEyeIcon className="mr-[60px] my-2 w-8" />
