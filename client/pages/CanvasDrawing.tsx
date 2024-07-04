@@ -25,11 +25,11 @@ interface NestedObject {
   [key: string]: any;
 }
 
-function textToParagraphs(text:string) {
+function textToParagraphs(text: string) {
   return text
-    .split('\n\n') // Split the text by double new lines to get paragraphs
-    .filter(paragraph => paragraph.trim() !== '') // Filter out any empty paragraphs
-    .map(paragraph => ({ content: paragraph.trim() })); // Trim and map to an object
+    .split("\n\n") // Split the text by double new lines to get paragraphs
+    .filter((paragraph) => paragraph.trim() !== "") // Filter out any empty paragraphs
+    .map((paragraph) => ({ content: paragraph.trim(), word: "true"  })); // Trim and map to an object
 }
 
 const CanvasDrawing = () => {
@@ -44,7 +44,7 @@ const CanvasDrawing = () => {
     if (id) {
       const fetchDocument = async () => {
         try {
-          console.log("try de canvasDrawing = ");
+          // console.log("try de canvasDrawing = ");
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
           // console.log("this is document = ", document);
@@ -59,10 +59,10 @@ const CanvasDrawing = () => {
             console.log(JSON.stringify(parsedResponse));
           }
           if (document.rawText) {
-            console.log(
-              "This is document.rawText",
-              document.rawText
-            );
+            // console.log(
+            //   "This is document.rawText",
+            //   document.rawText
+            // );
             try {
               setApiResponse(JSON.parse(document.rawText));
             } catch (error) {
@@ -76,13 +76,10 @@ const CanvasDrawing = () => {
       fetchDocument();
     }
   }, [id]);
-  
-  useEffect(() => {
-    console.log(
-      "This is ApiResponse = ",
-      apiResponse
-    );
-  }, [apiResponse]);
+
+  // useEffect(() => {
+  //   console.log("This is ApiResponse = ", apiResponse);
+  // }, [apiResponse]);
   //
   let count = 0;
   let branchNb = 0;
@@ -309,7 +306,7 @@ const CanvasDrawing = () => {
 
   useEffect(() => {
     const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-    // console.log("this is nestedDummy before = ", nestedDummy);
+    console.log("this is data json before = ", nestedDummy);
     const tab = AddCoordinates(nestedDummy);
     // console.log("This is result from addCoordinate = ", tab);
     ChangeXandY(tab);
@@ -317,9 +314,9 @@ const CanvasDrawing = () => {
     setLocalTab(tab);
   }, [nestedObjectData]);
 
-  // useEffect(() => {
-  //   console.log("This is localTab = ", localTab);
-  // }, [localTab]);
+  useEffect(() => {
+    console.log("This is localTab = ", localTab);
+  }, [localTab]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1070,7 +1067,7 @@ const CanvasDrawing = () => {
                         textRefs.current[index] = el;
                       }}
                     >
-                      {item.content.length >= 100 || hasRole ? (
+                      {item.content.length >= 100 || hasRole || item.word ? (
                         <p
                           className={`${textStyle} p-5`}
                           style={{ backgroundColor }}
