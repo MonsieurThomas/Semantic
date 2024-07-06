@@ -60,16 +60,22 @@ const MapCreate = () => {
   };
 
   return (
-    <div
-      className="flex flex-col items-center gap-[50px] pt-[70px]"
-      style={{ overflow: "hidden" }}
-    >
-      <div>
-        <h1 className="text-6xl font-bold w-[700px] text-center">
+    <div className="relative flex flex-col items-center gap-[50px] pt-[70px] h-screen w-full overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full">
+        <video
+          className="w-full h-full object-cover"
+          src="/bg-semantic.mp4"
+          autoPlay
+          muted
+          playsInline
+        />
+      </div>
+      <div className="relative z-10">
+        <h1 className="text-6xl font-bold w-[700px] text-center ">
           Speed up your research with mind maps
         </h1>
       </div>
-      <div className="flex flex-col items-center">
+      <div className="relative flex flex-col items-center z-10">
         <button
           onClick={handleCreateMap}
           className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[280px] rounded-[40px] hover:bg-[#FFE3B7]"
@@ -102,8 +108,8 @@ const MapCreate = () => {
           </h4>
         )}
       </div>
-      <div>
-        <h3 className="font-semibold text-center mt-[30px] w-[750px]">
+      <div className="relative z-10">
+        <h3 className="font-semibold text-center mt-[30px] w-[750px] ">
           Semantic accélère votre recherche d&apos;informations sur les
           documents Word en présentant leur contenu de manière structurée sous
           forme de{" "}

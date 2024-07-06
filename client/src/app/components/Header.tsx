@@ -1,3 +1,4 @@
+// Header.jsx
 import React, { useState, useContext } from "react";
 import "../styles/style.css";
 import Logo from "../../../public/logo.png";
@@ -39,7 +40,7 @@ function Header() {
 
   return (
     <div
-      className="flex mx-10 items-center py-6"
+      className="flex mx-10 items-center py-6 z-50"
       style={{ userSelect: "none" }}
       // style={{ userSelect: "none", fontFamily: "Lexend" }}
     >
@@ -47,10 +48,10 @@ function Header() {
         <Image
           src={Logo}
           alt="Logo"
-          className="w-[300px] hover:cursor-pointer"
+          className="w-[300px] hover:cursor-pointer z-10"
         />
       </Link>
-      <div className="relative flex w-full justify-between ml-[100px]">
+      <div className="relative flex w-full justify-between ml-[100px] z-10">
         <div
           className="flex items-center hover:cursor-pointer"
           onClick={handleToggle}
@@ -109,13 +110,13 @@ function Header() {
               >
                 {username ? (
                   <Link href="/MapChoice">
-                  <p>Ma bibliothèque</p>
-                </Link>
-                  ): (
-                    <Link href="/Login">
                     <p>Ma bibliothèque</p>
                   </Link>
-                  )}
+                ) : (
+                  <Link href="/Login">
+                    <p>Ma bibliothèque</p>
+                  </Link>
+                )}
                 {username ? (
                   <p onClick={handleSignOut} className="cursor-pointer">
                     Se déconnecter

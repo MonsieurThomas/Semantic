@@ -33,7 +33,15 @@ function Offer() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center pt-10 bg-[#fff9f4]">
+    <div className="relative flex flex-col items-center justify-center pt-10 bg-[#fff9f4]">
+      <video
+        className="absolute top-0 left-0 w-full h-full object-cover -z-10"
+        src="/bg-semantic.mp4"
+        autoPlay
+        // loop
+        muted
+        playsInline
+      />
       <button
         onClick={handleToggle}
         className={`relative flex items-center justify-between w-40 h-10 bg-white border border-black rounded-full cursor-pointer transition-colors duration-300`}
@@ -65,7 +73,10 @@ function Offer() {
         </span>
       </button>
 
-      <div className="grid grid-cols-3 gap-4 mt-8  w-[1100px]" style={{fontFamily:"Lexend"}}>
+      <div
+        className="grid grid-cols-3 gap-4 mt-8  w-[1100px]"
+        style={{ fontFamily: "Lexend" }}
+      >
         {plans.map((plan, index) => (
           <div
             key={index}
@@ -73,7 +84,7 @@ function Offer() {
           >
             {plan.name === "L'ANALYSTE" && (
               <div
-                className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-500 text-white text-xl font-semibold px-[20px] py-[2px] rounded-xl"
+                className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#FCA311] text-white text-xl font-semibold px-[20px] py-[2px] rounded-xl"
                 style={{ whiteSpace: "nowrap" }}
               >
                 Le plus populaire
