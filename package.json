@@ -1,6 +1,20 @@
 {
-    "name": "monorepo",
-    "private": true,
-    "workspaces": ["client", "api"]
+  "name": "monorepo",
+  "private": true,
+  "workspaces": [
+    "client"
+  ],
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "fs-extra": "^11.2.0",
+    "googleapis": "^137.1.0"
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.11",
+    "multer": "^1.4.5-lts.1"
+  },
+  "resolutions": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
-  
+}
