@@ -1,11 +1,14 @@
-import React, { useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useContext } from "react";
 import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
 import { UserContext } from "../src/context/UserContext";
+import { useRouter } from "next/router";
+import io from "socket.io-client";
 
 const MapCreate = () => {
   const fileInputRef = useRef<any>(null);
-  const { mindMapData, setMindMapData, id: userId } = useContext(UserContext);
+  const { setMindMapData, id: userId } = useContext(UserContext);
+  const router = useRouter();
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
@@ -21,23 +24,30 @@ const MapCreate = () => {
       for (let i = 0; i < files.length; i++) {
         formData.append("files", files[i]);
       }
-      console.log("this is userId", userId);
       formData.append("userId", String(userId || ""));
+
+      // Redirect to LoadingTime immediately
+      const taskId = new Date().getTime().toString(); // Unique task ID for this upload
+      router.push({
+        pathname: "/LoadingTime",
+        query: { taskId },
+      });
+
       try {
-        console.log("Uploading files...");
         const uploadResponse = await axios.post("/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log("Response from server:", uploadResponse.data);
 
         if (uploadResponse.data.success) {
-          console.log("Files uploaded with ID:", uploadResponse.data.document.id);
-          console.log("OpenAI response:", uploadResponse.data.openaiResponse);
-
-          // Set mindMapData from the response
           setMindMapData(uploadResponse.data.openaiResponse);
+          // Emit the completion event with document info
+          const socket = io();
+          socket.emit("complete", {
+            id: uploadResponse.data.document.id,
+            openaiResponse: uploadResponse.data.openaiResponse,
+          });
         } else {
           console.error("Upload failed:", uploadResponse.data);
         }
@@ -48,13 +58,6 @@ const MapCreate = () => {
       console.error("No files selected");
     }
   };
-
-  // Use useEffect to verify state update
-  useEffect(() => {
-    if (mindMapData) {
-      console.log("Updated mindMapData:", mindMapData);
-    }
-  }, [mindMapData]);
 
   return (
     <div

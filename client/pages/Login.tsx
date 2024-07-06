@@ -44,7 +44,7 @@ function Login() {
       console.log("data.token = ", data.token);
       console.log("data.id = ", data.id);
       console.log("data.username = ", data.username);
-      router.push("/MapCreate");
+      router.push("/");
     } catch (error) {
       console.error("An error occurred:", error);
       setError("An error occurred. Please try again.");

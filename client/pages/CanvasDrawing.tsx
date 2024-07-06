@@ -29,7 +29,7 @@ function textToParagraphs(text: string) {
   return text
     .split("\n\n") // Split the text by double new lines to get paragraphs
     .filter((paragraph) => paragraph.trim() !== "") // Filter out any empty paragraphs
-    .map((paragraph) => ({ content: paragraph.trim(), word: "true"  })); // Trim and map to an object
+    .map((paragraph) => ({ content: paragraph.trim(), word: "true" })); // Trim and map to an object
 }
 
 const CanvasDrawing = () => {
@@ -44,15 +44,12 @@ const CanvasDrawing = () => {
     if (id) {
       const fetchDocument = async () => {
         try {
-          // console.log("try de canvasDrawing = ");
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
-          // console.log("this is document = ", document);
           if (document.openaiResponse) {
             const cleanResponse = document.openaiResponse
               .replace(/```json|```/g, "")
               .trim();
-            // console.log("this is cleanResponse = ", cleanResponse);
             const parsedResponse = JSON.parse(cleanResponse);
             setNestedObjectData(parsedResponse);
             console.log("On a un document.openaiResponse");
@@ -885,6 +882,16 @@ const CanvasDrawing = () => {
     }
   };
 
+  const filterValues = (obj: { value: string }) => {
+    const searchWords = searchValue.toLowerCase().split(" "); // Divise la valeur de recherche en mots
+    const objWords = obj.value.toLowerCase().split(" "); // Divise chaque valeur de l'objet en mots
+    return searchWords.some(
+      (
+        searchWord // Vérifie si un des mots de recherche correspond au début de n'importe quel mot de l'objet
+      ) => objWords.some((objWord: string) => objWord.startsWith(searchWord))
+    );
+  };
+
   return (
     <>
       <div
@@ -928,56 +935,52 @@ const CanvasDrawing = () => {
       {searchValue && (
         <div className="w-[250px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
           <div className="p-2">
-            {localTab
-              .filter((obj) =>
-                obj.value.toLowerCase().startsWith(searchValue.toLowerCase())
-              )
-              .map((obj, index) => (
+            {localTab.filter(filterValues).map((obj, index) => (
+              <div
+                key={index}
+                className="mx-1 mb-1 inline-block rounded-md bg-white"
+              >
                 <div
-                  key={index}
-                  className="mx-1 mb-1 inline-block rounded-md bg-white"
+                  className="relative rounded-md cursor-pointer"
+                  onClick={() => zoomToValue(obj)}
+                  style={{
+                    position: "relative",
+                    padding: "0px 12px",
+                    boxSizing: "border-box",
+                    borderRadius: "inherit",
+                  }}
                 >
                   <div
-                    className="relative rounded-md cursor-pointer"
-                    onClick={() => zoomToValue(obj)}
+                    style={{
+                      backgroundColor: obj.color,
+                      opacity: getOpacity(obj),
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      borderRadius: "inherit",
+                      zIndex: 1,
+                      fontFamily: "Lexend",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <span
                     style={{
                       position: "relative",
-                      padding: "0px 12px",
-                      boxSizing: "border-box",
-                      borderRadius: "inherit",
+                      zIndex: 2,
+                      opacity: 1,
+                      fontFamily: "Lexend",
+                      fontSize: "16px",
+                      fontWeight: obj.path.length >= 3 ? 500 : 600,
+                      color: obj.path.length > 3 ? "black" : "#F0FFFF",
                     }}
                   >
-                    <div
-                      style={{
-                        backgroundColor: obj.color,
-                        opacity: getOpacity(obj),
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        borderRadius: "inherit",
-                        zIndex: 1,
-                        fontFamily: "Lexend",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                    <span
-                      style={{
-                        position: "relative",
-                        zIndex: 2,
-                        opacity: 1,
-                        fontFamily: "Lexend",
-                        fontSize: "16px",
-                        fontWeight: obj.path.length >= 3 ? 500 : 600,
-                        color: obj.path.length > 3 ? "black" : "#F0FFFF",
-                      }}
-                    >
-                      {obj.value}
-                    </span>
-                  </div>
+                    {obj.value}
+                  </span>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -131,12 +131,10 @@ function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
     }
   }
 
-  // Push the last line
   if (line.trim().length > 0) {
     lines.push(line.trim());
   }
 
-  // Check the number of lines and truncate if necessary
   if (lines.length > 2) {
     lines = lines.slice(0, 2);
     while (ctx.measureText(lines[1] + "...").width > boxWidth) {
@@ -280,10 +278,10 @@ function DrawCurveLine(
     } else {
       ctx.moveTo(obj.x + 3800, obj.y);
       ctx.quadraticCurveTo(
-        obj.x,
-        obj.y - (obj2.y - obj.y),
+        obj.x + caseWidth,
+        obj.y,
         obj2.x + 100,
-        obj2.y + caseHeight / 2
+        obj2.y + caseHeight - 400
       );
     }
     ctx.strokeStyle = obj2.color;

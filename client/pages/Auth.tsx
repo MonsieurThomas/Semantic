@@ -44,7 +44,7 @@ const Auth = () => {
       console.log("token = ", token);
       console.log("user = ", user);
 
-      router.push("/MapCreate");
+      router.push("/");
     } catch (error: any) {
       setError(error.message || "An error occurred. Please try again.");
     }

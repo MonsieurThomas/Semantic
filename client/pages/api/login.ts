@@ -39,9 +39,7 @@ export default async function handler(
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
     console.log("Token generated:", token);
 

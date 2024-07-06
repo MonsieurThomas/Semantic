@@ -2,10 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../src/context/UserContext";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import { RxCross1 } from "react-icons/rx";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { parseCookies } from "nookies";
-import { cookies } from "next/headers";
 
 interface Document {
   id: number;
@@ -37,6 +37,12 @@ const isJSON = (str: any) => {
     return false;
   }
   return true;
+};
+
+const formatSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} bytes`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
+  return `${Math.round(bytes / (1024 * 1024))} Mo`;
 };
 
 function MapChoice() {
@@ -71,12 +77,6 @@ function MapChoice() {
             setDocuments(documentsResponse.data);
             const openaiResponse = documentsResponse.data[0].openaiResponse;
             console.log("openaiResponse =", openaiResponse);
-
-            // const firstLevelKeys = Object.keys(JSON.parse(openaiResponse));
-            // console.log("firstLevelKeys =", firstLevelKeys);
-
-            // const firstTitle = firstLevelKeys[0];
-            // console.log("this is firstTitle =", firstTitle);
           }
         }
       } catch (error) {
@@ -101,6 +101,29 @@ function MapChoice() {
         openaiResponse: JSON.stringify(document.openaiResponse),
       },
     });
+  };
+
+  const handleDocumentDelete = async (documentId: number) => {
+    try {
+      const cookies = parseCookies();
+      const token = cookies.token;
+
+      if (token) {
+        await axios.delete(`/api/deleteDocument`, {
+          params: { documentId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Remove the document from the state
+        setDocuments((prevDocuments) =>
+          prevDocuments.filter((doc) => doc.id !== documentId)
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
   };
 
   return (
@@ -135,7 +158,7 @@ function MapChoice() {
                 {displayDate && (
                   <li className="text-xs pt-3 pl-2">{currentDate}</li>
                 )}
-                <li className="mt-[8px]">
+                <li className="mt-[8px] flex items-center justify-between">
                   <span
                     className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
                     style={{ backgroundColor: obj.color }}
@@ -191,7 +214,16 @@ function MapChoice() {
                         Object.keys(JSON.parse(obj.openaiResponse))[0]}
                     </span>
                   </p>
-                  <RemoveRedEyeIcon className="mr-[60px] my-2 w-8" />
+                  <div className="flex items-center pr-10 gap-1">
+                    <RemoveRedEyeIcon className="my-2 w-8" />
+                    <RxCross1
+                      className="cursor-pointer text-gray-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDocumentDelete(obj.id);
+                      }}
+                    />
+                  </div>
                 </div>
                 <ul className="pl-[50px]">
                   {obj.theme.map((name, themeKey) => (
@@ -203,7 +235,7 @@ function MapChoice() {
                       <div className="flex flex-grow items-center justify-between">
                         <span>{name}</span>
                         <span className="mr-[65px]">
-                          {obj.themeSize[themeKey]} bytes
+                          {formatSize(obj.themeSize[themeKey])}
                         </span>
                       </div>
                     </li>

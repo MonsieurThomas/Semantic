@@ -18,3 +18,18 @@ body {
       scrollbar-width: none;  /* Firefox */
 }
 }
+
+
+
+@keyframes progress {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progress 10s linear forwards;
+}
