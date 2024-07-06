@@ -19,14 +19,16 @@ export default function handler(req: NextApiRequest, res: ExtendedNextApiRespons
 
     const httpServer: HTTPServer = res.socket.server as any;
     const io = new SocketIOServer(httpServer, {
+      path: '/api/socket',
       cors: {
-        origin: '*',
+        origin: '*', // Adjust this to your specific needs for security
       },
     });
 
     io.on("connection", (socket) => {
       console.log("a user connected");
 
+      // Handle your custom events here
       socket.on("disconnect", () => {
         console.log("user disconnected");
       });
