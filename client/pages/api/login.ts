@@ -53,9 +53,7 @@ export default async function handler(
       })
     );
 
-    res
-      .status(200)
-      .json({ token, user: { id: user.id, username: user.username } });
+    res.status(200).json({ token, id: user.id, username: user.username });
   } catch (error) {
     console.error("Internal server error:", error);
     res.status(500).json({ message: "Internal server error" });

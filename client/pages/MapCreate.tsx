@@ -72,7 +72,7 @@ const MapCreate = () => {
       <div className="flex flex-col items-center">
         <button
           onClick={handleCreateMap}
-          className="relative text-4xl bg-[#FCA310] text-white p-3 font-semibold w-[280px] rounded-[40px] hover:bg-[#FFE3B7]"
+          className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[280px] rounded-[40px] hover:bg-[#FFE3B7]"
         >
           <h1 className="text-center">Crée ta</h1>
           <h1 className="text-center">mind map</h1>
@@ -85,28 +85,31 @@ const MapCreate = () => {
           onChange={handleFileChange}
           multiple // Allow multiple file selection
         />
-        <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
-          2go maximum{" "}
-          <a
-            href={"/Offer"}
-            className="text-[#F67A22] underline font-semibold cursor-pointer"
-          >
-            Starter{" "}
-          </a>
-          <img
-            src="/logoExpand.png"
-            alt="Expand"
-            className="inline-block w-4 h-4 cursor-pointer"
-          />
-        </h4>
+        {userId && (
+          <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
+            2go maximum{" "}
+            <a
+              href={"/Offer"}
+              className="text-[#FCA311] underline font-semibold cursor-pointer"
+            >
+              Starter{" "}
+            </a>
+            <img
+              src="/logoExpand.png"
+              alt="Expand"
+              className="inline-block w-4 h-4 cursor-pointer"
+            />
+          </h4>
+        )}
       </div>
       <div>
         <h3 className="font-semibold text-center mt-[30px] w-[750px]">
-          Semantic accélère votre recherche d&apos;information sur les documents
-          Word en presentant leur contenu de manière structurée sous forme de{" "}
+          Semantic accélère votre recherche d&apos;informations sur les
+          documents Word en présentant leur contenu de manière structurée sous
+          forme de{" "}
           <a
             href={"/MindMapping"}
-            className="text-[#FCA310] underline font-semibold cursor-pointer"
+            className="text-[#FCA311] underline font-semibold cursor-pointer"
           >
             mind maps
           </a>{" "}

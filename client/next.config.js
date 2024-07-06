@@ -6,8 +6,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        // source: '/socket.io',
-        source: "/api/socket",
+        source: '/socket.io',
+        // source: "/api/socket",
         destination: "/api/socket",
       },
     ];
