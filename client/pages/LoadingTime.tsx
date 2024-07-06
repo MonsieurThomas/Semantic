@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import io from "socket.io-client";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const LoadingTime = () => {
   const router = useRouter();
@@ -69,68 +69,76 @@ const LoadingTime = () => {
 
   return (
     <div className="relative h-[85vh] w-screen">
-      {progress >= 10 && (
-        <>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[40px] left-[300px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Exemple
-          </motion.h1>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[350px] left-[1100px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Initiatives
-          </motion.h1>
-        </>
-      )}
+      <AnimatePresence>
+        {progress >= 10 && (
+          <>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[40px] left-[300px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Exemple
+            </motion.h1>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[350px] left-[1100px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Initiatives
+            </motion.h1>
+          </>
+        )}
 
-      {progress >= 35 && (
-        <>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[220px] left-[700px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Application
-          </motion.h1>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[300px] left-[200px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Milliard
-          </motion.h1>
-        </>
-      )}
+        {progress >= 35 && (
+          <>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[220px] left-[700px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Application
+            </motion.h1>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[300px] left-[200px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Milliard
+            </motion.h1>
+          </>
+        )}
 
-      {progress >= 65 && (
-        <>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[150px] left-[1150px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Million
-          </motion.h1>
-          <motion.h1
-            className="font-bold text-2xl absolute top-[280px] left-[500px]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Solution
-          </motion.h1>
-        </>
-      )}
+        {progress >= 65 && (
+          <>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[150px] left-[1150px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Million
+            </motion.h1>
+            <motion.h1
+              className="font-bold text-2xl absolute top-[280px] left-[500px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Solution
+            </motion.h1>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-1/3">
         <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
