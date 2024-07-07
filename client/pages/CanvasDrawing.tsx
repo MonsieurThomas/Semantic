@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-// import apiResponse from "../src/app/utils/ApiJsonResponse";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import DrawTab from "./MapLogic/DrawTab";
 import CheckPistachePostion from "./CheckPistachePostion";
@@ -74,10 +73,6 @@ const CanvasDrawing = () => {
     }
   }, [id]);
 
-  // useEffect(() => {
-  //   console.log("This is ApiResponse = ", apiResponse);
-  // }, [apiResponse]);
-  //
   let count = 0;
   let branchNb = 0;
   let localeTab: Array<any> = [];
@@ -244,11 +239,7 @@ const CanvasDrawing = () => {
       // // changement de position pour la gauche
 
       if (obj.branch >= midBranch) {
-        // console.log("This is obj.y avant la magouille midbranch", obj.y);
-        // console.log("This is midCount", midCount);
         obj.y = obj.y - midCount;
-        // obj.y = (obj.y - (midCount - (count - midCount))) / 2;
-        // console.log("\n\nThis is obj.y dans la magouille midbranch", obj.y);
         obj.x = -obj.x;
       }
     });
@@ -340,6 +331,7 @@ const CanvasDrawing = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, setIsTextShown] = useState(false);
+  const [isMenuShown, setIsMenuShown] = useState(false);
   const [fullText, setFullText] = useState("");
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState<any>();
@@ -512,6 +504,37 @@ const CanvasDrawing = () => {
       }
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        // Ajoutez ici toute logique spécifique que vous souhaitez lorsque la barre d'espace est pressée
+        console.log("Barre d'espace pressée !");
+        const centerX = 0;
+        let centerY = 0;
+        for (const obj of localTab) {
+          if (obj.branch === 0) {
+            centerY = obj.y;
+            break;
+          }
+        }
+        const centerViewportX = widthScreen / 2;
+        const centerViewportY = heightScreen / 2;
+        const newZoomLevel = 0.02;
+
+        const panX = (centerX * newZoomLevel - centerViewportX) * -1;
+        const panY = (centerY * newZoomLevel - centerViewportY) * -1;
+
+        setPanOffset({ x: panX, y: panY });
+        setZoomLevel(newZoomLevel);
+        setZoomFraction(0);
+        if (zoomHandle) zoomHandle.style.left = `${0}px`;
+        // console.log("setDisableClicks = ", disableClicks)
+
+        // console.log("setDisableClicks apres = ", disableClicks)
+        redrawCanvas();
+      }
+    };
+
     /////handle weel ////
     /////handle weel ////
     /////handle weel ////
@@ -590,6 +613,10 @@ const CanvasDrawing = () => {
           adjustedY >= obj.y &&
           adjustedY <= obj.y + 1000
         ) {
+          if (obj.branch == 0) {
+            setIsMenuShown(true);
+            console.log("ok menu");
+          }
           if (obj.bounding && !isTextShown && !disableClicks) {
             setSelected(obj);
             setIsTextShown(true);
@@ -646,6 +673,7 @@ const CanvasDrawing = () => {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
+    document.addEventListener("keydown", handleKeyDown);
     // document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("wheel", handleWheel, { passive: false });
     if (scrollContainer)
@@ -661,6 +689,7 @@ const CanvasDrawing = () => {
       // window.removeEventListener('resize', handleResize);
       if (modal) modal.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
       // document.removeEventListener("mousedown", handleClickOutside);
@@ -796,7 +825,6 @@ const CanvasDrawing = () => {
 
   const handleClickInside = () => {
     setShowBackground(false);
-    console.log("ici");
   };
 
   useOutsideClick(modalRef, handleClickOutside);
@@ -827,7 +855,6 @@ const CanvasDrawing = () => {
     setShowBackground: any,
     setProgrammaticScroll: any
   ) => {
-    // Regular expression to match all variations of the separator
     const separatorRegex = /\.{3}\s*[-–—]>\s*\.{3}/;
     let searchText = String(selected.bounding[index]);
 
@@ -996,7 +1023,7 @@ const CanvasDrawing = () => {
       {isTextShown && (
         <div
           id="modal-backdrop"
-          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4"
+          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10"
         >
           <div className="flex w-full max-w-[1000px] mr-[300px]">
             <div
@@ -1024,12 +1051,11 @@ const CanvasDrawing = () => {
                     }
                   >
                     <div
-                      className="whitespace-nowrap overflow-hidden text-ellipsis text-center"
+                      className="whitespace-nowrap overflow-hidden text-ellipsis text-center p-1"
                       style={{ maxWidth: "320px", fontFamily: "Lexend" }}
                     >
                       {selected.value}
                     </div>
-                    <h1 className="text-center">P.{"XX"}</h1>
                   </div>
                   <div
                     className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
@@ -1085,6 +1111,15 @@ const CanvasDrawing = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {isMenuShown && (
+        <>
+          {console.log(isMenuShown)}
+          <div className="w-[250px] h-[300px] bg-slate-800 z-50 fixed top-[300px] left-0">
+            okok
+          </div>
+        </>
       )}
 
       {pistacheTab.length > 0 && (

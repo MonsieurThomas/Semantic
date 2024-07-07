@@ -4,6 +4,7 @@ import { IoMdAddCircle } from "react-icons/io";
 import { UserContext } from "../src/context/UserContext";
 import { useRouter } from "next/router";
 import io from "socket.io-client";
+import { motion } from "framer-motion";
 
 const MapCreate = () => {
   const fileInputRef = useRef<any>(null);
@@ -70,11 +71,16 @@ const MapCreate = () => {
           playsInline
         />
       </div>
-      <div className="relative z-10">
+      <motion.div
+        className="relative z-10"
+        initial={{ y: "10vh" }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
         <h1 className="text-6xl font-bold w-[700px] text-center ">
           Speed up your research with mind maps
         </h1>
-      </div>
+      </motion.div>
       <div className="relative flex flex-col items-center z-10">
         <button
           onClick={handleCreateMap}
@@ -92,30 +98,31 @@ const MapCreate = () => {
           multiple // Allow multiple file selection
         />
         {userId && (
-          <h4 className="text-[#C8C8C8] font-semibold text-center w-[1000px]">
-            2go maximum{" "}
-            <a
-              href={"/Offer"}
-              className="text-[#FCA311] underline font-semibold cursor-pointer"
-            >
-              Starter{" "}
-            </a>
-            <img
-              src="/logoExpand.png"
-              alt="Expand"
-              className="inline-block w-4 h-4 cursor-pointer"
-            />
-          </h4>
+          <div className="absolute top-[110px] text-center ">
+            <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
+              2go maximum{" "}
+              <a
+                href={"/Offer"}
+                className="text-[#FCA311] underline font-semibold cursor-pointer"
+              >
+                Starter{" "}
+              </a>
+              <img
+                src="/logoExpand.png"
+                alt="Expand"
+                className="inline-block w-4 h-4 cursor-pointer"
+              />
+            </h4>
+          </div>
         )}
       </div>
-      <div className="relative z-10">
-        <h3 className="font-semibold text-center mt-[30px] w-[750px] ">
-          Semantic accélère votre recherche d&apos;informations sur les
-          documents Word en présentant leur contenu de manière structurée sous
-          forme de{" "}
+      <div className="relative z-10 mt-4">
+        <h3 className="font-semibold text-center mt-[30px] w-[750px]">
+          Semantic accélère votre recherche d&apos;informations en présentant le
+          contenu de vos documents de manière structurée, sous forme de{" "}
           <a
             href={"/MindMapping"}
-            className="text-[#FCA311] underline font-semibold cursor-pointer"
+            className="text-[#FCA311] underline font-semibold cursor-pointer pl-1"
           >
             mind maps
           </a>{" "}

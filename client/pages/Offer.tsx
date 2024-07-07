@@ -33,12 +33,11 @@ function Offer() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center pt-10 bg-[#fff9f4]">
+    <div className="relative flex flex-col items-center justify-center pt-10" style={{ fontFamily: "Lexend" }}>
       <video
         className="absolute top-0 left-0 w-full h-full object-cover -z-10"
         src="/bg-semantic.mp4"
         autoPlay
-        // loop
         muted
         playsInline
       />
@@ -73,14 +72,11 @@ function Offer() {
         </span>
       </button>
 
-      <div
-        className="grid grid-cols-3 gap-4 mt-8  w-[1100px]"
-        style={{ fontFamily: "Lexend" }}
-      >
+      <div className="grid grid-cols-3 gap-4 mt-8  w-[1100px]">
         {plans.map((plan, index) => (
           <div
             key={index}
-            className="relative flex flex-col h-[600px] p-14 bg-[#fff1db] rounded-xl transition-transform transform hover:scale-105 hover:bg-[#fff9f4]"
+            className="relative flex flex-col h-[600px] p-14 bg-[#fff3ed] rounded-xl transition-transform transform hover:scale-105 hover:bg-[#fff9f4]"
           >
             {plan.name === "L'ANALYSTE" && (
               <div
