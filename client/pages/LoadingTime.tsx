@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const LoadingTime = () => {
   const router = useRouter();
-  const { taskId } = router.query;
   const [progress, setProgress] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [documentInfo, setDocumentInfo] = useState<{
@@ -14,7 +13,9 @@ const LoadingTime = () => {
   } | null>(null);
 
   useEffect(() => {
-    const socket = io();
+    const socket = io({
+      path: "/api/socket",
+    });
 
     socket.on(
       "loadingComplete",
@@ -73,6 +74,7 @@ const LoadingTime = () => {
         {progress >= 10 && (
           <>
             <motion.h1
+              key="exemple"
               className="font-bold text-2xl absolute top-[40px] left-[300px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -82,6 +84,7 @@ const LoadingTime = () => {
               Exemple
             </motion.h1>
             <motion.h1
+              key="initiatives"
               className="font-bold text-2xl absolute top-[350px] left-[1100px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -96,6 +99,7 @@ const LoadingTime = () => {
         {progress >= 35 && (
           <>
             <motion.h1
+              key="application"
               className="font-bold text-2xl absolute top-[220px] left-[700px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -105,6 +109,7 @@ const LoadingTime = () => {
               Application
             </motion.h1>
             <motion.h1
+              key="milliard"
               className="font-bold text-2xl absolute top-[300px] left-[200px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -119,6 +124,7 @@ const LoadingTime = () => {
         {progress >= 65 && (
           <>
             <motion.h1
+              key="million"
               className="font-bold text-2xl absolute top-[150px] left-[1150px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -128,6 +134,7 @@ const LoadingTime = () => {
               Million
             </motion.h1>
             <motion.h1
+              key="solution"
               className="font-bold text-2xl absolute top-[280px] left-[500px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -32,8 +32,12 @@ const capitalizeFirstLetter = (string: string) => {
 const isJSON = (str: any) => {
   if (!str) return false;
   try {
+    // const cleanJsonString = str.replace(/```json/g, '').replace(/```/g, '').trim();
+    // JSON.parse(cleanJsonString);
     JSON.parse(str);
   } catch (e) {
+    // console.log("str in isJSON = ", str);
+    // console.log("str in isJSON = ", typeof(str));
     return false;
   }
   return true;
@@ -75,6 +79,7 @@ function MapChoice() {
               },
             });
             setDocuments(documentsResponse.data);
+            console.log("documentsResponse.data =", documentsResponse.data);
             const openaiResponse = documentsResponse.data[0].openaiResponse;
             console.log("openaiResponse =", openaiResponse);
           }

@@ -182,8 +182,8 @@ const CanvasDrawing = () => {
   };
 
   function setCamera(obj: any) {
-    const centerX = obj.x + 3500 / 2;
-    const centerY = obj.y * 1600 + 1000 / 2;
+    const centerX = 6000 / 2;
+    const centerY = obj.y * 1300;
     const centerViewportX = widthScreen / 2;
     const centerViewportY = heightScreen / 2;
     const newZoomLevel = 0.02;
@@ -204,13 +204,10 @@ const CanvasDrawing = () => {
       // branche moyenne pour envoyer la moitié de la carte a gauche
       if (obj.count === Math.floor(count / 2)) midBranch = obj.branch + 1;
     });
-    // console.log("midBranch = ", midBranch);
     tab.forEach((obj) => {
       // hauteur max de la section droite de la carte
       if (obj.branch < midBranch) if (midCount < obj.y) midCount = obj.y;
     });
-    // console.log("midCount = ", midCount);
-    // console.log("count = ", count);
 
     tab.forEach((obj) => {
       // creating obj.end for drawing arc
@@ -1113,14 +1110,14 @@ const CanvasDrawing = () => {
         </div>
       )}
 
-      {isMenuShown && (
+      {/* {isMenuShown && (
         <>
           {console.log(isMenuShown)}
           <div className="w-[250px] h-[300px] bg-slate-800 z-50 fixed top-[300px] left-0">
             okok
           </div>
         </>
-      )}
+      )} */}
 
       {pistacheTab.length > 0 && (
         <Image

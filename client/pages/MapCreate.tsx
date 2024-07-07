@@ -122,7 +122,7 @@ const MapCreate = () => {
           contenu de vos documents de manière structurée, sous forme de{" "}
           <a
             href={"/MindMapping"}
-            className="text-[#FCA311] underline font-semibold cursor-pointer pl-1"
+            className="text-[#FCA311] underline font-semibold cursor-pointer "
           >
             mind maps
           </a>{" "}
