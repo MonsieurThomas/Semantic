@@ -86,8 +86,15 @@ function ParseLine(
       ) {
         if (obj.x > 0) DrawLine(ctx, obj, obj2, caseWidth, caseHeight);
         else DrawLine(ctx, obj2, obj, caseWidth, caseHeight);
-      }
-      if (
+      } else if (
+        obj2.branch >= 10 &&
+        Math.abs(obj2.path.length + obj.path.length) === 2 &&
+        obj.path.length === 0 &&
+        !obj.hide &&
+        !obj2.hide
+      ) {
+        DrawCurveLine(ctx, obj, obj2, caseWidth, caseHeight);
+      } else if (
         Math.abs(obj2.path.length + obj.path.length) === 1 &&
         obj.path.length === 0 &&
         !obj.hide &&

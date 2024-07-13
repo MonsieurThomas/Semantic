@@ -31,6 +31,35 @@ function textToParagraphs(text: string) {
     .map((paragraph) => ({ content: paragraph.trim(), word: "true" })); // Trim and map to an object
 }
 
+function paragraphsToText(jsonString: string) {
+  try {
+    // Parse the JSON string
+    const dataArray = JSON.parse(jsonString);
+
+    // Initialize an empty array to store the content
+    const contentArray: any = [];
+
+    // Iterate over each object in the array
+    dataArray.forEach((item: any) => {
+      if (item.content) {
+        contentArray.push(item.content);
+      }
+    });
+
+    // Join the array elements into a single string
+    const resultString = contentArray.join(" ");
+
+    return resultString;
+  } catch (error) {
+    console.error("Invalid JSON string:", error);
+    return "";
+  }
+}
+
+function paragraphsToTextSplit(text: string): string[] {
+  return text.split(/\s+/); // Divise le texte par les espaces et renvoie un tableau de mots
+}
+
 const CanvasDrawing = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -38,6 +67,8 @@ const CanvasDrawing = () => {
     null
   );
   const [apiResponse, setApiResponse] = useState<NestedObject | null>(null);
+  const [fullText, setFullText] = useState<string | null>(null);
+  const [fullTextSplit, setFullTextSplit] = useState<string[] | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -55,13 +86,16 @@ const CanvasDrawing = () => {
             console.log(JSON.stringify(parsedResponse));
           }
           if (document.rawText) {
-            // console.log(
-            //   "This is document.rawText",
-            //   document.rawText
-            // );
             try {
               setApiResponse(JSON.parse(document.rawText));
+              console.log("document.rawText dans l'api", document.rawText);
+              setFullText(paragraphsToText(document.rawText));
+              setFullTextSplit(
+                paragraphsToTextSplit(paragraphsToText(document.rawText))
+              );
             } catch (error) {
+              setFullText(document.rawText);
+              setFullTextSplit(paragraphsToTextSplit(document.rawText));
               setApiResponse(textToParagraphs(document.rawText));
             }
           }
@@ -233,11 +267,16 @@ const CanvasDrawing = () => {
     });
 
     tab.forEach((obj) => {
-      // // changement de position pour la gauche
-
       if (obj.branch >= midBranch) {
         obj.y = obj.y - midCount;
         obj.x = -obj.x;
+      }
+    });
+
+    tab.forEach((obj) => {
+      // retire un point devant path parce qu'apres la 10eme branche il y en a un
+      if (obj.path[0] == ".") {
+        obj.path = obj.path.substring(1);
       }
     });
 
@@ -258,7 +297,8 @@ const CanvasDrawing = () => {
       obj.occurence = 2;
     });
 
-    // console.log("tab apres modif = ", tab);
+    // console.log("this is type of fullText = ", typeof fullText);
+    // console.log("this is fullText = ", fullText);
   }
 
   function Color(tab: Array<any>) {
@@ -291,7 +331,7 @@ const CanvasDrawing = () => {
 
   useEffect(() => {
     const nestedDummy = JSON.parse(JSON.stringify(nestedObjectData));
-    console.log("this is data json before = ", nestedDummy);
+    // console.log("this is data json before = ", nestedDummy);
     const tab = AddCoordinates(nestedDummy);
     // console.log("This is result from addCoordinate = ", tab);
     ChangeXandY(tab);
@@ -329,7 +369,6 @@ const CanvasDrawing = () => {
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, setIsTextShown] = useState(false);
   const [isMenuShown, setIsMenuShown] = useState(false);
-  const [fullText, setFullText] = useState("");
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState<any>();
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
@@ -505,7 +544,7 @@ const CanvasDrawing = () => {
       if (event.code === "Space") {
         event.preventDefault();
         // Ajoutez ici toute logique spécifique que vous souhaitez lorsque la barre d'espace est pressée
-        console.log("Barre d'espace pressée !");
+        // console.log("Barre d'espace pressée !");
         const centerX = 0;
         let centerY = 0;
         for (const obj of localTab) {
@@ -612,7 +651,7 @@ const CanvasDrawing = () => {
         ) {
           if (obj.branch == 0) {
             setIsMenuShown(true);
-            console.log("ok menu");
+            // console.log("ok menu");
           }
           if (obj.bounding && !isTextShown && !disableClicks) {
             setSelected(obj);
@@ -867,14 +906,19 @@ const CanvasDrawing = () => {
     const parts = searchText.split(separatorRegex);
     const startText = parts[0];
     const endText = parts[1];
-    console.log("startText", startText);
-    console.log("endText", endText);
+    // console.log("startText", startText);
+    // console.log("endText", endText);
 
     // console.log("apiResponse = ", apiResponse);
-    const apiText = apiResponse?.find(
-      (item: any) => item.content.includes(startText)
-      // item.content.includes(startText) && item.content.includes(endText)
+    let apiText = apiResponse?.find((item: any) =>
+      item.content.includes(startText)
     );
+
+    if (!apiText) {
+      apiText = apiResponse?.find((item: any) =>
+        item.content.includes(endText)
+      );
+    }
 
     if (apiText) {
       const textIndex = apiResponse?.findIndex((item: any) => item === apiText);
@@ -915,6 +959,34 @@ const CanvasDrawing = () => {
       ) => objWords.some((objWord: string) => objWord.startsWith(searchWord))
     );
   };
+
+  type ContextType = string[];
+
+  const getContexts = (
+    searchValue: string,
+    fullText: string | null
+  ): ContextType => {
+    const contexts: ContextType = [];
+
+    if (fullText) {
+      const lowerCaseSearchValue = searchValue.toLowerCase();
+      const words = fullText.split(/\s+/);
+
+      for (let i = 0; i < words.length; i++) {
+        if (words[i].toLowerCase().includes(lowerCaseSearchValue)) {
+          const start = Math.max(i - 5, 0);
+          const end = Math.min(i + 5 + 1, words.length);
+          const context = words.slice(start, end).join(" ");
+          contexts.push(context);
+        }
+      }
+    }
+    return contexts;
+  };
+
+  const contexts: ContextType = searchValue
+    ? getContexts(searchValue, fullText)
+    : [];
 
   return (
     <>
@@ -1005,9 +1077,55 @@ const CanvasDrawing = () => {
                 </div>
               </div>
             ))}
+            {searchValue.length >= 3 &&
+              contexts.map((context: any, ctxIndex: any) => (
+                <div
+                  key={ctxIndex}
+                  className="mx-1 mb-1 inline-block rounded-md bg-white"
+                >
+                  <div
+                    className="relative rounded-md cursor-pointer"
+                    style={{
+                      position: "relative",
+                      padding: "0px 12px",
+                      boxSizing: "border-box",
+                      borderRadius: "inherit",
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: "gray",
+                        opacity: 0.2,
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        borderRadius: "inherit",
+                        zIndex: 1,
+                        fontFamily: "Lexend",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <span
+                      style={{
+                        position: "relative",
+                        zIndex: 2,
+                        opacity: 1,
+                        fontFamily: "Lexend",
+                        fontSize: "14px",
+                        color: "black",
+                      }}
+                    >
+                      {context}
+                    </span>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       )}
+
       <div className=" flex justify-center">
         <canvas
           ref={canvasRef}
@@ -1109,15 +1227,6 @@ const CanvasDrawing = () => {
           </div>
         </div>
       )}
-
-      {/* {isMenuShown && (
-        <>
-          {console.log(isMenuShown)}
-          <div className="w-[250px] h-[300px] bg-slate-800 z-50 fixed top-[300px] left-0">
-            okok
-          </div>
-        </>
-      )} */}
 
       {pistacheTab.length > 0 && (
         <Image

@@ -32,8 +32,13 @@ const capitalizeFirstLetter = (string: string) => {
 const isJSON = (str: any) => {
   if (!str) return false;
   try {
-    // const cleanJsonString = str.replace(/```json/g, '').replace(/```/g, '').trim();
-    // JSON.parse(cleanJsonString);
+    const cleanJsonString = str
+      .replace(/```json\n/g, "")
+      .replace(/```/g, "")
+      .trim();
+    console.log("cleanJsonString = ", cleanJsonString);
+
+    JSON.parse(cleanJsonString);
     JSON.parse(str);
   } catch (e) {
     // console.log("str in isJSON = ", str);
@@ -41,6 +46,16 @@ const isJSON = (str: any) => {
     return false;
   }
   return true;
+};
+
+const cleanJson = (str: any) => {
+  if (!str) return;
+  const cleanJsonString = str
+    .replace(/```json\n/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  return cleanJsonString;
 };
 
 const formatSize = (bytes: number): string => {
@@ -81,7 +96,7 @@ function MapChoice() {
             setDocuments(documentsResponse.data);
             console.log("documentsResponse.data =", documentsResponse.data);
             const openaiResponse = documentsResponse.data[0].openaiResponse;
-            console.log("openaiResponse =", openaiResponse);
+            // console.log("openaiResponse =", openaiResponse);
           }
         }
       } catch (error) {
@@ -169,8 +184,11 @@ function MapChoice() {
                     style={{ backgroundColor: obj.color }}
                     onClick={() => handleDocumentClick(obj)}
                   >
-                    {isJSON(obj.openaiResponse) &&
-                      Object.keys(JSON.parse(obj.openaiResponse))[0]}
+                    {isJSON(obj.openaiResponse)
+                      ? Object.keys(JSON.parse(obj.openaiResponse))[0]
+                      : Object.keys(
+                          JSON.parse(cleanJson(obj.openaiResponse))
+                        )[0]}
                   </span>
                 </li>
               </ul>
@@ -215,8 +233,10 @@ function MapChoice() {
                       className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
                       style={{ backgroundColor: obj.color }}
                     >
-                      {isJSON(obj.openaiResponse) &&
-                        Object.keys(JSON.parse(obj.openaiResponse))[0]}
+                      {isJSON(cleanJson(obj.openaiResponse)) &&
+                        Object.keys(
+                          JSON.parse(cleanJson(obj.openaiResponse))
+                        )[0]}
                     </span>
                   </p>
                   <div className="flex items-center pr-10 gap-1">
