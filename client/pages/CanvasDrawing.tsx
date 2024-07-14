@@ -286,6 +286,7 @@ const CanvasDrawing = () => {
         obj.y = midCount / 2;
         obj.branch = 0;
         setCamera(obj);
+        console.log("bon obj = ", obj);
       }
     });
 
@@ -384,8 +385,9 @@ const CanvasDrawing = () => {
   const maxZoom = 0.1;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const minZoom = 0.02;
-  const [selectedParagraphIndex, setSelectedParagraphIndex] =
-    useState<number>(0);
+  const [selectedParagraphIndices, setSelectedParagraphIndices] = useState<
+    number[]
+  >([]);
   const [disableClicks, setDisableClicks] = useState(false);
   const widthScreen = 1500;
   const heightScreen = 500;
@@ -545,14 +547,14 @@ const CanvasDrawing = () => {
         event.preventDefault();
         // Ajoutez ici toute logique spécifique que vous souhaitez lorsque la barre d'espace est pressée
         // console.log("Barre d'espace pressée !");
-        const centerX = 0;
-        let centerY = 0;
         for (const obj of localTab) {
           if (obj.branch === 0) {
-            centerY = obj.y;
+            // setCamera(obj);
             break;
           }
         }
+        const centerX = 6000 / 2;
+        const centerY = 5 * 1300;
         const centerViewportX = widthScreen / 2;
         const centerViewportY = heightScreen / 2;
         const newZoomLevel = 0.02;
@@ -877,17 +879,21 @@ const CanvasDrawing = () => {
         0,
         selected,
         textRefs,
-        setSelectedParagraphIndex,
+        selectedParagraphIndices,
         setShowBackground,
         setProgrammaticScroll
       );
   }, [isTextShown, selected]);
 
+  function removeDots(input: string): string {
+    return input.replace(/·/g, "").trim();
+  }
+
   const findFullString = (
     index: number,
     selected: any,
     textRefs: any,
-    setSelectedParagraphIndex: any,
+    selectedParagraphIndices: any,
     setShowBackground: any,
     setProgrammaticScroll: any
   ) => {
@@ -904,51 +910,94 @@ const CanvasDrawing = () => {
     }
 
     const parts = searchText.split(separatorRegex);
-    const startText = parts[0];
-    const endText = parts[1];
-    // console.log("startText", startText);
-    // console.log("endText", endText);
+    const startText = removeDots(parts[0]);
+    const endText = removeDots(parts[1]);
 
-    // console.log("apiResponse = ", apiResponse);
-    let apiText = apiResponse?.find((item: any) =>
-      item.content.includes(startText)
+    let apiText: any[] = [];
+
+    // Find paragraph containing both startText and endText
+    let combinedText = apiResponse?.find(
+      (item: any) =>
+        removeDots(item.content).includes(startText) &&
+        removeDots(item.content).includes(endText)
     );
-
-    if (!apiText) {
-      apiText = apiResponse?.find((item: any) =>
-        item.content.includes(endText)
+    if (combinedText) {
+      apiText.push(combinedText);
+    } else {
+      // Find paragraph containing startText
+      let startTextParagraph = apiResponse?.find((item: any) =>
+        removeDots(item.content).includes(startText)
       );
+      if (!startTextParagraph) {
+        console.log("Dans le nouveau if");
+        console.log("Dans le nouveau if startText = ", startText);
+
+        apiResponse?.forEach((item: any, idx: number) => {
+          console.log(`Index: ${idx}, Content: ${removeDots(item.content)}`);
+        });
+
+        startTextParagraph = apiResponse?.find((item: any) =>
+          startText.includes(removeDots(item.content))
+        );
+        console.log(
+          "startTextParagraph apres le nouveau if = ",
+          startTextParagraph
+        );
+      }
+      // Find paragraph containing endText
+      let endTextParagraph = apiResponse?.find((item: any) =>
+        removeDots(item.content).includes(endText)
+      );
+
+      if (startTextParagraph) {
+        apiText.push(startTextParagraph);
+      }
+
+      if (endTextParagraph && endTextParagraph !== startTextParagraph) {
+        apiText.push(endTextParagraph);
+      }
     }
 
-    if (apiText) {
-      const textIndex = apiResponse?.findIndex((item: any) => item === apiText);
-      setSelectedParagraphIndex(textIndex);
+    if (apiText.length > 0) {
+      const textIndices = apiText.map((text) =>
+        apiResponse?.findIndex((item: any) => item === text)
+      );
+
+      setSelectedParagraphIndices(textIndices);
       setShowBackground(true);
       setProgrammaticScroll(true);
-      const textElement = textRefs.current[textIndex];
 
-      if (textElement) {
-        let blockPosition: ScrollLogicalPosition = "center";
-        if (index === 0) {
-          blockPosition = "center";
-        } else if (index === 1) {
-          blockPosition = "center";
-        } else if (index === 2) {
-          blockPosition = "end";
+      textIndices.forEach((textIndex, idx) => {
+        const textElement = textRefs.current[textIndex];
+
+        if (textElement) {
+          let blockPosition: ScrollLogicalPosition = "center";
+          if (index === 0) {
+            blockPosition = "center";
+          } else if (index === 1) {
+            blockPosition = "center";
+          } else if (index === 2) {
+            blockPosition = "end";
+          }
+
+          textElement.scrollIntoView({
+            behavior: "smooth",
+            block: blockPosition,
+          });
+
+          if (idx === textIndices.length - 1) {
+            setTimeout(() => {
+              setProgrammaticScroll(false);
+            }, 1000);
+          }
         }
-
-        textElement.scrollIntoView({
-          behavior: "smooth",
-          block: blockPosition,
-        });
-        setTimeout(() => {
-          setProgrammaticScroll(false);
-        }, 1000);
-      }
+      });
     } else {
       console.log("No matching text found.");
     }
   };
+
+  // Function to remove "·" from strings
 
   const filterValues = (obj: { value: string }) => {
     const searchWords = searchValue.toLowerCase().split(" "); // Divise la valeur de recherche en mots
@@ -1159,7 +1208,7 @@ const CanvasDrawing = () => {
                         index,
                         selected,
                         textRefs,
-                        setSelectedParagraphIndex,
+                        setSelectedParagraphIndices,
                         setShowBackground,
                         setProgrammaticScroll
                       )
@@ -1201,7 +1250,15 @@ const CanvasDrawing = () => {
                   const textStyle = hasRole
                     ? "text-lg font-bold"
                     : "text-base font-normal";
-                  const isParagraphSelected = index === selectedParagraphIndex;
+
+                  // Determine if the current index is within the selected range
+                  const isParagraphSelected =
+                    (selectedParagraphIndices.length === 2 &&
+                      index >= selectedParagraphIndices[0] &&
+                      index <= selectedParagraphIndices[1]) ||
+                    (selectedParagraphIndices.length === 1 &&
+                      index === selectedParagraphIndices[0]);
+
                   const backgroundColor = isParagraphSelected ? "white" : "";
 
                   return (

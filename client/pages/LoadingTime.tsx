@@ -160,23 +160,39 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
         </div>
       </div>
 
-      <h3 className="font-bold text-lg absolute bottom-10 left-1/2 transform -translate-x-1/2 text-[#BBBBBB]">
-        Perdu dans votre mindmap ?
-      </h3>
-      <h3 className="font-bold text-lg absolute bottom-4 left-1/2 transform -translate-x-1/2 text-[#BBBBBB]">
-        {randomPhrase}
-      </h3>
+      <div
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-full flex justify-center items-start leading-tight"
+        style={{ height: "60px" }}
+      >
+        <h3 className="font-bold text-lg text-center text-[#BBBBBB] w-[800px]">
+          {randomPhrase.split("\n").map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index !== randomPhrase.split("\n").length - 1 && <br />}
+            </React.Fragment>
+          ))}
+        </h3>
+      </div>
     </div>
   );
 };
 
 export const getServerSideProps = async () => {
   const phrases = [
-    "Prenez du recul en dézoomant ou tapez \"Espace\" pour revenir au centre.",
-    "Utilisez le dézoom pour voir la vue d'ensemble ou appuyez sur \"Espace\" pour centrer.",
-    "Dézoomez pour une vue globale ou appuyez sur \"Espace\" pour revenir au centre.",
-    "Vous pouvez dézoomer pour une vue plus large ou appuyer sur \"Espace\" pour centrer.",
-    "Revenez au centre en appuyant sur \"Espace\" ou dézoomez pour voir tout le contenu."
+    'Perdu dans votre mindmap ?\nPrenez du recul en dézoomant ou tapez "Espace" pour revenir au centre.',
+    'Revenez au centre en appuyant sur "Espace" ou dézoomez pour voir tout le contenu.',
+    "Pour accéder à votre banque de marqueurs sur une map, tapez “ctrl+m”",
+    "Le saviez-vous ? 8h, c’est le temps passé en moyenne chaque semaine au travail à chercher de l’information sans la trouver. Mais ça, c’est sans Semantic.",
+    "Le saviez-vous ? 3h, c’est le temps passé en moyenne par jour au travail à chercher et gérer des informations. Avant Semantic en tout cas.",
+    "Pensez à sauvegarder votre mindmap : vous retrouverez dans Ma Bibliothèque la date, les documents utilisés et la mindmap.",
+    "Une fois au bout de votre mindmap, vous pouvez afficher le texte concerné et basculer dans le document associé.",
+    "Si vous travaillez tard, n’oubliez pas d’activer le night-shift !",
+    "Pensez à utiliser les marqueurs en passant la souris sur un bloc pour personnalisez vos maps et les parcourir avec plus d’aisance.",
+    "Un clic sur 👁️ et vous pourrez faire disparaître puis réapparaitre une partie de la map. De quoi mieux se concentrer sur le reste !",
+    // "Les mind maps peuvent aider à organiser visuellement les concepts et leurs relations, ce qui  facilite la recherche d'informations. Une étude publiée dans \"The Journal of Educational Psychology\" a montré que les participants retrouvaient plus rapidement l'information dans un mind map que dans une liste linéaire… et s’en souvenaient mieux !",
+    "Une recherche menée par l’université de Nouvelle-Galles du Sud a montré que l’utilisation de mind maps est associée à une amélioration de la mémoire à long terme.",
+    "\nUne méta-analyse publiée dans \"Educational Psychology Review\" a souligné que l'utilisation de mind maps était associée à des performances d'apprentissage améliorées.",
+    "L'université de Radboud aux Pays-Bas a montré que les étudiants qui utilisaient des mind maps obtenaient de meilleurs résultats aux tests de connaissances que ceux qui utilisaient des méthodes d'étude plus traditionnelles.",
   ];
 
   const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];

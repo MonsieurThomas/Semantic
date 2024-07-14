@@ -142,12 +142,16 @@ function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
     lines.push(line.trim());
   }
 
-  if (lines.length > 2) {
-    lines = lines.slice(0, 2);
-    while (ctx.measureText(lines[1] + "...").width > boxWidth) {
-      lines[1] = lines[1].slice(0, -1);
+  if (obj.branch == 0 && obj.hover == true) {
+  } else {
+    // Truncate lines and add "..." if necessary
+    if (lines.length > 2) {
+      lines = lines.slice(0, 2);
+      while (ctx.measureText(lines[1] + "...").width > boxWidth) {
+        lines[1] = lines[1].slice(0, -1);
+      }
+      lines[1] = lines[1].trim() + "...";
     }
-    lines[1] = lines[1].trim() + "...";
   }
 
   const totalTextHeight = lines.length * lineHeight;
@@ -172,7 +176,14 @@ function DrawSquare(
   let posX = obj.x;
   let posY = obj.y;
   const cornerRadius = 160;
-  if (obj.branch == 0) {
+  if (obj.branch == 0 && obj.hover) {
+    const words = obj.value.split(" ");
+
+    posX = obj.x - 500;
+    posY = obj.y - words.length * 100;
+    caseWidth += 1000;
+    caseHeight += words.length * 170;
+  } else if (obj.branch == 0) {
     posX = obj.x - 500;
     posY = obj.y - 500;
     caseWidth += 1000;
