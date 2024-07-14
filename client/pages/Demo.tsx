@@ -2,12 +2,9 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import LoupeDemo from "../public/loupeDemo.png";
 import EyeDemo from "../public/EyeDemo.png";
-import PaperDemo from "../public/PaperDemo.png";
+import PaperDemo from "../public/paperDemo.png";
 
 function Demo() {
-  // const [docsPerWeek, setDocsPerWeek] = useState(0);
-  // const [pagesPerDoc, setPagesPerDoc] = useState(0);
-
   const [email, setEmail] = useState("");
   const [location, setLocation] = useState("");
   const [companySize, setCompanySize] = useState("");
@@ -18,7 +15,6 @@ function Demo() {
   const handleDocsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (/^\d*$/.test(value)) {
-      // Permet uniquement les nombres
       setDocsPerWeek(value);
     }
   };
@@ -26,7 +22,6 @@ function Demo() {
   const handlePagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (/^\d*$/.test(value)) {
-      // Permet uniquement les nombres
       setPagesPerDoc(value);
     }
   };
@@ -36,14 +31,6 @@ function Demo() {
     setLocation("");
     setCompanySize("");
   };
-
-  // const handleDocsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   setDocsPerWeek(Number(event.target.value));
-  // };
-
-  // const handlePagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   setPagesPerDoc(Number(event.target.value));
-  // };
 
   const calculateEarnings = () => {
     const pages = Number(pagesPerDoc);
@@ -59,40 +46,47 @@ function Demo() {
       return `${hours} heures`;
     }
 
+    if (hours === 0) {
+      return `${minutes} minutes`;
+    }
+
     return `${hours} heures et ${minutes} minutes`;
   };
 
   const earnings = calculateEarnings();
 
   useEffect(() => {
-    // Create a script element
     const script = document.createElement("script");
     script.src = "https://cdn.reservio.com/widget/button-bundle.js";
     script.async = true;
 
-    // Append the script element to the body
     document.body.appendChild(script);
 
-    // Clean up the script element when the component unmounts
     return () => {
       document.body.removeChild(script);
     };
   }, []);
 
   return (
-    <div className="flex mx-[100px] my-[0px] h-[85vh] gap-[2px]">
-      <div className="w-1/2  p-6 pt-2 bg-gray-50 rounded-[35px]">
-        {/* <h1 className="text-2xl font-bold w-[400px] ">
-          Lisez 3x plus de documents, en 3x moins de temps
-        </h1> */}
+    <div className="relative flex mx-[100px] my-[0px] h-[85vh] gap-[2px] z-0">
+      <div className="absolute top-0 left-0 w-full h-full z-0">
+        <video
+          className="w-full h-full object-cover"
+          src="/bg-semantic.mp4"
+          autoPlay
+          muted
+          playsInline
+        />
+      </div>
+      <div className="w-1/2 p-6 pt-2 rounded-[35px] z-10 bg-opacity-75 bg-white">
         <h1 className="text-2xl font-bold my-4 text-center">
           Ce qu’on propose
         </h1>
-        <div className="bg-white px-5 rounded-xl">
+        <div className="px-5 rounded-xl">
           <Image
             src={PaperDemo}
             alt="Paper Demo"
-            className="w-[50px] mx-auto pt-6"
+            className="w-[50px] mx-auto mt-6 mb-4 pt-6"
           />
           <h1 className="font-bold">Compile n’importe quels documents:</h1>
           <h3 className="text-sm mx-auto mt-1">
@@ -102,7 +96,7 @@ function Demo() {
           <Image
             src={EyeDemo}
             alt="Eye Demo"
-            className="w-[60px] mx-auto mt-4 mb-2 "
+            className="w-[60px] mx-auto mt-6 mb-4 "
           />
           <h1 className="text-lg font-bold ">
             Structure ta pensée en un rien de temps
@@ -114,7 +108,7 @@ function Demo() {
           <Image
             src={LoupeDemo}
             alt="Loupe Demo"
-            className="w-[50px] mx-auto "
+            className="w-[50px] mx-auto mt-6 mb-4 "
           />
           <h1 className="text-lg font-bold ">
             Trouve plus d’informations, plus rapidement, sans te fatiguer
@@ -126,7 +120,7 @@ function Demo() {
         </div>
       </div>
 
-      <div className="w-1/2 p-4 bg-gray-50 rounded-[35px]">
+      <div className="w-1/2 p-4 rounded-[35px] bg-gray-50 bg-opacity-75 z-10">
         <h1 className="text-2xl font-bold my-4 text-center ">
           Ce que tu gagnes{" "}
         </h1>
@@ -134,13 +128,13 @@ function Demo() {
           This is how much you could earn on Thinkific
         </h1>
         <div className="bg-white p-5 rounded-xl">
-          <div className="mb-4 flex items-center">
+          <div className="mb-10 flex items-center">
             <input
               type="text"
               id="docsPerWeek"
               value={docsPerWeek}
               onChange={handleDocsChange}
-              className="w-[80px]  rounded-md px-2 h-[30px] mr-2 no-scrollbar text-center"
+              className="w-[80px] border border-gray-300 rounded-md px-2 h-[30px] mr-2 no-scrollbar text-center"
             />
             <div className="mx-2">
               <h2 className="block font-medium ">/Documents lus</h2>
@@ -154,8 +148,8 @@ function Demo() {
               onChange={handlePagesChange}
               className="w-[80px] border border-gray-300 rounded-md px-2 h-[30px] mr-2 no-scrollbar text-center"
             />
-            <div className="mx-2 mb-6">
-              <h2 className="block font-medium">Nombre de pages</h2>
+            <div className="mx-2">
+              <h2 className="block font-medium">/Nombre de pages</h2>
               <h2 className="text-sm">moyen par document</h2>
             </div>
           </div>

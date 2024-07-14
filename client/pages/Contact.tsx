@@ -10,10 +10,15 @@ const Contact = () => {
       style={{ fontFamily: "Lexend", height: "85vh" }}
       className="relative flex flex-col justify-between items-center"
     >
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bg.src})`, opacity: 0.1, zIndex: -1 }}
-      ></div>
+     <div className="absolute top-0 left-0 w-full h-full z-0">
+        <video
+          className="w-full h-full object-cover"
+          src="/bg-semantic.mp4"
+          autoPlay
+          muted
+          playsInline
+        />
+      </div>
       <div className="relative z-10 flex flex-col items-center justify-center h-1/2 text-center p-6 rounded-xl">
         <h1 className="text-5xl font-bold mb-6">Contacte-nous!</h1>
         <p className="text-lg ">Une question, un problème, une idée?</p>

@@ -46,7 +46,6 @@ function Header() {
     <div
       className="flex mx-10 items-center py-6 z-50"
       style={{ userSelect: "none" }}
-      // style={{ userSelect: "none", fontFamily: "Lexend" }}
     >
       <Link href="/">
         <Image
@@ -72,16 +71,16 @@ function Header() {
         {isExpanded && (
           <div className="absolute left-[210px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
             <Link href="/Offer">
-              <p>Nos offres</p>
+              <p onClick={toggleToFalse}>Nos offres</p>
             </Link>
             <Link href="/MindMapping">
-              <p>Mind mapping</p>
+              <p onClick={toggleToFalse}>Mind mapping</p>
             </Link>
             <Link href="/FAQ">
-              <p>FAQ</p>
+              <p onClick={toggleToFalse}>FAQ</p>
             </Link>
             <Link href="/Contact">
-              <p>Contact</p>
+              <p onClick={toggleToFalse}>Contact</p>
             </Link>
           </div>
         )}
@@ -96,7 +95,6 @@ function Header() {
         <div className="flex justify-center text-center gap-[150px]">
           <div
             onMouseEnter={handleProfileHover}
-            // onMouseLeave={handleProfileLeave}
             className="relative"
           >
             {username ? (
@@ -116,17 +114,17 @@ function Header() {
             )}
             {isProfileHovered && (
               <div
-                className="absolute right-0 mt-2 w-[150px] text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer"
+                className="absolute right-0 mt-2 w-[150px] text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer z-11"
                 onMouseEnter={handleProfileHover}
                 onMouseLeave={handleProfileLeave}
               >
                 {username ? (
                   <Link href="/MapChoice">
-                    <p>Ma bibliothèque</p>
+                    <p onClick={toggleToFalse}>Ma bibliothèque</p>
                   </Link>
                 ) : (
                   <Link href="/Login">
-                    <p>Ma bibliothèque</p>
+                    <p onClick={toggleToFalse}>Ma bibliothèque</p>
                   </Link>
                 )}
                 {username ? (
@@ -134,11 +132,13 @@ function Header() {
                     Se déconnecter
                   </p>
                 ) : (
-                  <Link href="/Login">Se connecter</Link>
+                  <Link href="/Login" onClick={toggleToFalse}>
+                    Se connecter
+                  </Link>
                 )}
                 {router.pathname === "/CanvasDrawing" && (
                   <Link href="/MapChoice">
-                    <p>Enregistrer</p>
+                    <p onClick={toggleToFalse}>Enregistrer</p>
                   </Link>
                 )}
               </div>
