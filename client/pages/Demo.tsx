@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import LoupeDemo from "../public/loupeDemo.png";
 import EyeDemo from "../public/EyeDemo.png";
-import PaperDemo from "../public/paperDemo.png";
+import PaperDemo from "../public/PaperDemo.png";
 
 function Demo() {
   const [email, setEmail] = useState("");
