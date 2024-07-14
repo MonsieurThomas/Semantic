@@ -3,7 +3,11 @@ import { useRouter } from "next/router";
 import io from "socket.io-client";
 import { AnimatePresence, motion } from "framer-motion";
 
-const LoadingTime = () => {
+interface LoadingTimeProps {
+  randomPhrase: string;
+}
+
+const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
@@ -160,11 +164,28 @@ const LoadingTime = () => {
         Perdu dans votre mindmap ?
       </h3>
       <h3 className="font-bold text-lg absolute bottom-4 left-1/2 transform -translate-x-1/2 text-[#BBBBBB]">
-        Prenez du recul en dézoomant ou tapez &quot;Espace&quot; pour revenir au
-        centre.
+        {randomPhrase}
       </h3>
     </div>
   );
+};
+
+export const getServerSideProps = async () => {
+  const phrases = [
+    "Prenez du recul en dézoomant ou tapez \"Espace\" pour revenir au centre.",
+    "Utilisez le dézoom pour voir la vue d'ensemble ou appuyez sur \"Espace\" pour centrer.",
+    "Dézoomez pour une vue globale ou appuyez sur \"Espace\" pour revenir au centre.",
+    "Vous pouvez dézoomer pour une vue plus large ou appuyer sur \"Espace\" pour centrer.",
+    "Revenez au centre en appuyant sur \"Espace\" ou dézoomez pour voir tout le contenu."
+  ];
+
+  const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+  return {
+    props: {
+      randomPhrase,
+    },
+  };
 };
 
 export default LoadingTime;

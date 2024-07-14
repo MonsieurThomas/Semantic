@@ -38,6 +38,10 @@ function Header() {
     setIsProfileHovered(false);
   };
 
+  const pushToDemo = () => {
+    router.push("/Demo");
+  };
+
   return (
     <div
       className="flex mx-10 items-center py-6 z-50"
@@ -80,6 +84,14 @@ function Header() {
               <p>Contact</p>
             </Link>
           </div>
+        )}
+        {!username && (
+          <button
+            onClick={pushToDemo}
+            className="bg-[#14213D] text-white font-bold px-8 rounded-2xl"
+          >
+            Réserver une démo
+          </button>
         )}
         <div className="flex justify-center text-center gap-[150px]">
           <div
