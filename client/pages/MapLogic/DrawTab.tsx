@@ -177,12 +177,37 @@ function DrawSquare(
   let posY = obj.y;
   const cornerRadius = 160;
   if (obj.branch == 0 && obj.hover) {
+    //calcul nombre de ligne titre
+    let lines: string[] = [];
+    let line = "";
     const words = obj.value.split(" ");
+    console.log("This words = ", words);
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + " ";
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
 
-    posX = obj.x - 500;
-    posY = obj.y - words.length * 100;
-    caseWidth += 1000;
-    caseHeight += words.length * 170;
+      if (testWidth > 3500) {
+        lines.push(line.trim());
+        line = words[i] + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    console.log("This lines = ", lines.length);
+
+    if (lines.length > 1) {
+      posX = obj.x - 500;
+      posY = obj.y - words.length * 100;
+      caseWidth += 1000;
+      caseHeight += words.length * 170;
+    }
+    else{
+      posX = obj.x - 500;
+      posY = obj.y - 500;
+      caseWidth += 1000;
+      caseHeight += 1000;
+    }
   } else if (obj.branch == 0) {
     posX = obj.x - 500;
     posY = obj.y - 500;

@@ -129,7 +129,7 @@ const CanvasDrawing = () => {
         typeof obj[key] === "object" &&
         obj[key] !== null &&
         !Array.isArray(obj[key]) &&
-        !("value" in obj[key]) // Check if it's not a terminal node
+        !("bounding" in obj[key]) // Check if it's not a terminal node
       ) {
         if (depth === 1) {
           branchNb++;
@@ -140,13 +140,18 @@ const CanvasDrawing = () => {
           obj[key],
           depth + 1,
           branchNb,
-          key,
+          obj[key].value,
           currentPath
         );
         newObj[key] = { ...processedObj };
         localCount += subCount;
         localSum += subSum;
-      } else if ("value" in obj[key]) {
+      } else if (
+        typeof obj[key] === "object" &&
+        obj[key] !== null &&
+        "bounding" in obj[key]
+      ) {
+        console.log("we are in value", obj[key]);
         // Handle terminal nodes with value and offset
         if (depth === 1) {
           branchNb++;
@@ -189,6 +194,15 @@ const CanvasDrawing = () => {
     const [newObj, , ,] = processNestedObject(obj, 0);
     // count = 0;
     branchNb = 0;
+
+    localeTab.forEach((object) => {
+      if (!object.path && !object.value) {
+        object.value = Object.keys(obj)[0];
+        object.branch = 0;
+        console.log("object = ", object);
+      }
+    });
+    console.log("localeTab = ", localeTab);
 
     return localeTab;
   };
@@ -286,7 +300,6 @@ const CanvasDrawing = () => {
         obj.y = midCount / 2;
         obj.branch = 0;
         setCamera(obj);
-        console.log("bon obj = ", obj);
       }
     });
 
@@ -366,12 +379,13 @@ const CanvasDrawing = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [isHoveringObject, setIsHoveringObject] = useState(false);
   const [pistacheTab, setPistacheTab] = useState<any>([]);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState<string>("");
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, setIsTextShown] = useState(false);
   const [isMenuShown, setIsMenuShown] = useState(false);
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [selected, setSelected] = useState<any>();
+  const [selectedCitation, setSelectedCitation] = useState(false);
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [showBackground, setShowBackground] = useState(false);
@@ -543,7 +557,10 @@ const CanvasDrawing = () => {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.code === "Space") {
+      if (
+        event.code === "Space" &&
+        document.activeElement !== document.querySelector('input[type="text"]')
+      ) {
         event.preventDefault();
         // Ajoutez ici toute logique spécifique que vous souhaitez lorsque la barre d'espace est pressée
         // console.log("Barre d'espace pressée !");
@@ -768,6 +785,7 @@ const CanvasDrawing = () => {
   }
 
   const handleInputChange = (event: any) => {
+    console.log('Input value: "', event.target.value, '"');
     setSearchValue(event.target.value);
   };
 
@@ -885,6 +903,17 @@ const CanvasDrawing = () => {
       );
   }, [isTextShown, selected]);
 
+  useEffect(() => {
+    if (selectedCitation)
+      findFullStringFromCitation(
+        selectedCitation,
+        textRefs,
+        selectedParagraphIndices,
+        setShowBackground,
+        setProgrammaticScroll
+      );
+  }, [isTextShown, selectedCitation]);
+
   function removeDots(input: string): string {
     return input.replace(/·/g, "").trim();
   }
@@ -899,7 +928,6 @@ const CanvasDrawing = () => {
   ) => {
     const separatorRegex = /\.{3}\s*[-–—]>\s*\.{3}/;
     let searchText = String(selected.bounding[index]);
-
     if (searchText.endsWith("...")) {
       searchText = searchText.slice(0, -3);
     }
@@ -966,10 +994,13 @@ const CanvasDrawing = () => {
       setSelectedParagraphIndices(textIndices);
       setShowBackground(true);
       setProgrammaticScroll(true);
-
+      console.log("textIndices dans findString = ", textIndices);
       textIndices.forEach((textIndex, idx) => {
+        console.log("textIndices dans findString = ", textIndex);
+        console.log("textIndices dans findString = ", idx);
         const textElement = textRefs.current[textIndex];
 
+        console.log("text element dans fullstring = ", textElement);
         if (textElement) {
           let blockPosition: ScrollLogicalPosition = "center";
           if (index === 0) {
@@ -979,6 +1010,125 @@ const CanvasDrawing = () => {
           } else if (index === 2) {
             blockPosition = "end";
           }
+
+          textElement.scrollIntoView({
+            behavior: "smooth",
+            block: blockPosition,
+          });
+
+          if (idx === textIndices.length - 1) {
+            setTimeout(() => {
+              setProgrammaticScroll(false);
+            }, 1000);
+          }
+        }
+      });
+    } else {
+      console.log("No matching text found.");
+    }
+  };
+
+  const prepareCitationOpening = (context: any) => {
+    setSelectedCitation(context);
+    setIsTextShown(true);
+  };
+
+  const findFullStringFromCitation = (
+    context: any,
+    textRefs: any,
+    selectedParagraphIndices: any,
+    setShowBackground: any,
+    setProgrammaticScroll: any
+  ) => {
+    console.log("apiResponse", apiResponse);
+    console.log("context", context);
+
+    const contextWords = context.split(" ");
+
+    // Create startText with the first 6 words
+    const startText = contextWords.slice(0, 6).join(" ");
+
+    // Create endText with words from the 5th to the 11th (last 6 words)
+    const endText = contextWords.slice(5, 11).join(" ");
+
+    console.log("startText", startText);
+    console.log("endText", endText);
+
+    let apiText: any[] = [];
+
+    // Find paragraph containing both startText and endText
+    let combinedText = apiResponse?.find((item: any) =>
+      removeDots(item.content).includes(context)
+    );
+
+    // If the entire context is not found, look for startText and endText
+    if (!combinedText) {
+      combinedText = apiResponse?.find(
+        (item: any) =>
+          removeDots(item.content).includes(startText) &&
+          removeDots(item.content).includes(endText)
+      );
+    }
+
+    console.log("combinedText", combinedText);
+
+    if (combinedText) {
+      apiText.push(combinedText);
+      console.log("combinedText");
+    } else {
+      // Find paragraph containing startText
+      let startTextParagraph = apiResponse?.find((item: any) =>
+        removeDots(item.content).includes(startText)
+      );
+      if (!startTextParagraph) {
+        // apiResponse?.forEach((item: any, idx: number) => {
+        //   console.log(`Index: ${idx}, Content: ${removeDots(item.content)}`);
+        // });
+
+        startTextParagraph = apiResponse?.find((item: any) =>
+          startText.includes(removeDots(item.content))
+        );
+        // console.log(
+        //   "startTextParagraph apres le nouveau if = ",
+        //   startTextParagraph
+        // );
+      }
+      // Find paragraph containing endText
+      let endTextParagraph = apiResponse?.find((item: any) =>
+        removeDots(item.content).includes(endText)
+      );
+
+      if (startTextParagraph) {
+        apiText.push(startTextParagraph);
+      }
+
+      if (endTextParagraph && endTextParagraph !== startTextParagraph) {
+        apiText.push(endTextParagraph);
+      }
+    }
+    if (apiText.length > 0) {
+      const textIndices = apiText.map((text) =>
+        apiResponse?.findIndex((item: any) => item === text)
+      );
+
+      setSelectedParagraphIndices(textIndices);
+      console.log("textIndices = ", textIndices);
+      console.log("textRefs = ", textRefs);
+      setShowBackground(true);
+      setProgrammaticScroll(true);
+      setSelected(null);
+      // setIsTextShown(true);
+
+      console.log("textIndices = ", textIndices);
+      console.log("textRefs = ", textRefs);
+      textIndices.forEach((textIndex, idx) => {
+        console.log("textIndices dans findString = ", textIndex);
+        console.log("textIndices dans findString = ", idx);
+        const textElement = textRefs.current[textIndex];
+        console.log("textElement = ", textElement);
+
+        if (textElement) {
+          let blockPosition: ScrollLogicalPosition = "center";
 
           textElement.scrollIntoView({
             behavior: "smooth",
@@ -1019,17 +1169,45 @@ const CanvasDrawing = () => {
 
     if (fullText) {
       const lowerCaseSearchValue = searchValue.toLowerCase();
-      const words = fullText.split(/\s+/);
+      const fullTextLowerCase = fullText.toLowerCase();
 
-      for (let i = 0; i < words.length; i++) {
-        if (words[i].toLowerCase().includes(lowerCaseSearchValue)) {
-          const start = Math.max(i - 5, 0);
-          const end = Math.min(i + 5 + 1, words.length);
-          const context = words.slice(start, end).join(" ");
-          contexts.push(context);
-        }
+      let searchIndex = 0;
+      while (
+        (searchIndex = fullTextLowerCase.indexOf(
+          lowerCaseSearchValue,
+          searchIndex
+        )) !== -1
+      ) {
+        // Ensure searchValue is not split
+        console.log("this is searchindex", searchIndex);
+        const startIdx = Math.max(
+          fullTextLowerCase.lastIndexOf(" ", searchIndex - 1),
+          0
+        );
+        const endIdx = Math.min(
+          fullTextLowerCase.indexOf(" ", searchIndex + searchValue.length) + 1,
+          fullText.length
+        );
+
+        // Extract the context string
+        const beforeMatch = fullText
+          .slice(0, searchIndex)
+          .split(/\s+/)
+          .slice(-5, -1); // Last 5 words before the match
+        console.log("beforeMatch", beforeMatch);
+        const afterMatch = fullText.slice(searchIndex).split(/\s+/).slice(0, 5); // First 5 words after the match
+
+        // Reconstruct the context
+        const context = [
+          ...beforeMatch,
+          ...afterMatch,
+        ].join(" ");
+
+        contexts.push(context);
+        searchIndex += lowerCaseSearchValue.length;
       }
     }
+    console.log("This is contexts", contexts);
     return contexts;
   };
 
@@ -1054,7 +1232,7 @@ const CanvasDrawing = () => {
               className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
               onChange={handleInputChange}
               value={searchValue}
-              style={{ userSelect: "none", outline: "none" }}
+              // style={{ userSelect: "none", outline: "none" }}
             />
           </div>
         ) : null}
@@ -1156,7 +1334,7 @@ const CanvasDrawing = () => {
                         boxSizing: "border-box",
                       }}
                     />
-                    <span
+                    <button
                       style={{
                         position: "relative",
                         zIndex: 2,
@@ -1165,9 +1343,10 @@ const CanvasDrawing = () => {
                         fontSize: "14px",
                         color: "black",
                       }}
+                      onClick={() => prepareCitationOpening(context)}
                     >
                       {context}
-                    </span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -1185,51 +1364,49 @@ const CanvasDrawing = () => {
       </div>
 
       {isTextShown && (
-        <div
-          id="modal-backdrop"
-          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10"
-        >
+        <div className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10">
           <div className="flex w-full max-w-[1000px] mr-[300px]">
             <div
               className="flex flex-col overflow-auto px-5 py-3"
               style={{ flex: 2, width: "300px", maxHeight: "100vh" }}
             >
-              {selected.bounding.map((offset: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center my-[80px] gap-3"
-                >
+              {selected &&
+                selected.bounding.map((offset: any, index: number) => (
                   <div
-                    className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    onClick={() =>
-                      findFullString(
-                        index,
-                        selected,
-                        textRefs,
-                        setSelectedParagraphIndices,
-                        setShowBackground,
-                        setProgrammaticScroll
-                      )
-                    }
+                    key={index}
+                    className="flex justify-between items-center my-[80px] gap-3"
                   >
                     <div
-                      className="whitespace-nowrap overflow-hidden text-ellipsis text-center p-1"
-                      style={{ maxWidth: "320px", fontFamily: "Lexend" }}
+                      className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onClick={() =>
+                        findFullString(
+                          index,
+                          selected,
+                          textRefs,
+                          setSelectedParagraphIndices,
+                          setShowBackground,
+                          setProgrammaticScroll
+                        )
+                      }
                     >
-                      {selected.value}
+                      <div
+                        className="whitespace-nowrap overflow-hidden text-ellipsis text-center p-1"
+                        style={{ maxWidth: "320px", fontFamily: "Lexend" }}
+                      >
+                        {selected.value}
+                      </div>
+                    </div>
+                    <div
+                      className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                      {String.fromCharCode(65 + index)}
                     </div>
                   </div>
-                  <div
-                    className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    {String.fromCharCode(65 + index)}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
             <div
               ref={modalRef}

@@ -70,9 +70,9 @@ function Header() {
         </div>
         {isExpanded && (
           <div className="absolute left-[210px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
-            <Link href="/Offer">
+            {/* <Link href="/Offer">
               <p onClick={toggleToFalse}>Nos offres</p>
-            </Link>
+            </Link> */}
             <Link href="/MindMapping">
               <p onClick={toggleToFalse}>Mind mapping</p>
             </Link>
