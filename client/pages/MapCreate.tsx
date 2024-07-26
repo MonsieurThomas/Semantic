@@ -65,7 +65,7 @@ const MapCreate = () => {
       <div className="absolute top-0 left-0 w-full h-full">
         <video
           className="w-full h-full object-cover"
-          src="/bg-semantic.mp4"
+          src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
@@ -95,7 +95,7 @@ const MapCreate = () => {
           ref={fileInputRef}
           style={{ display: "none" }}
           onChange={handleFileChange}
-          multiple // Allow multiple file selection
+          multiple
         />
         {userId && (
           <div className="absolute top-[110px] text-center ">

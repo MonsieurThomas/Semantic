@@ -151,7 +151,7 @@ const CanvasDrawing = () => {
         obj[key] !== null &&
         "bounding" in obj[key]
       ) {
-        console.log("we are in value", obj[key]);
+        // console.log("we are in value", obj[key]);
         // Handle terminal nodes with value and offset
         if (depth === 1) {
           branchNb++;
@@ -191,6 +191,8 @@ const CanvasDrawing = () => {
     obj: NestedObject
   ) => {
     localeTab = [];
+    console.log("nested obj before parsing = ", obj);
+
     const [newObj, , ,] = processNestedObject(obj, 0);
     // count = 0;
     branchNb = 0;
@@ -199,7 +201,6 @@ const CanvasDrawing = () => {
       if (!object.path && !object.value) {
         object.value = Object.keys(obj)[0];
         object.branch = 0;
-        console.log("object = ", object);
       }
     });
     console.log("localeTab = ", localeTab);
@@ -370,6 +371,9 @@ const CanvasDrawing = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isZooming, setIsZooming] = useState(false);
@@ -590,6 +594,22 @@ const CanvasDrawing = () => {
       }
     };
 
+    const handleInputClickOutside = (event: MouseEvent) => {
+      // localTab.forEach((obj) => {
+      //   if (obj.hover) return;
+      // })
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node) &&
+        resultsRef.current &&
+        !resultsRef.current.contains(event.target as Node) &&
+        !isTextShown
+      ) {
+        setSearchValue("");
+        setIsHovering(false);
+      }
+    };
+
     /////handle weel ////
     /////handle weel ////
     /////handle weel ////
@@ -729,7 +749,7 @@ const CanvasDrawing = () => {
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
     document.addEventListener("keydown", handleKeyDown);
-    // document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleInputClickOutside);
     document.addEventListener("wheel", handleWheel, { passive: false });
     if (scrollContainer)
       scrollContainer.addEventListener("scroll", handleScrollOverflow);
@@ -747,7 +767,7 @@ const CanvasDrawing = () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("click", handleCanvasClick);
-      // document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleInputClickOutside);
       document.removeEventListener("wheel", handleWheel);
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScrollOverflow);
@@ -785,9 +805,11 @@ const CanvasDrawing = () => {
   }
 
   const handleInputChange = (event: any) => {
-    // console.log('Input value: "', event.target.value, '"');
     setSearchValue(event.target.value);
   };
+  useEffect(() => {
+    console.log("searchValue a chaud = ", searchValue);
+  }, [searchValue]);
 
   function getOpacity(obj: any) {
     const calculatedOpacity = 1 - (obj.path.length - 0.5) / 10;
@@ -1149,14 +1171,22 @@ const CanvasDrawing = () => {
 
   // Function to remove "·" from strings
 
+  // const filterValues = (obj: { value: string }) => {
+  //   const searchWords = searchValue.toLowerCase().split(" "); // Divise la valeur de recherche en mots
+  //   const objWords = obj.value.toLowerCase().split(" "); // Divise chaque valeur de l'objet en mots
+  //   return searchWords.some(
+  //     (
+  //       searchWord // Vérifie si un des mots de recherche correspond au début de n'importe quel mot de l'objet
+  //     ) => objWords.some((objWord: string) => objWord.startsWith(searchWord))
+  //   );
+  // };
+
   const filterValues = (obj: { value: string }) => {
-    const searchWords = searchValue.toLowerCase().split(" "); // Divise la valeur de recherche en mots
-    const objWords = obj.value.toLowerCase().split(" "); // Divise chaque valeur de l'objet en mots
-    return searchWords.some(
-      (
-        searchWord // Vérifie si un des mots de recherche correspond au début de n'importe quel mot de l'objet
-      ) => objWords.some((objWord: string) => objWord.startsWith(searchWord))
-    );
+    const searchWord = searchValue.toLowerCase(); // Convertit la valeur de recherche en minuscules
+    const objValue = obj.value.toLowerCase(); // Convertit la valeur de l'objet en minuscules
+
+    // Vérifie si obj.value inclut searchValue et commence par searchValue
+    return objValue.includes(searchWord) && objValue.startsWith(searchWord);
   };
 
   type ContextType = string[];
@@ -1178,24 +1208,36 @@ const CanvasDrawing = () => {
           searchIndex
         )) !== -1
       ) {
-        // Ensure searchValue is not split
-        // console.log("this is searchindex", searchIndex);
+        // Find the start and end of the context
         const startIdx = Math.max(
-          fullTextLowerCase.lastIndexOf(" ", searchIndex - 1),
+          searchIndex - 30 * searchValue.length, // Rough estimate of 5 words before
           0
         );
         const endIdx = Math.min(
-          fullTextLowerCase.indexOf(" ", searchIndex + searchValue.length) + 1,
+          searchIndex + 30 * searchValue.length, // Rough estimate of 5 words after + searchValue
           fullText.length
         );
 
         // Extract the context string
-        const beforeMatch = fullText
-          .slice(0, searchIndex)
-          .split(/\s+/)
-          .slice(-5, -1); // Last 5 words before the match
-        // console.log("beforeMatch", beforeMatch);
-        const afterMatch = fullText.slice(searchIndex).split(/\s+/).slice(0, 5); // First 5 words after the match
+        const contextString = fullText.slice(startIdx, endIdx);
+
+        // Split the context string into words
+        const words = contextString.split(/\s+/);
+
+        // Get the index of the search term in the words array
+        const searchWordIndex = words.findIndex((word) =>
+          word.toLowerCase().includes(lowerCaseSearchValue)
+        );
+
+        // Get the 5 words before and after the search term
+        const beforeMatch = words.slice(
+          Math.max(0, searchWordIndex - 5),
+          searchWordIndex
+        );
+        const afterMatch = words.slice(
+          searchWordIndex,
+          Math.min(words.length, searchWordIndex + 6)
+        ); // Includes the search word
 
         // Reconstruct the context
         const context = [...beforeMatch, ...afterMatch].join(" ");
@@ -1204,8 +1246,14 @@ const CanvasDrawing = () => {
         searchIndex += lowerCaseSearchValue.length;
       }
     }
-    // console.log("This is contexts", contexts);
+
     return contexts;
+  };
+
+  const focusInput = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const contexts: ContextType = searchValue
@@ -1215,14 +1263,18 @@ const CanvasDrawing = () => {
   return (
     <>
       <div
-        className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl "
+        className="bg-[#F2F2F2] fixed ml-10 mt-2 rounded-xl"
         onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)} //
+        onMouseLeave={() => setIsHovering(false)}
+        ref={containerRef}
       >
         {!isHovering && !searchValue && <SearchOutlinedIcon className="mt-1" />}
         {isHovering || searchValue ? (
           <div className="flex justify-center items-center">
-            <SearchOutlinedIcon className="cursor-pointer" />
+            <SearchOutlinedIcon
+              className="cursor-pointer"
+              onClick={focusInput}
+            />
             <input
               type="text"
               placeholder="Rechercher"
@@ -1230,6 +1282,7 @@ const CanvasDrawing = () => {
               onChange={handleInputChange}
               value={searchValue}
               style={{ userSelect: "none", outline: "none" }}
+              ref={inputRef}
             />
           </div>
         ) : null}
@@ -1253,7 +1306,10 @@ const CanvasDrawing = () => {
         </>
       )}
       {searchValue && (
-        <div className="w-[250px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto">
+        <div
+          className="w-[250px] h-[300px] ml-9 mt-11 bg-slate-800 rounded-2xl fixed overflow-auto"
+          ref={resultsRef}
+        >
           <div className="p-2">
             {localTab.filter(filterValues).map((obj, index) => (
               <div
