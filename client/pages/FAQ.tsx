@@ -15,7 +15,7 @@ function Questions() {
     >
       <video
         className="absolute top-0 left-0 w-full h-full object-cover -z-10"
-        src="/bg-semantic.mp4"
+        src="/NEURONES FAQ_v1a.mp4"
         autoPlay
         muted
         playsInline

@@ -1,5 +1,4 @@
-// Header.jsx
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import "../styles/style.css";
 import Logo from "../../../public/logo.png";
 import Image from "next/image";
@@ -16,6 +15,7 @@ function Header() {
   const { setUsername: setContextUsername, setId: setContextId } =
     useContext(UserContext);
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -41,6 +41,19 @@ function Header() {
   const pushToDemo = () => {
     router.push("/Demo");
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div
@@ -69,10 +82,10 @@ function Header() {
           </span>
         </div>
         {isExpanded && (
-          <div className="absolute left-[210px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer">
-            {/* <Link href="/Offer">
-              <p onClick={toggleToFalse}>Nos offres</p>
-            </Link> */}
+          <div
+            className="absolute left-[210px] mt-2 text-sm leading-tight px-2 py-1 rounded-xl bg-[#FCA314] text-white font-medium cursor-pointer"
+            ref={dropdownRef}
+          >
             <Link href="/MindMapping">
               <p onClick={toggleToFalse}>Mind mapping</p>
             </Link>
@@ -93,13 +106,10 @@ function Header() {
           </button>
         )}
         <div className="flex justify-center text-center gap-[150px]">
-          <div
-            onMouseEnter={handleProfileHover}
-            className="relative"
-          >
+          <div onMouseEnter={handleProfileHover} className="relative">
             {username ? (
               <div className="flex items-center gap-2">
-                <span className=" flex items-center justify-center text-xl font-semibold rounded-full bg-gray-200 w-10 h-10">
+                <span className="flex items-center justify-center text-xl font-semibold rounded-full bg-gray-200 w-10 h-10">
                   {username.charAt(0).toUpperCase()}
                 </span>
               </div>

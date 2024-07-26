@@ -13,7 +13,7 @@ const Contact = () => {
      <div className="absolute top-0 left-0 w-full h-full z-0">
         <video
           className="w-full h-full object-cover"
-          src="/bg-semantic.mp4"
+          src="/NEURONES CONTACT_v1a.mp4"
           autoPlay
           muted
           playsInline

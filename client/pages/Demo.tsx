@@ -69,16 +69,16 @@ function Demo() {
 
   return (
     <div className="relative flex mx-[100px] my-[0px] h-[85vh] gap-[2px] z-0">
-      <div className="absolute top-0 left-0 w-full h-full z-0">
+      <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
         <video
           className="w-full h-full object-cover"
-          src="/bg-semantic.mp4"
+          src="/NEURONES MINDMAPPING_v1a.mp4"
           autoPlay
           muted
           playsInline
         />
       </div>
-      <div className="w-1/2 p-6 pt-2 rounded-[35px] z-10 bg-opacity-75 bg-white">
+      <div className="w-1/2 p-6 pt-2 rounded-[35px] z-10 bg-opacity-75 ">
         <h1 className="text-2xl font-bold my-4 text-center">
           Ce qu’on propose
         </h1>
@@ -86,7 +86,7 @@ function Demo() {
           <Image
             src={PaperDemo}
             alt="Paper Demo"
-            className="w-[50px] mx-auto mt-6 mb-4 pt-6"
+            className="w-[45px] mx-auto mt-8 mb-6 pt-6"
           />
           <h1 className="font-bold">Compile n’importe quels documents:</h1>
           <h3 className="text-sm mx-auto mt-1">
@@ -96,7 +96,7 @@ function Demo() {
           <Image
             src={EyeDemo}
             alt="Eye Demo"
-            className="w-[60px] mx-auto mt-6 mb-4 "
+            className="w-[50px] mx-auto mt-8 mb-6 "
           />
           <h1 className="text-lg font-bold ">
             Structure ta pensée en un rien de temps
@@ -108,7 +108,7 @@ function Demo() {
           <Image
             src={LoupeDemo}
             alt="Loupe Demo"
-            className="w-[50px] mx-auto mt-6 mb-4 "
+            className="w-[45px] mx-auto mt-4 mb-6 "
           />
           <h1 className="text-lg font-bold ">
             Trouve plus d’informations, plus rapidement, sans te fatiguer
@@ -120,14 +120,14 @@ function Demo() {
         </div>
       </div>
 
-      <div className="w-1/2 p-4 rounded-[35px] bg-gray-50 bg-opacity-75 z-10">
+      <div className="w-1/2 p-6 pt-2 rounded-[35px]  bg-opacity-75 z-10">
         <h1 className="text-2xl font-bold my-4 text-center ">
           Ce que tu gagnes{" "}
         </h1>
-        <h1 className="text-xl font-semibold my-4 text-center">
+        {/* <h1 className="text-xl font-semibold my-4 text-center">
           This is how much you could earn on Thinkific
-        </h1>
-        <div className="bg-white p-5 rounded-xl">
+        </h1> */}
+        <div className=" p-5 py-14 rounded-xl">
           <div className="mb-10 flex items-center">
             <input
               type="text"
@@ -135,6 +135,7 @@ function Demo() {
               value={docsPerWeek}
               onChange={handleDocsChange}
               className="w-[80px] border border-gray-300 rounded-md px-2 h-[30px] mr-2 no-scrollbar text-center"
+              style={{ outline: "none" }}
             />
             <div className="mx-2">
               <h2 className="block font-medium ">/Documents lus</h2>
@@ -147,6 +148,7 @@ function Demo() {
               value={pagesPerDoc}
               onChange={handlePagesChange}
               className="w-[80px] border border-gray-300 rounded-md px-2 h-[30px] mr-2 no-scrollbar text-center"
+              style={{ outline: "none" }}
             />
             <div className="mx-2">
               <h2 className="block font-medium">/Nombre de pages</h2>
@@ -172,7 +174,7 @@ function Demo() {
           ></div>
         </div>
         <h1 className="font-bold text-center mt-10">
-          Gratuite, 30mn, et sans engagement :
+          Gratuite, 30mn, et sans engagement
         </h1>
       </div>
     </div>

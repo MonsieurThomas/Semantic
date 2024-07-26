@@ -785,7 +785,7 @@ const CanvasDrawing = () => {
   }
 
   const handleInputChange = (event: any) => {
-    console.log('Input value: "', event.target.value, '"');
+    // console.log('Input value: "', event.target.value, '"');
     setSearchValue(event.target.value);
   };
 
@@ -957,20 +957,20 @@ const CanvasDrawing = () => {
         removeDots(item.content).includes(startText)
       );
       if (!startTextParagraph) {
-        console.log("Dans le nouveau if");
-        console.log("Dans le nouveau if startText = ", startText);
+        // console.log("Dans le nouveau if");
+        // console.log("Dans le nouveau if startText = ", startText);
 
         apiResponse?.forEach((item: any, idx: number) => {
-          console.log(`Index: ${idx}, Content: ${removeDots(item.content)}`);
+          // console.log(`Index: ${idx}, Content: ${removeDots(item.content)}`);
         });
 
         startTextParagraph = apiResponse?.find((item: any) =>
           startText.includes(removeDots(item.content))
         );
-        console.log(
-          "startTextParagraph apres le nouveau if = ",
-          startTextParagraph
-        );
+        // console.log(
+        //   "startTextParagraph apres le nouveau if = ",
+        //   startTextParagraph
+        // );
       }
       // Find paragraph containing endText
       let endTextParagraph = apiResponse?.find((item: any) =>
@@ -994,13 +994,13 @@ const CanvasDrawing = () => {
       setSelectedParagraphIndices(textIndices);
       setShowBackground(true);
       setProgrammaticScroll(true);
-      console.log("textIndices dans findString = ", textIndices);
+      // console.log("textIndices dans findString = ", textIndices);
       textIndices.forEach((textIndex, idx) => {
-        console.log("textIndices dans findString = ", textIndex);
-        console.log("textIndices dans findString = ", idx);
+        // console.log("textIndices dans findString = ", textIndex);
+        // console.log("textIndices dans findString = ", idx);
         const textElement = textRefs.current[textIndex];
 
-        console.log("text element dans fullstring = ", textElement);
+        // console.log("text element dans fullstring = ", textElement);
         if (textElement) {
           let blockPosition: ScrollLogicalPosition = "center";
           if (index === 0) {
@@ -1040,8 +1040,8 @@ const CanvasDrawing = () => {
     setShowBackground: any,
     setProgrammaticScroll: any
   ) => {
-    console.log("apiResponse", apiResponse);
-    console.log("context", context);
+    // console.log("apiResponse", apiResponse);
+    // console.log("context", context);
 
     const contextWords = context.split(" ");
 
@@ -1051,8 +1051,8 @@ const CanvasDrawing = () => {
     // Create endText with words from the 5th to the 11th (last 6 words)
     const endText = contextWords.slice(5, 11).join(" ");
 
-    console.log("startText", startText);
-    console.log("endText", endText);
+    // console.log("startText", startText);
+    // console.log("endText", endText);
 
     let apiText: any[] = [];
 
@@ -1070,11 +1070,11 @@ const CanvasDrawing = () => {
       );
     }
 
-    console.log("combinedText", combinedText);
+    // console.log("combinedText", combinedText);
 
     if (combinedText) {
       apiText.push(combinedText);
-      console.log("combinedText");
+      // console.log("combinedText");
     } else {
       // Find paragraph containing startText
       let startTextParagraph = apiResponse?.find((item: any) =>
@@ -1112,20 +1112,20 @@ const CanvasDrawing = () => {
       );
 
       setSelectedParagraphIndices(textIndices);
-      console.log("textIndices = ", textIndices);
-      console.log("textRefs = ", textRefs);
+      // console.log("textIndices = ", textIndices);
+      // console.log("textRefs = ", textRefs);
       setShowBackground(true);
       setProgrammaticScroll(true);
       setSelected(null);
       // setIsTextShown(true);
 
-      console.log("textIndices = ", textIndices);
-      console.log("textRefs = ", textRefs);
+      // console.log("textIndices = ", textIndices);
+      // console.log("textRefs = ", textRefs);
       textIndices.forEach((textIndex, idx) => {
-        console.log("textIndices dans findString = ", textIndex);
-        console.log("textIndices dans findString = ", idx);
+        // console.log("textIndices dans findString = ", textIndex);
+        // console.log("textIndices dans findString = ", idx);
         const textElement = textRefs.current[textIndex];
-        console.log("textElement = ", textElement);
+        // console.log("textElement = ", textElement);
 
         if (textElement) {
           let blockPosition: ScrollLogicalPosition = "center";
@@ -1179,7 +1179,7 @@ const CanvasDrawing = () => {
         )) !== -1
       ) {
         // Ensure searchValue is not split
-        console.log("this is searchindex", searchIndex);
+        // console.log("this is searchindex", searchIndex);
         const startIdx = Math.max(
           fullTextLowerCase.lastIndexOf(" ", searchIndex - 1),
           0
@@ -1194,20 +1194,17 @@ const CanvasDrawing = () => {
           .slice(0, searchIndex)
           .split(/\s+/)
           .slice(-5, -1); // Last 5 words before the match
-        console.log("beforeMatch", beforeMatch);
+        // console.log("beforeMatch", beforeMatch);
         const afterMatch = fullText.slice(searchIndex).split(/\s+/).slice(0, 5); // First 5 words after the match
 
         // Reconstruct the context
-        const context = [
-          ...beforeMatch,
-          ...afterMatch,
-        ].join(" ");
+        const context = [...beforeMatch, ...afterMatch].join(" ");
 
         contexts.push(context);
         searchIndex += lowerCaseSearchValue.length;
       }
     }
-    console.log("This is contexts", contexts);
+    // console.log("This is contexts", contexts);
     return contexts;
   };
 
@@ -1232,7 +1229,7 @@ const CanvasDrawing = () => {
               className="bg-[#F2F2F2] p-1 w-[150px] rounded-xl"
               onChange={handleInputChange}
               value={searchValue}
-              // style={{ userSelect: "none", outline: "none" }}
+              style={{ userSelect: "none", outline: "none" }}
             />
           </div>
         ) : null}
