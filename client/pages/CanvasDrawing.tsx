@@ -374,6 +374,7 @@ const CanvasDrawing = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const pistacheRef = useRef<HTMLDivElement>(null);
 
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isZooming, setIsZooming] = useState(false);
@@ -595,9 +596,6 @@ const CanvasDrawing = () => {
     };
 
     const handleInputClickOutside = (event: MouseEvent) => {
-      // localTab.forEach((obj) => {
-      //   if (obj.hover) return;
-      // })
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node) &&
@@ -607,6 +605,12 @@ const CanvasDrawing = () => {
       ) {
         setSearchValue("");
         setIsHovering(false);
+      }
+      if (
+        pistacheRef.current &&
+        !pistacheRef.current.contains(event.target as Node)
+      ) {
+        setShowPistacheTab(false);
       }
     };
 
@@ -1194,8 +1198,8 @@ const CanvasDrawing = () => {
   const getContexts = (
     searchValue: string,
     fullText: string | null
-  ): ContextType => {
-    const contexts: ContextType = [];
+  ): string[] => {
+    const contexts: string[] = [];
 
     if (fullText) {
       const lowerCaseSearchValue = searchValue.toLowerCase();
@@ -1208,39 +1212,24 @@ const CanvasDrawing = () => {
           searchIndex
         )) !== -1
       ) {
-        // Find the start and end of the context
-        const startIdx = Math.max(
-          searchIndex - 30 * searchValue.length, // Rough estimate of 5 words before
-          0
-        );
-        const endIdx = Math.min(
-          searchIndex + 30 * searchValue.length, // Rough estimate of 5 words after + searchValue
-          fullText.length
-        );
+        // Find the word boundaries around the search term
+        const beforeText = fullTextLowerCase.slice(0, searchIndex).split(/\s+/);
+        const afterText = fullTextLowerCase
+          .slice(searchIndex + lowerCaseSearchValue.length)
+          .split(/\s+/);
 
-        // Extract the context string
-        const contextString = fullText.slice(startIdx, endIdx);
+        // Get the 5 words before the search term
+        const beforeWords = beforeText.slice(-5);
 
-        // Split the context string into words
-        const words = contextString.split(/\s+/);
+        // Get the 5 words after the search term
+        const afterWords = afterText.slice(0, 5);
 
-        // Get the index of the search term in the words array
-        const searchWordIndex = words.findIndex((word) =>
-          word.toLowerCase().includes(lowerCaseSearchValue)
-        );
-
-        // Get the 5 words before and after the search term
-        const beforeMatch = words.slice(
-          Math.max(0, searchWordIndex - 5),
-          searchWordIndex
-        );
-        const afterMatch = words.slice(
-          searchWordIndex,
-          Math.min(words.length, searchWordIndex + 6)
-        ); // Includes the search word
-
-        // Reconstruct the context
-        const context = [...beforeMatch, ...afterMatch].join(" ");
+        // Reconstruct the context with 5 words before, the search term, and 5 words after
+        const context = [
+          ...beforeWords,
+          fullText.slice(searchIndex, searchIndex + searchValue.length), // The exact match from the original text
+          ...afterWords,
+        ].join(" ");
 
         contexts.push(context);
         searchIndex += lowerCaseSearchValue.length;
@@ -1514,281 +1503,295 @@ const CanvasDrawing = () => {
           </div>
         </div>
       )}
-
-      {pistacheTab.length > 0 && (
-        <Image
-          src={MarquePage}
-          alt="no image"
-          className="fixed top-[84px] w-20 h-16 cursor-pointer"
-          style={{
-            userSelect: "none",
-            right: showPistacheTab ? "275px" : "-15px",
-          }}
-          onClick={togglePistacheTab}
-        />
-      )}
-      {showPistacheTab && (
-        <div
-          className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl py-4"
-          style={{
-            height: `${scrollNeeded ? maxHeight : dynamicHeight}px`,
-            overflowY: scrollNeeded ? "auto" : "hidden",
-            borderTopLeftRadius: "1rem",
-            borderBottomLeftRadius: "1rem",
-            borderTopRightRadius: "0",
-            borderBottomRightRadius: "0",
-          }}
-        >
-          {pistacheTab.map((item: any, index: number) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "10px",
-                fontFamily: "Lexend",
-                fontSize: "17px",
-              }}
-            >
-              {item.pistacheType === "tache" ? (
-                <div>
-                  {/* Images pour les taches */}
-                  {item.pistacheNum === 1 && (
-                    <Image
-                      src={task0}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                  {item.pistacheNum === 3 && (
-                    <Image
-                      src={task2}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                  {item.pistacheNum === 4 && (
-                    <Image
-                      src={task3}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                  {item.pistacheNum === 5 && (
-                    <Image
-                      src={task4}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                  {item.pistacheNum === 6 && (
-                    <Image
-                      src={task5}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                  {item.pistacheNum === 7 && (
-                    <Image
-                      src={task6}
-                      alt="Logo"
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        margin: "0 20px 0 10px",
-                      }}
-                      onClick={() => removeItem(item)}
-                    />
-                  )}
-                </div>
-              ) : item.pistacheType === "priorité" ? (
-                // Bouton pour priorité avec le numéro à l'intérieur
-                <button
-                  style={{
-                    position: "relative",
-                    height: "30px",
-                    width: "30px",
-                    backgroundColor: item.pistacheColor,
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    margin: " 0 10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    overflow: "hidden",
-                  }}
-                  onClick={() => removeItem(item)}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <span
-                    style={{
-                      color: "white",
-                      fontSize: "20px",
-                      fontWeight: "bold",
-                      fontFamily: "Lexend",
-                      zIndex: 1,
-                      position: "relative",
-                    }}
-                  >
-                    {item.pistacheNum}
-                  </span>
-                  <div
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      display: hoveredIndex === index ? "flex" : "none",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 2,
-                    }}
-                  >
-                    <RxCross1
-                      style={{ color: "white", width: "35px", height: "35px" }}
-                    />
-                  </div>
-                </button>
-              ) : item.pistacheType === "flag" ? (
-                // Bouton pour priorité avec le numéro à l'intérieur
-                <button
-                  style={{
-                    position: "relative",
-                    height: "30px",
-                    width: "30px",
-                    backgroundColor: item.pistacheColor,
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    margin: " 0 10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    overflow: "hidden",
-                  }}
-                  onClick={() => removeItem(item)}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <span
-                    style={{
-                      color: "white",
-                      fontSize: "26px",
-                      fontWeight: "bold",
-                      fontFamily: "Lexend",
-                      zIndex: 1,
-                      position: "relative",
-                    }}
-                  >
-                    <FaFontAwesomeFlag style={{ fontSize: "16px" }} />
-                  </span>
-                  <div
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      display: hoveredIndex === index ? "flex" : "none",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 2,
-                    }}
-                  >
-                    <RxCross1
-                      style={{ color: "white", width: "35px", height: "35px" }}
-                    />
-                  </div>
-                </button>
-              ) : (
-                <button
-                  style={{
-                    position: "relative",
-                    height: "30px",
-                    width: "30px",
-                    backgroundColor: item.pistacheColor,
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    margin: "0 10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                  onClick={() => removeItem(item)}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <div
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      display: hoveredIndex === index ? "flex" : "none",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <RxCross1
-                      style={{ color: "white", width: "35px", height: "35px" }}
-                    />
-                  </div>
-                </button>
-              )}
-
+      <div>
+        {pistacheTab.length > 0 && (
+          <Image
+            src={MarquePage}
+            alt="no image"
+            className="fixed top-[84px] w-20 h-16 cursor-pointer"
+            style={{
+              userSelect: "none",
+              right: showPistacheTab ? "275px" : "-15px",
+            }}
+            onClick={togglePistacheTab}
+          />
+        )}
+        {showPistacheTab && (
+          <div
+            ref={pistacheRef}
+            className="ml-10 mt-14 fixed top-10 right-0 w-[300px] bg-slate-800 rounded-xl py-4"
+            style={{
+              height: `${scrollNeeded ? maxHeight : dynamicHeight}px`,
+              overflowY: scrollNeeded ? "auto" : "hidden",
+              borderTopLeftRadius: "1rem",
+              borderBottomLeftRadius: "1rem",
+              borderTopRightRadius: "0",
+              borderBottomRightRadius: "0",
+            }}
+          >
+            {pistacheTab.map((item: any, index: number) => (
               <div
+                key={index}
                 style={{
-                  color: "white",
-                  backgroundColor: item.color,
-                  padding: "6px 0 6px 10px",
-                  borderTopLeftRadius: "12px",
-                  borderBottomLeftRadius: "12px",
-                  borderTopRightRadius: "0",
-                  borderBottomRightRadius: "0",
-                  fontWeight: "500",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  flexGrow: 1,
-                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                  fontFamily: "Lexend",
+                  fontSize: "17px",
                 }}
-                onClick={() => zoomToValue(item)}
               >
-                {item.value}
+                {item.pistacheType === "tache" ? (
+                  <div>
+                    {/* Images pour les taches */}
+                    {item.pistacheNum === 1 && (
+                      <Image
+                        src={task0}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                    {item.pistacheNum === 3 && (
+                      <Image
+                        src={task2}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                    {item.pistacheNum === 4 && (
+                      <Image
+                        src={task3}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                    {item.pistacheNum === 5 && (
+                      <Image
+                        src={task4}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                    {item.pistacheNum === 6 && (
+                      <Image
+                        src={task5}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                    {item.pistacheNum === 7 && (
+                      <Image
+                        src={task6}
+                        alt="Logo"
+                        style={{
+                          height: "30px",
+                          width: "30px",
+                          margin: "0 20px 0 10px",
+                        }}
+                        onClick={() => removeItem(item)}
+                      />
+                    )}
+                  </div>
+                ) : item.pistacheType === "priorité" ? (
+                  // Bouton pour priorité avec le numéro à l'intérieur
+                  <button
+                    style={{
+                      position: "relative",
+                      height: "30px",
+                      width: "30px",
+                      backgroundColor: item.pistacheColor,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      margin: " 0 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      overflow: "hidden",
+                    }}
+                    onClick={() => removeItem(item)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    <span
+                      style={{
+                        color: "white",
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                        fontFamily: "Lexend",
+                        zIndex: 1,
+                        position: "relative",
+                      }}
+                    >
+                      {item.pistacheNum}
+                    </span>
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        display: hoveredIndex === index ? "flex" : "none",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 2,
+                      }}
+                    >
+                      <RxCross1
+                        style={{
+                          color: "white",
+                          width: "35px",
+                          height: "35px",
+                        }}
+                      />
+                    </div>
+                  </button>
+                ) : item.pistacheType === "flag" ? (
+                  // Bouton pour priorité avec le numéro à l'intérieur
+                  <button
+                    style={{
+                      position: "relative",
+                      height: "30px",
+                      width: "30px",
+                      backgroundColor: item.pistacheColor,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      margin: " 0 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      overflow: "hidden",
+                    }}
+                    onClick={() => removeItem(item)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    <span
+                      style={{
+                        color: "white",
+                        fontSize: "26px",
+                        fontWeight: "bold",
+                        fontFamily: "Lexend",
+                        zIndex: 1,
+                        position: "relative",
+                      }}
+                    >
+                      <FaFontAwesomeFlag style={{ fontSize: "16px" }} />
+                    </span>
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        display: hoveredIndex === index ? "flex" : "none",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 2,
+                      }}
+                    >
+                      <RxCross1
+                        style={{
+                          color: "white",
+                          width: "35px",
+                          height: "35px",
+                        }}
+                      />
+                    </div>
+                  </button>
+                ) : (
+                  <button
+                    style={{
+                      position: "relative",
+                      height: "30px",
+                      width: "30px",
+                      backgroundColor: item.pistacheColor,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      margin: "0 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                    onClick={() => removeItem(item)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        display: hoveredIndex === index ? "flex" : "none",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <RxCross1
+                        style={{
+                          color: "white",
+                          width: "35px",
+                          height: "35px",
+                        }}
+                      />
+                    </div>
+                  </button>
+                )}
+
+                <div
+                  style={{
+                    color: "white",
+                    backgroundColor: item.color,
+                    padding: "6px 0 6px 10px",
+                    borderTopLeftRadius: "12px",
+                    borderBottomLeftRadius: "12px",
+                    borderTopRightRadius: "0",
+                    borderBottomRightRadius: "0",
+                    fontWeight: "500",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    flexGrow: 1,
+                    width: "100%",
+                  }}
+                  onClick={() => zoomToValue(item)}
+                >
+                  {item.value}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 };

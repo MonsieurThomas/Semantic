@@ -179,17 +179,35 @@ function MapChoice() {
                   <li className="text-xs pt-3 pl-2">{currentDate}</li>
                 )}
                 <li className="mt-[8px] flex items-center justify-between">
-                  <span
-                    className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
-                    style={{ backgroundColor: obj.color }}
-                    onClick={() => handleDocumentClick(obj)}
-                  >
-                    {isJSON(obj.openaiResponse)
-                      ? Object.keys(JSON.parse(obj.openaiResponse))[0]
-                      : Object.keys(
-                          JSON.parse(cleanJson(obj.openaiResponse))
-                        )[0]}
-                  </span>
+                <span
+                  className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
+                  style={{ backgroundColor: obj.color }}
+                  onClick={() => handleDocumentClick(obj)}
+                >
+                  {(() => {
+                      try {
+                        // Ici, on vérifie d'abord si la réponse est un JSON valide avec la fonction isJSON
+                        const response = isJSON(obj.openaiResponse)
+                          ? JSON.parse(obj.openaiResponse)
+                          : (() => {
+                              try {
+                                // Si ce n'est pas un JSON valide, on tente de le nettoyer et de le parser
+                                return JSON.parse(cleanJson(obj.openaiResponse));
+                              } catch (error) {
+                                console.error("Error parsing JSON after cleaning:", cleanJson(obj.openaiResponse));
+                                // Retourner un message d'erreur en cas de problème avec cleanJson
+                                return { error: "Invalid JSON after cleaning" };
+                              }
+                            })();
+
+                        return Object.keys(response)[0];
+                      } catch (error) {
+                        console.error("Error parsing JSON:", obj.openaiResponse);
+                        // Retourner un message d'erreur en cas de problème avec la première tentative de parsing
+                        return "Invalid JSON";
+                      }
+                    })()}
+                </span>
                 </li>
               </ul>
             );
