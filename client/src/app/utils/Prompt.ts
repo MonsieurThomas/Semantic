@@ -54,43 +54,43 @@ A la fin de l’étape 3, tu dois donc avoir les dernières branches de la mindm
 \`\`\`json
 {
   "Titre Global": {
-    item 1: {
-      value: "titre du bloc"
-        item 1.1: { 
-          value: "titre du sous-bloc"
-          bounding: ["Début de citation... —> ...fin de citation."]
+    "item 1": {
+      "value": "titre du bloc"
+        "item 1.1": { 
+          "value": "titre du sous-bloc"
+          "bounding": ["Début de citation... —> ...fin de citation."]
       },
-      value: "titre du bloc"
-        item 1.2: {
-          value: "titre du sous-bloc"
-          bounding : ["Début de citation... —> ...fin de citation."]
+      "value": "titre du bloc"
+        "item 1.2": {
+          "value": "titre du sous-bloc"
+          "bounding" : ["Début de citation... —> ...fin de citation."]
       }
     },
-    item 2: {
-      value: "titre du bloc",
-         item 2.1: {
-           value: "titre du sous-bloc",
-             item 2.1.1: {
-             value: "titre du sous-sous bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+    "item 2": {
+      "value": "titre du bloc",
+         "item 2.1": {
+           "value": "titre du sous-bloc",
+             "item 2.1.1": {
+             "value": "titre du sous-sous bloc",
+             "bounding": ["Début de citation... —> ...fin de citation."]
         },
-            item 2.1.2: {
-             value: "titre du sous-sous-bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+            "item 2.1.2": {
+             "value": "titre du sous-sous-bloc",
+             "bounding": ["Début de citation... —> ...fin de citation."]
         }
       },
-         item 2.2: {
-           value: "titre du sous-bloc",
-             item 2.2.1: {
-             value: "titre du sous-sous bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+         "item 2.2": {
+           "value": "titre du sous-bloc",
+             "item 2.2.1:" {
+             "value": "titre du sous-sous bloc",
+             "bounding": ["Début de citation... —> ...fin de citation."]
         },
-             item 2.2.2: {
-             value: "titre du sous-sous-bloc",
-             bounding: ["Début de citation... —> ...fin de citation."]
+             "item 2.2.2": {
+             "value": "titre du sous-sous-bloc",
+             "bounding": ["Début de citation... —> ...fin de citation."]
      }
     },
-      item 3 // Structure similaire pour d'autres catégories et blocs
+      "item 3" // Structure similaire pour d'autres catégories et blocs
     }
   }
 }

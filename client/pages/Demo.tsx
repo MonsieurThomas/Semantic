@@ -68,7 +68,7 @@ function Demo() {
   }, []);
 
   return (
-    <div className="relative flex mx-[100px] my-[0px] h-[85vh] gap-[2px] z-0">
+    <div className="relative flex px-[100px] my-[0px] w-full h-[85vh] gap-[2px] z-0">
       <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
         <video
           className="w-full h-full object-cover"
@@ -79,14 +79,14 @@ function Demo() {
         />
       </div>
       <div className="w-1/2 p-6 pt-2 rounded-[35px] z-10 bg-opacity-75 ">
-        <h1 className="text-2xl font-bold my-4 text-center">
+        <h1 className="text-2xl font-bold my-3 text-center">
           Ce qu’on propose
         </h1>
         <div className="px-5 rounded-xl">
           <Image
             src={PaperDemo}
             alt="Paper Demo"
-            className="w-[45px] mx-auto mt-8 mb-6 pt-6"
+            className="w-[45px] mx-auto mt-4 mb-6 pt-6"
           />
           <h1 className="font-bold">Compile n’importe quels documents:</h1>
           <h3 className="text-sm mx-auto mt-1">

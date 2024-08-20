@@ -60,11 +60,15 @@ const MapCreate = () => {
     }
   };
 
+  const handleurl = () => {
+    router.push("/testUrl");
+  };
+
   return (
-    <div className="relative flex flex-col items-center gap-[50px] pt-[70px] h-screen w-full overflow-hidden">
+    <div className="relative flex flex-col items-center gap-[40px] w-full overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full">
         <video
-          className="w-full h-full object-cover"
+          className=" top-[320px] w-full h-ful object-cover"
           src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
@@ -73,18 +77,18 @@ const MapCreate = () => {
       </div>
       <motion.div
         className="relative z-10"
-        initial={{ y: "10vh" }}
+        initial={{ y: "0vh" }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
-        <h1 className="text-6xl font-bold w-[700px] text-center ">
+        <h1 className="text-6xl font-bold w-[700px] pt-[60px] text-center ">
           Speed up your research with mind maps
         </h1>
       </motion.div>
-      <div className="relative flex flex-col items-center z-10">
+      <div className="relative flex flex-col items-center z-10 overflow-hidden">
         <button
           onClick={handleCreateMap}
-          className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[280px] rounded-[40px] hover:bg-[#FFE3B7]"
+          className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[328px] h-[130px] rounded-[40px] hover:bg-[#FFE3B7]"
         >
           <h1 className="text-center">Crée ta</h1>
           <h1 className="text-center">mind map</h1>
@@ -98,7 +102,7 @@ const MapCreate = () => {
           multiple
         />
         {userId && (
-          <div className="absolute top-[110px] text-center ">
+          <div className="absolute top-[130px] text-center ">
             <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
               2go maximum{" "}
               <a
@@ -127,6 +131,7 @@ const MapCreate = () => {
             mind maps
           </a>{" "}
           interactives.
+      <button onClick={handleurl}>Handle url</button>
         </h3>
       </div>
     </div>

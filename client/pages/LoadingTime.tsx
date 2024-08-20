@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import io from "socket.io-client";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import AnimatedWord from "./AnimateWord";
 
 interface LoadingTimeProps {
   randomPhrase: string;
+}
+
+interface WordType {
+  word: string;
+  top: string;
+  left: string;
+  progressThreshold: number;
 }
 
 const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
+  const [wordsToDisplay, setWordsToDisplay] = useState<WordType[]>([]);
   const [documentInfo, setDocumentInfo] = useState<{
     id: string;
     openaiResponse: string;
@@ -72,83 +81,109 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
     }
   }, [loadingComplete, documentInfo, router]);
 
+  // Liste des mots regroupés par progressThreshold
+  const groupedWords = {
+    3: [
+      { word: "Diagnostic", top: "80px", left: "300px" },
+      { word: "Optimisation", top: "150px", left: "600px" },
+      { word: "Gestion du changement", top: "200px", left: "900px" },
+      { word: "Gestion des risques", top: "330px", left: "320px" },
+      { word: "Conclusion", top: "350px", left: "840px" },
+      { word: "Sources", top: "370px", left: "160px" },
+      { word: "Taille de marché", top: "220px", left: "540px" },
+    ],
+    10: [
+      { word: "Innovation", top: "380px", left: "600px" },
+      { word: "Transformation digitale", top: "300px", left: "100px" },
+      { word: "Audit", top: "50px", left: "850px" },
+    ],
+    35: [
+      { word: "Contrat", top: "460px", left: "140px" },
+      { word: "Conformité", top: "180px", left: "750px" },
+      { word: "Réglementation", top: "400px", left: "1150px" },
+    ],
+    50: [
+      { word: "Litige", top: "50px", left: "1260px" },
+      { word: "Responsabilité", top: "100px", left: "670px" },
+      { word: "Propriété", top: "130px", left: "360px" },
+    ],
+    65: [
+      { word: "Risque", top: "140px", left: "1180px" },
+      { word: "Arbitrage", top: "260px", left: "830px" },
+      { word: "Exemples", top: "110px", left: "140px" },
+    ],
+    85: [
+      { word: "Initiatives", top: "310px", left: "940px" },
+      { word: "Applications", top: "280px", left: "1210px" },
+      { word: "Solutions", top: "280px", left: "710px" },
+    ],
+    98: [
+      { word: "Millions", top: "200px", left: "160px" },
+      { word: "Milliards", top: "40px", left: "1050px" },
+      { word: "Investissement", top: "70px", left: "510px" },
+    ],
+  };
+
+  // Sélection aléatoire d'un mot pour chaque progressThreshold
+  const selectedWords = Object.entries(groupedWords).reduce(
+    (accumulatedWords, [threshold, words]) => {
+      let selectedWordsForThreshold = [];
+
+      if (words.length === 7 && progress == 5) {
+        console.log("ok");
+        const usedIndices = new Set<number>();
+        while (usedIndices.size < 3) {
+          const randomIndex = Math.floor(Math.random() * words.length);
+          if (!usedIndices.has(randomIndex)) {
+            usedIndices.add(randomIndex);
+            selectedWordsForThreshold.push({
+              ...words[randomIndex],
+              progressThreshold: Number(threshold),
+            });
+          }
+        }
+      } else {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        selectedWordsForThreshold.push({
+          ...words[randomIndex],
+          progressThreshold: Number(threshold),
+        });
+      }
+
+      console.log("selectedWordsForThreshold = ", selectedWordsForThreshold[0].progressThreshold);
+      return [...accumulatedWords, ...selectedWordsForThreshold];
+    },
+    [] as Array<{
+      word: string;
+      top: string;
+      left: string;
+      progressThreshold: number;
+    }>
+  );
+
+  useEffect(() => {
+    console.log("progress = ", progress)
+    const wordsToAdd = selectedWords.filter(
+      (word) => progress == word.progressThreshold
+    );
+    console.log("Mots ajoutés pour progress:", progress);
+    console.log("Mots ajoutés pour wordsToAdd:", wordsToAdd, "\n");
+    setWordsToDisplay((prevWords) => [...prevWords, ...wordsToAdd]);
+  }, [progress]);
+
   return (
     <div className="relative h-[85vh] w-screen">
       <AnimatePresence>
-        {progress >= 10 && (
-          <>
-            <motion.h1
-              key="exemple"
-              className="font-bold text-2xl absolute top-[40px] left-[300px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Exemple
-            </motion.h1>
-            <motion.h1
-              key="initiatives"
-              className="font-bold text-2xl absolute top-[350px] left-[1100px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Initiatives
-            </motion.h1>
-          </>
-        )}
-
-        {progress >= 35 && (
-          <>
-            <motion.h1
-              key="application"
-              className="font-bold text-2xl absolute top-[220px] left-[700px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Application
-            </motion.h1>
-            <motion.h1
-              key="milliard"
-              className="font-bold text-2xl absolute top-[300px] left-[200px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Milliard
-            </motion.h1>
-          </>
-        )}
-
-        {progress >= 65 && (
-          <>
-            <motion.h1
-              key="million"
-              className="font-bold text-2xl absolute top-[150px] left-[1150px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Million
-            </motion.h1>
-            <motion.h1
-              key="solution"
-              className="font-bold text-2xl absolute top-[280px] left-[500px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Solution
-            </motion.h1>
-          </>
-        )}
+        {wordsToDisplay.map((wordData, index) => (
+          <AnimatedWord
+            key={index}
+            word={wordData.word}
+            top={wordData.top}
+            left={wordData.left}
+            progressThreshold={wordData.progressThreshold}
+            currentProgress={progress}
+          />
+        ))}
       </AnimatePresence>
 
       <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-1/3">
@@ -189,9 +224,8 @@ export const getServerSideProps = async () => {
     "Si vous travaillez tard, n’oubliez pas d’activer le night-shift !",
     "Pensez à utiliser les marqueurs en passant la souris sur un bloc pour personnalisez vos maps et les parcourir avec plus d’aisance.",
     "Un clic sur 👁️ et vous pourrez faire disparaître puis réapparaitre une partie de la map. De quoi mieux se concentrer sur le reste !",
-    // "Les mind maps peuvent aider à organiser visuellement les concepts et leurs relations, ce qui  facilite la recherche d'informations. Une étude publiée dans \"The Journal of Educational Psychology\" a montré que les participants retrouvaient plus rapidement l'information dans un mind map que dans une liste linéaire… et s’en souvenaient mieux !",
     "Une recherche menée par l’université de Nouvelle-Galles du Sud a montré que l’utilisation de mind maps est associée à une amélioration de la mémoire à long terme.",
-    "\nUne méta-analyse publiée dans \"Educational Psychology Review\" a souligné que l'utilisation de mind maps était associée à des performances d'apprentissage améliorées.",
+    "Une méta-analyse publiée dans \"Educational Psychology Review\" a souligné que l'utilisation de mind maps était associée à des performances d'apprentissage améliorées.",
     "L'université de Radboud aux Pays-Bas a montré que les étudiants qui utilisaient des mind maps obtenaient de meilleurs résultats aux tests de connaissances que ceux qui utilisaient des méthodes d'étude plus traditionnelles.",
   ];
 

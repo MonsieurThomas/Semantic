@@ -5,30 +5,34 @@
 html,
 body {
   font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  /* overflow: hidden; */
+  height: 100%;
 }
 
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    display: none;
   }
   /* Hide scrollbar for IE, Edge and Firefox */
   .no-scrollbar {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
-}
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 
-/* Hide number input spinners for Chrome, Safari, Opera */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+  /* Hide number input spinners for Chrome, Safari, Opera */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-/* Hide number input spinners for Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
+  /* Hide number input spinners for Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
 
 @keyframes progress {
@@ -48,7 +52,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 

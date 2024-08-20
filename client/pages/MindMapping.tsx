@@ -79,24 +79,24 @@ const MindMapping = () => {
 
   return (
     <div
-      style={{ fontFamily: "Lexend", fontSize: "18px" }}
-      className="relative px-[200px]"
+      className="relative flex flex-col items-center gap-[50px] mx-[60px] h-scree w-fu overflow-hidden"
+      style={{ fontFamily: "Lexend" }}
     >
-      <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
+      <div className="fixed top-0 left-0 w-full h-full z-[-1]">
         <video
           className="w-full h-full object-cover"
-          src="/NEURONES MINDMAPPING_v1a.mp4"
+          src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
         />
       </div>
-      <div className="relative z-10">
-        <h1 className="text-5xl font-bold mb-6 text-center pt-10">
+      <div className="relative z-10 ">
+        <h1 className="text-5xl font-bold mb-6 text-center pt-10 ">
           Le génie du mind mapping
         </h1>
 
-        <h3 className="p-3 font-bold">Le mind mapping en chiffres</h3>
+        <h3 className="py-3 font-bold">Le mind mapping en chiffres</h3>
         <p>
           En moyenne, les sondés ont fait état d&apos;une augmentation de 30 %
           de leur productivité grâce à l’utilisation de mind maps dans leur
@@ -115,7 +115,7 @@ const MindMapping = () => {
           {tabs.map((tab, index) => (
             <button
               key={index}
-              className={`px-4 pt-8 font-semibold ${
+              className={`px-4 pt-8 font-semibold text-lg  ${
                 index === activeTab ? "border-b-2 border-blue-500" : ""
               }`}
               onClick={() => setActiveTab(index)}
