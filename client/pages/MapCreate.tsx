@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from "react";
+import React, { useRef, useContext, useEffect } from "react";
 import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
 import { UserContext } from "../src/context/UserContext";
@@ -64,34 +64,40 @@ const MapCreate = () => {
     router.push("/testUrl");
   };
 
+  useEffect(() => {
+    console.log(
+      `Screen width: ${window.screen.width}px, Screen height: ${window.screen.height}px`
+    );
+  }, []);
+
   return (
-    <div className="flex justify-center items-center">
-      <div className="absolute top-[0px] left-0 w-full h-ful">
+    <div className="overflow-hidden 2xl:h-[90vh]">
+      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[80vh] overflow-hidden">
         <video
-          className="top-[120px] w-full h-full object-cover"
+          className=" w-full overflow-hidden"
           src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
         />
       </div>
-      <div className="relative flex flex-col items-center gap-[50px] w-full ">
+      <div className="relative flex flex-col 2xl:top-[200px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
         <motion.div
           className="relative z-10"
           initial={{ y: "0vh" }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <h1 className="text-6xl font-bold w-[700px] pt-[60px] text-center ">
+          <h1 className="text-6xl 2xl:text-7xl font-bold w-[700px] 2xl:w-[800px] pt-[60px] text-center ">
             Speed up your research with mind maps
           </h1>
         </motion.div>
         <div className="relative flex flex-col items-center z-10 overflow-hidden">
           <button
             onClick={handleCreateMap}
-            className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[328px] h-[130px] rounded-[40px] hover:bg-[#FFE3B7]"
+            className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
-            <h1 className="text-center">Crée ta</h1>
+            <h1 className="text-center 2xl:pb-2">Crée ta</h1>
             <h1 className="text-center">mind map</h1>
             <IoMdAddCircle className="absolute top-2 right-5 w-6" />
           </button>
@@ -103,14 +109,14 @@ const MapCreate = () => {
             multiple
           />
           {userId && (
-            <div className="absolute top-[130px] text-center ">
+            <div className="z-10 mt-1 text-center overflow-hidden  ">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-                2go maximum{" "}
+                Maximum 400 pages {" "}
                 <a
                   href={"/Offer"}
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
                 >
-                  Starter{" "}
+                  Lecteur Rapide{" "}
                 </a>
                 <img
                   src="/logoExpand.png"
@@ -122,7 +128,7 @@ const MapCreate = () => {
           )}
         </div>
         <div className="relative z-10 mt-4">
-          <h3 className="font-semibold text-center mt-[30px] w-[750px]">
+          <h3 className="font-semibold text-center mt-[30px] w-[750px] 2xl:text-xl">
             Semantic accélère votre recherche d&apos;informations en présentant
             le contenu de vos documents de manière structurée, sous forme de{" "}
             <a
@@ -132,7 +138,7 @@ const MapCreate = () => {
               mind maps
             </a>{" "}
             interactives.
-            <button onClick={handleurl}>Handle url</button>
+            {/* <button onClick={handleurl}>Handle url</button> */}
           </h3>
         </div>
       </div>

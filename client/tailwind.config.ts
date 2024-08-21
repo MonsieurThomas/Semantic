@@ -17,6 +17,13 @@ const config: Config = {
       colors: {
         // "customColor": "#FFFFFF"
       },
+      screens: {
+        'xl': '1440px',
+        '2xl': '1441px',
+        'lg': '1024px',
+        'md': '768px',
+        'sm': '640px',
+      },
     },
   },
   plugins: [],
