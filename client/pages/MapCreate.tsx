@@ -81,7 +81,7 @@ const MapCreate = () => {
           playsInline
         />
       </div>
-      <div className="relative flex flex-col 2xl:top-[80px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
+      <div className="relative flex flex-col 2xl:top-[64px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
         <motion.div
           className="relative z-10"
           initial={{ y: "0vh" }}
@@ -97,7 +97,7 @@ const MapCreate = () => {
             onClick={handleCreateMap}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
-            <h1 className="text-center 2xl:pb-2">Crée ta</h1>
+            <h1 className="text-center 2xl:pb-2">Crée votre</h1>
             <h1 className="text-center">mind map</h1>
             <IoMdAddCircle className="absolute top-2 right-5 w-6" />
           </button>
@@ -127,7 +127,7 @@ const MapCreate = () => {
             </div>
           )}
         </div>
-        <div className="relative z-10 mt-4">
+        <div className="relative z-10">
           <h3 className="font-semibold text-center mt-[30px] w-[750px] 2xl:text-xl">
             Semantic accélère votre recherche d&apos;informations en présentant
             le contenu de vos documents de manière structurée, sous forme de{" "}
