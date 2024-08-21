@@ -85,7 +85,7 @@ const MindMapping = () => {
       <div className="fixed top-0 left-0 w-full h-full z-[-1]">
         <video
           className="w-full h-full object-cover"
-          src="/NEURONES HOMEPAGE_v1a.mp4"
+          src="/NEURONES MINDMAPPING_v1a.mp4"
           autoPlay
           muted
           playsInline

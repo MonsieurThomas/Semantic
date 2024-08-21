@@ -81,7 +81,7 @@ const MapCreate = () => {
           playsInline
         />
       </div>
-      <div className="relative flex flex-col 2xl:top-[200px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
+      <div className="relative flex flex-col 2xl:top-[80px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
         <motion.div
           className="relative z-10"
           initial={{ y: "0vh" }}
@@ -111,7 +111,7 @@ const MapCreate = () => {
           {userId && (
             <div className="z-10 mt-1 text-center overflow-hidden  ">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-                Maximum 400 pages {" "}
+                Maximum 400 pages{" "}
                 <a
                   href={"/Offer"}
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
