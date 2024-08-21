@@ -71,8 +71,8 @@ const MapCreate = () => {
   }, []);
 
   return (
-    <div className="overflow-hidden 2xl:h-[90vh]">
-      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[80vh] overflow-hidden">
+    <div className="overflow-hidden 2xl:h-[80vh]">
+      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[77vh] overflow-hidden">
         <video
           className=" w-full overflow-hidden"
           src="/NEURONES HOMEPAGE_v1a.mp4"
