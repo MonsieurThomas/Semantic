@@ -68,6 +68,11 @@ function MapChoice() {
   const { username, id, setUsername, setId } = useContext(UserContext);
   const [documents, setDocuments] = useState<Document[]>([]);
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   useEffect(() => {
     const fetchProfileAndDocuments = async () => {
@@ -179,12 +184,12 @@ function MapChoice() {
                   <li className="text-xs pt-3 pl-2">{currentDate}</li>
                 )}
                 <li className="mt-[8px] flex items-center justify-between">
-                <span
-                  className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
-                  style={{ backgroundColor: obj.color }}
-                  onClick={() => handleDocumentClick(obj)}
-                >
-                  {(() => {
+                  <span
+                    className="p-3 py-[6px] text-white rounded-xl text-sm font-semibold cursor-pointer whitespace-nowrap"
+                    style={{ backgroundColor: obj.color }}
+                    onClick={() => handleDocumentClick(obj)}
+                  >
+                    {(() => {
                       try {
                         // Ici, on vérifie d'abord si la réponse est un JSON valide avec la fonction isJSON
                         const response = isJSON(obj.openaiResponse)
@@ -192,9 +197,14 @@ function MapChoice() {
                           : (() => {
                               try {
                                 // Si ce n'est pas un JSON valide, on tente de le nettoyer et de le parser
-                                return JSON.parse(cleanJson(obj.openaiResponse));
+                                return JSON.parse(
+                                  cleanJson(obj.openaiResponse)
+                                );
                               } catch (error) {
-                                console.error("Error parsing JSON after cleaning:", cleanJson(obj.openaiResponse));
+                                console.error(
+                                  "Error parsing JSON after cleaning:",
+                                  cleanJson(obj.openaiResponse)
+                                );
                                 // Retourner un message d'erreur en cas de problème avec cleanJson
                                 return { error: "Invalid JSON after cleaning" };
                               }
@@ -202,12 +212,15 @@ function MapChoice() {
 
                         return Object.keys(response)[0];
                       } catch (error) {
-                        console.error("Error parsing JSON:", obj.openaiResponse);
+                        console.error(
+                          "Error parsing JSON:",
+                          obj.openaiResponse
+                        );
                         // Retourner un message d'erreur en cas de problème avec la première tentative de parsing
                         return "Invalid JSON";
                       }
                     })()}
-                </span>
+                  </span>
                 </li>
               </ul>
             );
@@ -224,6 +237,8 @@ function MapChoice() {
             type="text"
             placeholder="Rechercher par nom, par date.."
             className="w-[400px] bg-[#E5E5E5] pl-2 outline-none"
+            value={searchQuery}
+            onChange={handleInputChange}
           />
         </div>
         <div className="w-[75vw] mt-2 rounded-xl overflow-auto no-scrollbar h-[500px] pt-1 cursor-pointer">
@@ -236,8 +251,12 @@ function MapChoice() {
             });
 
             const capitalizedDateStr = capitalizeFirstLetter(dateStr);
-
-            return (
+            let name = "";
+            if (isJSON(cleanJson(obj.openaiResponse)))
+              name = Object.keys(JSON.parse(cleanJson(obj.openaiResponse)))[0]
+            
+            if (name.toLowerCase().includes(searchQuery.toLowerCase()))
+              return (
               <div
                 key={key}
                 id={`scroll-${key}`}

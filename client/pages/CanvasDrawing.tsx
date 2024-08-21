@@ -70,6 +70,8 @@ const CanvasDrawing = () => {
   const [fullText, setFullText] = useState<string | null>(null);
   const [fullTextSplit, setFullTextSplit] = useState<string[] | null>(null);
 
+  // console.log("\n\n\n\nThis is document in fetching avant= \n\n\n\n");
+
   useEffect(() => {
     if (id) {
       const fetchDocument = async () => {
@@ -77,6 +79,7 @@ const CanvasDrawing = () => {
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
           if (document.openaiResponse) {
+            // console.log("\n\n\n\nThis is document.openaiResponse in fetching =", document.openaiResponse,"\n\n\n\n");
             const cleanResponse = document.openaiResponse
               .replace(/```json|```/g, "")
               .trim();
@@ -677,7 +680,6 @@ const CanvasDrawing = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-      // setIsPistacheOpen(!isPistacheOpen)
 
       const x = e.clientX - rect.left - panOffset.x;
       const y = e.clientY - rect.top - panOffset.y;
@@ -685,6 +687,11 @@ const CanvasDrawing = () => {
       localTab.forEach((obj) => {
         const adjustedX = x / zoomLevel;
         const adjustedY = y / zoomLevel;
+
+        if (obj.value == "Garant de la Constitution") {
+          console.log("This is adjustedX = ", adjustedX);
+          console.log("This is adjustedY = ", adjustedY);
+        }
 
         if (
           adjustedX >= obj.x &&
@@ -730,9 +737,21 @@ const CanvasDrawing = () => {
           setPistacheTab(
             CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab)
           );
+        if (
+          obj.isPistache &&
+          ((adjustedX < obj.x + 4000 || adjustedX > obj.x + 7500) ||
+          (adjustedY < obj.y - 1200 || adjustedY > obj.y + 2600)) && !(adjustedX >= obj.x + 2900 &&
+          adjustedX <= obj.x + 3500 &&
+          adjustedY >= obj.y - 400 &&
+          adjustedY <= obj.y)
+        ) {
+          console.log("ici");
+          obj.isPistache = false;
+        }
         redrawCanvas();
       });
     };
+
     const handleScroll = () => {
       // console.log("programmaticScroll", programmaticScroll);
       if (!programmaticScroll) setShowBackground(false);

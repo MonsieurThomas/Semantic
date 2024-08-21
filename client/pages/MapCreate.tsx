@@ -65,74 +65,76 @@ const MapCreate = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-[40px] w-full overflow-hidden">
+    <div className="flex justify-center items-center">
       <div className="absolute top-0 left-0 w-full h-full">
         <video
-          className=" top-[320px] w-full h-ful object-cover"
+          className="top-[0px] w-full h-full object-cover"
           src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
         />
       </div>
-      <motion.div
-        className="relative z-10"
-        initial={{ y: "0vh" }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      >
-        <h1 className="text-6xl font-bold w-[700px] pt-[60px] text-center ">
-          Speed up your research with mind maps
-        </h1>
-      </motion.div>
-      <div className="relative flex flex-col items-center z-10 overflow-hidden">
-        <button
-          onClick={handleCreateMap}
-          className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[328px] h-[130px] rounded-[40px] hover:bg-[#FFE3B7]"
+      <div className="relative flex flex-col items-center gap-[50px] w-full ">
+        <motion.div
+          className="relative z-10"
+          initial={{ y: "0vh" }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <h1 className="text-center">Crée ta</h1>
-          <h1 className="text-center">mind map</h1>
-          <IoMdAddCircle className="absolute top-2 right-5 w-6" />
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-          multiple
-        />
-        {userId && (
-          <div className="absolute top-[130px] text-center ">
-            <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-              2go maximum{" "}
-              <a
-                href={"/Offer"}
-                className="text-[#FCA311] underline font-semibold cursor-pointer"
-              >
-                Starter{" "}
-              </a>
-              <img
-                src="/logoExpand.png"
-                alt="Expand"
-                className="inline-block w-4 h-4 cursor-pointer"
-              />
-            </h4>
-          </div>
-        )}
-      </div>
-      <div className="relative z-10 mt-4">
-        <h3 className="font-semibold text-center mt-[30px] w-[750px]">
-          Semantic accélère votre recherche d&apos;informations en présentant le
-          contenu de vos documents de manière structurée, sous forme de{" "}
-          <a
-            href={"/MindMapping"}
-            className="text-[#FCA311] underline font-semibold cursor-pointer "
+          <h1 className="text-6xl font-bold w-[700px] pt-[60px] text-center ">
+            Speed up your research with mind maps
+          </h1>
+        </motion.div>
+        <div className="relative flex flex-col items-center z-10 overflow-hidden">
+          <button
+            onClick={handleCreateMap}
+            className="relative text-4xl bg-[#FCA311] text-white p-3 font-semibold w-[328px] h-[130px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
-            mind maps
-          </a>{" "}
-          interactives.
-      <button onClick={handleurl}>Handle url</button>
-        </h3>
+            <h1 className="text-center">Crée ta</h1>
+            <h1 className="text-center">mind map</h1>
+            <IoMdAddCircle className="absolute top-2 right-5 w-6" />
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            multiple
+          />
+          {userId && (
+            <div className="absolute top-[130px] text-center ">
+              <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
+                2go maximum{" "}
+                <a
+                  href={"/Offer"}
+                  className="text-[#FCA311] underline font-semibold cursor-pointer"
+                >
+                  Starter{" "}
+                </a>
+                <img
+                  src="/logoExpand.png"
+                  alt="Expand"
+                  className="inline-block w-4 h-4 cursor-pointer"
+                />
+              </h4>
+            </div>
+          )}
+        </div>
+        <div className="relative z-10 mt-4">
+          <h3 className="font-semibold text-center mt-[30px] w-[750px]">
+            Semantic accélère votre recherche d&apos;informations en présentant
+            le contenu de vos documents de manière structurée, sous forme de{" "}
+            <a
+              href={"/MindMapping"}
+              className="text-[#FCA311] underline font-semibold cursor-pointer "
+            >
+              mind maps
+            </a>{" "}
+            interactives.
+            <button onClick={handleurl}>Handle url</button>
+          </h3>
+        </div>
       </div>
     </div>
   );
