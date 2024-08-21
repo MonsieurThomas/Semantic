@@ -72,7 +72,7 @@ const MapCreate = () => {
 
   return (
     <div className="overflow-hidden 2xl:h-[80vh]">
-      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[77vh] overflow-hidden">
+      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[78vh] overflow-hidden">
         <video
           className=" w-full overflow-hidden"
           src="/NEURONES HOMEPAGE_v1a.mp4"
@@ -97,7 +97,7 @@ const MapCreate = () => {
             onClick={handleCreateMap}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
-            <h1 className="text-center 2xl:pb-2">Crée votre</h1>
+            <h1 className="text-center 2xl:pb-2">Crée ta</h1>
             <h1 className="text-center">mind map</h1>
             <IoMdAddCircle className="absolute top-2 right-5 w-6" />
           </button>
