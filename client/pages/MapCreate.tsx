@@ -66,9 +66,9 @@ const MapCreate = () => {
 
   return (
     <div className="flex justify-center items-center">
-      <div className="absolute top-0 left-0 w-full h-full">
+      <div className="absolute top-[0px] left-0 w-full h-ful">
         <video
-          className="top-[0px] w-full h-full object-cover"
+          className="top-[120px] w-full h-full object-cover"
           src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
