@@ -48,8 +48,8 @@ function AddFile() {
           Créer votre mind map
         </button>
       </div>
-      <h1 className="mt-4 border mx-[300px] font-semibold text-center">
-        Semantic accélère votre recherche d'informations en présentant le
+      <h1 className="mt-4 mx-[300px] font-semibold text-center">
+        Semantic accélère votre recherche d&apos;informations en présentant le
         contenu de vos documents de manière structurée sous forme de{" "}
         <span onClick={handleMindMaps} className="text-[#FCA310]">
           {" "}
