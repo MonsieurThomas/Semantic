@@ -185,7 +185,7 @@ export default async function handler(req: NextApiRequest, res: ExtendedNextApiR
         model: 'gpt-4o-2024-08-06',
         n: 1,
         stop: null,
-        temperature: 0.7,
+        temperature: 0.4,
         messages: [
           {
             role: 'user',

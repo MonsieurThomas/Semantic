@@ -193,15 +193,11 @@ function DrawSquare(
         line = testLine;
       }
     }
-    console.log("This lines = ", lines.length);
-
     if (lines.length > 1) {
-      console.log("This lines debut if = ", lines.length);
       posX = obj.x - 500;
-      posY = obj.y - (Math.max(caseHeight, words.length * 170)/2)
+      posY = obj.y - Math.max(caseHeight, words.length * 170) / 2;
       caseWidth += 1000;
       caseHeight += Math.max(caseHeight, words.length * 170);
-      console.log("words.length * 170 = ", words.length * 170);
     } else {
       posX = obj.x - 500;
       posY = obj.y - 500;
@@ -268,25 +264,27 @@ function DrawSquare(
   if (obj.branch == 0) ctx.font = "80px Lexend";
   wrapText(ctx, obj, caseWidth); // affichage texte
   if (obj.hover && obj.branch != 0 && !obj.bounding) eyeShape(ctx, obj);
-  if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj);
+  if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj, caseWidth);
   if (obj.pistacheColor) {
     // pistache part
     ctx.globalAlpha = 1;
     ctx.beginPath();
-    ctx.arc(obj.x + 3400, obj.y, 200, 0, 2 * Math.PI);
+    ctx.arc(obj.x + caseWidth - 20, obj.y, 200, 0, 2 * Math.PI);
     ctx.fillStyle = obj.pistacheColor;
     ctx.fill();
     if (obj.pistacheType == "flag") {
-      drawFlag(ctx, obj.x + 3380, obj.y, 140);
+      drawFlag(ctx, obj.x + caseWidth - 50, obj.y, 140);
       ctx.strokeStyle = obj.pistacheColor;
+      ctx.lineWidth = 2;
     } else if (obj.pistacheType == "priorité") {
       ctx.fillStyle = "white";
-      ctx.fillText(`${obj.pistacheNum}`, obj.x + 3300, obj.y + 120);
+      ctx.fillText(`${obj.pistacheNum}`, obj.x + caseWidth - 120, obj.y + 120);
       ctx.strokeStyle = obj.pistacheColor;
+      ctx.lineWidth = 2;
     } else if (obj.pistacheType == "tache") {
       drawLoadingCircle(
         ctx,
-        obj.x + 3400,
+        obj.x + caseWidth,
         obj.y - 200,
         obj.pistacheNum - 1,
         200
@@ -294,6 +292,7 @@ function DrawSquare(
       ctx.strokeStyle = "#1EC07C";
     } else if (obj.pistacheType == "etiquette") {
       ctx.strokeStyle = obj.pistacheColor;
+      ctx.lineWidth = 2;
     }
     ctx.stroke();
   }
@@ -403,8 +402,12 @@ function eyeShape(ctx: CanvasRenderingContext2D, obj: any) {
   ctx.restore();
 }
 
-function drawMagicWand(ctx: CanvasRenderingContext2D, obj: any) {
-  let startX = obj.x + 2950;
+function drawMagicWand(
+  ctx: CanvasRenderingContext2D,
+  obj: any,
+  caseWidh: number
+) {
+  let startX = obj.x + caseWidh - 500;
   let startY = obj.y + 20;
   let color = "black";
   let length = 240;
@@ -458,7 +461,12 @@ const drawStar = (
   ctx.fill();
 };
 
-function DrawBubble(ctx: CanvasRenderingContext2D, obj: any, zoom: number) {
+function DrawBubble(
+  ctx: CanvasRenderingContext2D,
+  obj: any,
+  zoom: number,
+  caseWidth: number
+) {
   ctx.save();
 
   if (Array.isArray(obj.bounding) && obj.bounding.length > 0) {
@@ -471,7 +479,15 @@ function DrawBubble(ctx: CanvasRenderingContext2D, obj: any, zoom: number) {
       ctx.beginPath();
       if (obj.x < 0)
         ctx.arc(obj.x - 600, obj.y + 500, 300, 0, 2 * Math.PI, false);
-      else ctx.arc(obj.x + 4100, obj.y + 500, 300, 0, 2 * Math.PI, false);
+      else
+        ctx.arc(
+          obj.x + caseWidth + 500,
+          obj.y + 500,
+          300,
+          0,
+          2 * Math.PI,
+          false
+        );
       const opacityfill = Math.min(opacity, 0.05);
       // console.log("opacity = ", opacity, " for ", obj.value);
       ctx.globalAlpha = opacityfill;
@@ -489,7 +505,11 @@ function DrawBubble(ctx: CanvasRenderingContext2D, obj: any, zoom: number) {
       if (obj.x < 0) {
         ctx.fillText(obj.bounding.length.toString(), obj.x - 600, obj.y + 515);
       } else {
-        ctx.fillText(obj.bounding.length.toString(), obj.x + 4100, obj.y + 515);
+        ctx.fillText(
+          obj.bounding.length.toString(),
+          obj.x + caseWidth + 500,
+          obj.y + 515
+        );
       }
     }
   }
@@ -576,28 +596,30 @@ function Pistache(
   let posX = obj.x + caseWidth + 200;
   let posY = obj.y - 1000;
   const cornerRadius = 200;
+  let caseSide = caseHeight - 200;
+  let case2ndSide = caseWidth - 1200;
   ctx.beginPath();
   ctx.moveTo(posX + cornerRadius, posY);
-  ctx.lineTo(posX + caseWidth - cornerRadius, posY);
+  ctx.lineTo(posX + case2ndSide - cornerRadius, posY);
   ctx.arc(
-    posX + caseWidth - cornerRadius,
+    posX + case2ndSide - cornerRadius,
     posY + cornerRadius,
     cornerRadius,
     1.5 * Math.PI,
     2 * Math.PI
   );
-  ctx.lineTo(posX + caseWidth, posY + caseHeight - cornerRadius);
+  ctx.lineTo(posX + case2ndSide, posY + caseSide - cornerRadius);
   ctx.arc(
-    posX + caseWidth - cornerRadius,
-    posY + caseHeight - cornerRadius,
+    posX + case2ndSide - cornerRadius,
+    posY + caseSide - cornerRadius,
     cornerRadius,
     0,
     0.5 * Math.PI
   );
-  ctx.lineTo(posX + cornerRadius, posY + caseHeight);
+  ctx.lineTo(posX + cornerRadius, posY + caseSide);
   ctx.arc(
     posX + cornerRadius,
-    posY + caseHeight - cornerRadius,
+    posY + caseSide - cornerRadius,
     cornerRadius,
     0.5 * Math.PI,
     Math.PI
@@ -628,7 +650,7 @@ function Pistache(
   ];
   const circleRadius = 150;
   labels.forEach((label, index) => {
-    const labelPosY = posY - 3500 + (index + 5) * (caseHeight / labels.length);
+    const labelPosY = posY - 3500 + (index + 5) * (caseSide / labels.length);
     ctx.fillStyle = "black";
     ctx.font = "160px Lexend";
     ctx.fillText(label, posX + 100, labelPosY);
@@ -648,7 +670,7 @@ function Pistache(
       ctx.stroke();
       if (index == 1) {
         ctx.font = "bold 260px Lexend";
-        ctx.fillStyle = "white"; // Ensure text color is black
+        ctx.fillStyle = "white";
         ctx.fillText(
           `${num + 1}`,
           posX - 70 + (num + 1) * 450,
@@ -684,7 +706,7 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>, zoom: number) {
   ParseLine(ctx, tab, caseWidth, caseHeight);
   tab.forEach((obj) => {
     DrawSquare(ctx, obj, caseWidth, caseHeight);
-    DrawBubble(ctx, obj, zoom);
+    DrawBubble(ctx, obj, zoom, caseWidth);
   });
   tab.forEach((obj) => {
     if (obj.isPistache) Pistache(ctx, obj, caseWidth, caseHeight + 2000);

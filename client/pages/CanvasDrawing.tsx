@@ -70,6 +70,9 @@ const CanvasDrawing = () => {
   const [fullText, setFullText] = useState<string | null>(null);
   const [fullTextSplit, setFullTextSplit] = useState<string[] | null>(null);
 
+  let caseWidth = 4800;
+  let caseHeigth = 1200;
+
   // console.log("\n\n\n\nThis is document in fetching avant= \n\n\n\n");
 
   useEffect(() => {
@@ -443,10 +446,6 @@ const CanvasDrawing = () => {
   }, [panOffset, zoomLevel, localTab, zoomFraction]);
 
   useEffect(() => {
-    console.log("isPistacheHoverd = ", isPistacheHovered);
-  }, [isPistacheHovered]);
-
-  useEffect(() => {
     redrawCanvas();
   }, [localTab, redrawCanvas]);
 
@@ -467,9 +466,9 @@ const CanvasDrawing = () => {
 
         if (
           adjustedX >= obj.x &&
-          adjustedX <= obj.x + 3500 &&
+          adjustedX <= obj.x + 4800 &&
           adjustedY >= obj.y - 300 &&
-          adjustedY <= obj.y + 1000
+          adjustedY <= obj.y + 1200
         ) {
           obj.hover = true;
           isHovering = true;
@@ -689,39 +688,15 @@ const CanvasDrawing = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-
+    
       const x = e.clientX - rect.left - panOffset.x;
       const y = e.clientY - rect.top - panOffset.y;
-
+      let newPistacheHovered = false;
+    
       localTab.forEach((obj) => {
         const adjustedX = x / zoomLevel;
         const adjustedY = y / zoomLevel;
-
-        if (obj.value == "Garant de la Constitution") {
-          console.log("This is adjustedX = ", adjustedX);
-          console.log("This is adjustedY = ", adjustedY);
-        }
-
-        if (
-          adjustedX >= obj.x &&
-          adjustedX <= obj.x + 3500 &&
-          adjustedY >= obj.y &&
-          adjustedY <= obj.y + 1000
-        ) {
-          if (obj.branch == 0) {
-            setIsMenuShown(true);
-            // console.log("ok menu");
-          }
-          if (
-            obj.bounding &&
-            !isTextShown &&
-            !disableClicks &&
-            !isPistacheHovered
-          ) {
-            setSelected(obj);
-            setIsTextShown(true);
-          }
-        }
+    
         if (
           adjustedX >= obj.x + 150 &&
           adjustedX <= obj.x + 700 &&
@@ -731,45 +706,81 @@ const CanvasDrawing = () => {
           obj.hideRoot = !obj.hideRoot;
           hideCases(localTab, obj);
         } else if (
-          adjustedX >= obj.x + 2900 &&
-          adjustedX <= obj.x + 3500 &&
+          adjustedX >= obj.x + caseWidth - 500 &&
+          adjustedX <= obj.x + caseWidth &&
           adjustedY >= obj.y - 400 &&
           adjustedY <= obj.y
         ) {
-          if (isPistacheOpen == false) obj.isPistache = !obj.isPistache;
-          else if (isPistacheOpen && obj.isPistache)
-            obj.isPistache = !obj.isPistache;
+          obj.isPistache = !obj.isPistache;
+          console.log("ici pistache", obj.isPistache);
           redrawCanvas();
+        } else if (
+          obj.isPistache &&
+          adjustedX >= obj.x + 4000 &&
+          adjustedX <= obj.x + 8700 &&
+          adjustedY >= obj.y - 1200 &&
+          adjustedY <= obj.y + 2600
+        ) {
+          setPistacheTab(
+            CheckPistachePostion(
+              obj,
+              adjustedX,
+              adjustedY,
+              pistacheTab,
+              caseWidth,
+              caseHeigth
+            )
+          );
+          newPistacheHovered = true;
+          console.log("newPistacheHovered", newPistacheHovered);
         }
         if (
           obj.isPistache &&
-          adjustedX >= obj.x + 4000 &&
-          adjustedX <= obj.x + 7500 &&
-          adjustedY >= obj.y - 1200 &&
-          adjustedY <= obj.y + 2600
-        )
-          setPistacheTab(
-            CheckPistachePostion(obj, adjustedX, adjustedY, pistacheTab)
-          );
-        if (
-          obj.isPistache &&
           (adjustedX < obj.x + 4000 ||
-            adjustedX > obj.x + 7500 ||
+            adjustedX > obj.x + 8700 ||
             adjustedY < obj.y - 1200 ||
             adjustedY > obj.y + 2600) &&
           !(
-            adjustedX >= obj.x + 2900 &&
-            adjustedX <= obj.x + 3500 &&
+            adjustedX >= obj.x + caseWidth - 500 &&
+            adjustedX <= obj.x + caseWidth &&
             adjustedY >= obj.y - 400 &&
             adjustedY <= obj.y
           )
         ) {
-          console.log("ici");
+          console.log("ici close pistache");
           obj.isPistache = false;
         }
         redrawCanvas();
       });
+    
+      // Maintenant vérifiez si vous devez afficher le texte ou non
+      localTab.forEach((obj) => {
+        const adjustedX = x / zoomLevel;
+        const adjustedY = y / zoomLevel;
+    
+        if (
+          adjustedX >= obj.x &&
+          adjustedX <= obj.x + caseWidth &&
+          adjustedY >= obj.y &&
+          adjustedY <= obj.y + caseHeigth
+        ) {
+          if (obj.branch == 0) {
+            setIsMenuShown(true);
+          }
+          if (
+            obj.bounding &&
+            !isTextShown &&
+            !disableClicks &&
+            !isPistacheHovered &&
+            !newPistacheHovered
+          ) {
+            setSelected(obj);
+            setIsTextShown(true);
+          }
+        }
+      });
     };
+    
 
     const handleScroll = () => {
       // console.log("programmaticScroll", programmaticScroll);
@@ -849,9 +860,6 @@ const CanvasDrawing = () => {
   const handleInputChange = (event: any) => {
     setSearchValue(event.target.value);
   };
-  useEffect(() => {
-    console.log("searchValue a chaud = ", searchValue);
-  }, [searchValue]);
 
   function getOpacity(obj: any) {
     const calculatedOpacity = 1 - (obj.path.length - 0.5) / 10;
@@ -952,8 +960,12 @@ const CanvasDrawing = () => {
 
   const itemHeight = 52;
   const maxHeight = itemHeight * 4;
-  const dynamicHeight = itemHeight * pistacheTab.length + 12;
+  const dynamicHeight = itemHeight * pistacheTab?.length + 12;
   const scrollNeeded = dynamicHeight > maxHeight;
+
+  useEffect(() => {
+    console.log("isPistacheHovered = ", isPistacheHovered);
+  }, [isPistacheHovered]);
 
   useEffect(() => {
     if (selected)
@@ -1211,23 +1223,10 @@ const CanvasDrawing = () => {
     }
   };
 
-  // Function to remove "·" from strings
-
-  // const filterValues = (obj: { value: string }) => {
-  //   const searchWords = searchValue.toLowerCase().split(" "); // Divise la valeur de recherche en mots
-  //   const objWords = obj.value.toLowerCase().split(" "); // Divise chaque valeur de l'objet en mots
-  //   return searchWords.some(
-  //     (
-  //       searchWord // Vérifie si un des mots de recherche correspond au début de n'importe quel mot de l'objet
-  //     ) => objWords.some((objWord: string) => objWord.startsWith(searchWord))
-  //   );
-  // };
-
   const filterValues = (obj: { value: string }) => {
-    const searchWord = searchValue.toLowerCase(); // Convertit la valeur de recherche en minuscules
-    const objValue = obj.value.toLowerCase(); // Convertit la valeur de l'objet en minuscules
+    const searchWord = searchValue.toLowerCase();
+    const objValue = obj.value.toLowerCase();
 
-    // Vérifie si obj.value inclut searchValue et commence par searchValue
     return objValue.includes(searchWord) && objValue.startsWith(searchWord);
   };
 
@@ -1542,7 +1541,7 @@ const CanvasDrawing = () => {
         </div>
       )}
       <div>
-        {pistacheTab.length > 0 && (
+        {pistacheTab?.length > 0 && (
           <Image
             src={MarquePage}
             alt="no image"
@@ -1552,6 +1551,8 @@ const CanvasDrawing = () => {
               right: showPistacheTab ? "275px" : "-15px",
             }}
             onClick={togglePistacheTab}
+            onMouseEnter={() => setIsPistacheHovered(true)}
+            onMouseLeave={() => setIsPistacheHovered(false)}
           />
         )}
         {showPistacheTab && (

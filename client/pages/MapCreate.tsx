@@ -128,7 +128,7 @@ const MapCreate = () => {
           )}
         </div>
         <div className="relative z-10">
-          <h3 className="font-semibold text-center mt-[30px] w-[750px] 2xl:text-xl">
+          <h3 className="font-semibold text-center 2xl:mt-[30px] w-[750px] 2xl:text-xl">
             Semantic accélère votre recherche d&apos;informations en présentant
             le contenu de vos documents de manière structurée, sous forme de{" "}
             <a

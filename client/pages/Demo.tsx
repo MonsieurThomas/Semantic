@@ -88,7 +88,7 @@ function Demo() {
             alt="Paper Demo"
             className="w-[45px] mx-auto mt-4 mb-6 pt-6"
           />
-          <h1 className="font-bold">Compile tes documents</h1>
+          <h1 className="text-lg font-bold">Compile tes documents</h1>
           <h3 className="text-sm mx-auto mt-1">
             Jusqu’à 200 pages de Word, PDF, pages Web stockées et sécurisées,
             d’un seul coup.
@@ -122,9 +122,6 @@ function Demo() {
         <h1 className="text-2xl font-bold my-4 text-center ">
           Ce que tu gagnes{" "}
         </h1>
-        {/* <h1 className="text-xl font-semibold my-4 text-center">
-          This is how much you could earn on Thinkific
-        </h1> */}
         <div className=" p-5 py-14 rounded-xl">
           <div className="mb-10 flex items-center">
             <input
@@ -175,11 +172,15 @@ function Demo() {
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              const subject = encodeURIComponent("Réservation pour une démo Semantic");
-              const body = encodeURIComponent("Bonjour,\n\nJe souhaiterais réserver un créneau pour une démo Semantic.\n\nMerci.\n\n(Messieurs je vous invite a me dire ce que vous voulez voir ecrit ici)");
+              const subject = encodeURIComponent(
+                "Réservation pour une démo Semantic"
+              );
+              const body = encodeURIComponent(
+                "Bonjour,\n\nJe souhaiterais réserver un créneau pour une démo Semantic.\n\nMerci.\n\n(Messieurs je vous invite a me dire ce que vous voulez voir ecrit ici)"
+              );
               window.location.href = `mailto:r.thomas06200@gmail.com?subject=${subject}&body=${body}`;
             }}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           >
             Réserver maintenant
           </div>
