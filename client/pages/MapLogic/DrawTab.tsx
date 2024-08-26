@@ -121,7 +121,7 @@ function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
 
   if (obj.branch == 0) {
     boxX -= 500;
-    boxY += 250;
+    boxY += 100;
     ctx.font = `bold 500px Lexend`;
     lineHeight = 550;
   }
@@ -196,10 +196,12 @@ function DrawSquare(
     console.log("This lines = ", lines.length);
 
     if (lines.length > 1) {
+      console.log("This lines debut if = ", lines.length);
       posX = obj.x - 500;
-      posY = obj.y - words.length * 100;
+      posY = obj.y - (Math.max(caseHeight, words.length * 170)/2)
       caseWidth += 1000;
       caseHeight += Math.max(caseHeight, words.length * 170);
+      console.log("words.length * 170 = ", words.length * 170);
     } else {
       posX = obj.x - 500;
       posY = obj.y - 500;
