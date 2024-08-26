@@ -107,7 +107,7 @@ function ParseLine(
 }
 
 function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
-  const boxHeight = 1500;
+  const boxHeight = 1600;
   const words = obj.value.split(" ");
   let fontSize = "380px";
   let lineHeight = 350;
@@ -117,10 +117,11 @@ function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
   let lines: string[] = [];
   let line = "";
   let boxX = obj.x;
-  let boxY = obj.y + 5;
+  let boxY = obj.y + 45;
 
   if (obj.branch == 0) {
     boxX -= 500;
+    boxY += 250;
     ctx.font = `bold 500px Lexend`;
     lineHeight = 550;
   }
@@ -177,11 +178,9 @@ function DrawSquare(
   let posY = obj.y;
   const cornerRadius = 160;
   if (obj.branch == 0 && obj.hover) {
-    //calcul nombre de ligne titre
     let lines: string[] = [];
     let line = "";
     const words = obj.value.split(" ");
-    console.log("This words = ", words);
     for (let i = 0; i < words.length; i++) {
       const testLine = line + words[i] + " ";
       const metrics = ctx.measureText(testLine);
@@ -200,9 +199,8 @@ function DrawSquare(
       posX = obj.x - 500;
       posY = obj.y - words.length * 100;
       caseWidth += 1000;
-      caseHeight += words.length * 170;
-    }
-    else{
+      caseHeight += Math.max(caseHeight, words.length * 170);
+    } else {
       posX = obj.x - 500;
       posY = obj.y - 500;
       caseWidth += 1000;
@@ -679,8 +677,8 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>, zoom: number) {
     return;
   }
 
-  let caseWidth = 3500;
-  let caseHeight = 1000;
+  let caseWidth = 4800;
+  let caseHeight = 1200;
   ParseLine(ctx, tab, caseWidth, caseHeight);
   tab.forEach((obj) => {
     DrawSquare(ctx, obj, caseWidth, caseHeight);

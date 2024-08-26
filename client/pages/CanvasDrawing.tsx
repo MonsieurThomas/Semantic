@@ -79,7 +79,11 @@ const CanvasDrawing = () => {
           const response = await axios.get(`/api/getDocumentById?id=${id}`);
           const document = response.data;
           if (document.openaiResponse) {
-            // console.log("\n\n\n\nThis is document.openaiResponse in fetching =", document.openaiResponse,"\n\n\n\n");
+            console.log(
+              "\n\n\n\nThis is document.openaiResponse in fetching =",
+              document.openaiResponse,
+              "\n\n\n\n"
+            );
             const cleanResponse = document.openaiResponse
               .replace(/```json|```/g, "")
               .trim();
@@ -308,8 +312,8 @@ const CanvasDrawing = () => {
     });
 
     tab.forEach((obj) => {
-      obj.y = obj.y * 1300;
-      obj.x = obj.x * 6000;
+      obj.y = obj.y * 1500;
+      obj.x = obj.x * 7000;
       obj.hover = false;
       obj.hide = false;
       obj.occurence = 2;
@@ -396,6 +400,7 @@ const CanvasDrawing = () => {
   const [selectedCitation, setSelectedCitation] = useState(false);
   const [isPistacheOpen, setIsPistacheOpen] = useState(false);
   const [pageCount, setPageCount] = useState(0);
+  const [isPistacheHovered, setIsPistacheHovered] = useState(false);
   const [showBackground, setShowBackground] = useState(false);
   const [programmaticScroll, setProgrammaticScroll] = useState(false);
   const [startPan, setStartPan] = useState<{ x: number; y: number }>({
@@ -436,6 +441,10 @@ const CanvasDrawing = () => {
     DrawTab(ctx, localTab, formatZoom(zoomFraction));
     ctx.restore();
   }, [panOffset, zoomLevel, localTab, zoomFraction]);
+
+  useEffect(() => {
+    console.log("isPistacheHoverd = ", isPistacheHovered);
+  }, [isPistacheHovered]);
 
   useEffect(() => {
     redrawCanvas();
@@ -703,7 +712,12 @@ const CanvasDrawing = () => {
             setIsMenuShown(true);
             // console.log("ok menu");
           }
-          if (obj.bounding && !isTextShown && !disableClicks) {
+          if (
+            obj.bounding &&
+            !isTextShown &&
+            !disableClicks &&
+            !isPistacheHovered
+          ) {
             setSelected(obj);
             setIsTextShown(true);
           }
@@ -739,11 +753,16 @@ const CanvasDrawing = () => {
           );
         if (
           obj.isPistache &&
-          ((adjustedX < obj.x + 4000 || adjustedX > obj.x + 7500) ||
-          (adjustedY < obj.y - 1200 || adjustedY > obj.y + 2600)) && !(adjustedX >= obj.x + 2900 &&
-          adjustedX <= obj.x + 3500 &&
-          adjustedY >= obj.y - 400 &&
-          adjustedY <= obj.y)
+          (adjustedX < obj.x + 4000 ||
+            adjustedX > obj.x + 7500 ||
+            adjustedY < obj.y - 1200 ||
+            adjustedY > obj.y + 2600) &&
+          !(
+            adjustedX >= obj.x + 2900 &&
+            adjustedX <= obj.x + 3500 &&
+            adjustedY >= obj.y - 400 &&
+            adjustedY <= obj.y
+          )
         ) {
           console.log("ici");
           obj.isPistache = false;
@@ -1547,6 +1566,8 @@ const CanvasDrawing = () => {
               borderTopRightRadius: "0",
               borderBottomRightRadius: "0",
             }}
+            onMouseEnter={() => setIsPistacheHovered(true)}
+            onMouseLeave={() => setIsPistacheHovered(false)}
           >
             {pistacheTab.map((item: any, index: number) => (
               <div

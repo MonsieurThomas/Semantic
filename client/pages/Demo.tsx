@@ -88,7 +88,7 @@ function Demo() {
             alt="Paper Demo"
             className="w-[45px] mx-auto mt-4 mb-6 pt-6"
           />
-          <h1 className="font-bold">Compile n’importe quels documents:</h1>
+          <h1 className="font-bold">Compile tes documents</h1>
           <h3 className="text-sm mx-auto mt-1">
             Jusqu’à 200 pages de Word, PDF, pages Web stockées et sécurisées,
             d’un seul coup.
@@ -98,9 +98,7 @@ function Demo() {
             alt="Eye Demo"
             className="w-[50px] mx-auto mt-8 mb-6 "
           />
-          <h1 className="text-lg font-bold ">
-            Structure ta pensée en un rien de temps
-          </h1>
+          <h1 className="text-lg font-bold ">Structure ta pensée</h1>
           <h3 className="text-sm mt-1">
             En moins de 10 secondes, tu as une vision claire de tout leur
             contenu, sans bouger ton doigt de la souris.
@@ -111,11 +109,11 @@ function Demo() {
             className="w-[45px] mx-auto mt-4 mb-6 "
           />
           <h1 className="text-lg font-bold ">
-            Trouve plus d’informations, plus rapidement, sans te fatiguer
+            Trouve 3x plus d’informations en 3x moins de temps
           </h1>
           <h3 className="text-sm pb-5 mt-1">
             Accède, en 1 clic, à tous les paragraphes qui t’intéressent et
-            multiplie par 3 ta productivité, sans jamais t’épuiser.
+            décuple dès maintenant ta productivité.
           </h3>
         </div>
       </div>
@@ -138,8 +136,10 @@ function Demo() {
               style={{ outline: "none" }}
             />
             <div className="mx-2">
-              <h2 className="block font-medium ">/Documents lus</h2>
-              <h2 className="text-sm">par semaine</h2>
+              <h2 className="block font-medium whitespace-nowrap">
+                Documents lus
+              </h2>
+              <h2 className="text-sm whitespace-nowrap">(par semaine)</h2>
             </div>
             <p className="px-4">x</p>
             <input
@@ -151,8 +151,10 @@ function Demo() {
               style={{ outline: "none" }}
             />
             <div className="mx-2">
-              <h2 className="block font-medium">/Nombre de pages</h2>
-              <h2 className="text-sm">moyen par document</h2>
+              <h2 className="block font-medium whitespace-nowrap">
+                Nombre de pages moyen
+              </h2>
+              <h2 className="text-sm whitespace-nowrap">(par document)</h2>
             </div>
           </div>
           <div>
@@ -170,11 +172,20 @@ function Demo() {
             data-text="Réserver maintenant"
             data-size="large"
             data-color="#FCA311"
-            data-url="https://semantic.reservio.com"
-          ></div>
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const subject = encodeURIComponent("Réservation pour une démo Semantic");
+              const body = encodeURIComponent("Bonjour,\n\nJe souhaiterais réserver un créneau pour une démo Semantic.\n\nMerci.\n\n(Messieurs je vous invite a me dire ce que vous voulez voir ecrit ici)");
+              window.location.href = `mailto:r.thomas06200@gmail.com?subject=${subject}&body=${body}`;
+            }}
+            style={{ cursor: 'pointer' }}
+          >
+            Réserver maintenant
+          </div>
         </div>
         <h1 className="font-bold text-center mt-10">
-          Gratuite, 30mn, et sans engagement
+          Gratuite, en moins de 30 min et sans engagement
         </h1>
       </div>
     </div>
