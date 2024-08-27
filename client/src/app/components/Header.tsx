@@ -60,7 +60,7 @@ function Header() {
 
   return (
     <div
-      className="flex mx-10 items-center py-6 z-50"
+      className="flex mx-10 items-center py-6 z-50 h-[90px]"
       style={{ userSelect: "none" }}
     >
       <Link href="/">

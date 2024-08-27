@@ -71,35 +71,35 @@ const MapCreate = () => {
   }, []);
 
   return (
-    <div className="overflow-hidden 2xl:h-[80vh]">
-      <div className="absolute top-[120px] 2xl:top-[200px] left-0 w-full h-[78vh] overflow-hidden">
+    <div className="h-[calc(100vh-90px)] overflow-hidden relative">
+      <div className="absolute left-0 top-0 w-full h-full">
         <video
-          className=" w-full overflow-hidden"
+          className="w-full h-full object-cover object-top transform translate-y-[30px] translate-x-[-4px]"
           src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
         />
       </div>
-      <div className="relative flex flex-col 2xl:top-[64px] items-center gap-[40px] 2xl:gap-[50px] w-full overflow-hidden">
+      <div className="relative flex flex-col items-center justify-center gap-[40px] 2xl:gap-[50px] w-full h-full">
         <motion.div
           className="relative z-10"
           initial={{ y: "0vh" }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <h1 className="text-6xl 2xl:text-7xl font-bold w-[700px] 2xl:w-[800px] pt-[60px] text-center ">
+          <h1 className="text-6xl 2xl:text-7xl font-bold w-[700px] 2xl:w-[800px] pt-[0px] text-center ">
             Speed up your research with mind maps
           </h1>
         </motion.div>
-        <div className="relative flex flex-col items-center z-10 overflow-hidden">
+        <div className="relative flex flex-col items-center z-10">
           <button
             onClick={handleCreateMap}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
             <h1 className="text-center 2xl:pb-2">Crée ta</h1>
             <h1 className="text-center">mind map</h1>
-            <IoMdAddCircle className="absolute top-2 right-5 w-6" />
+            <IoMdAddCircle className="absolute top-0 right-5 w-6" />
           </button>
           <input
             type="file"
@@ -138,7 +138,6 @@ const MapCreate = () => {
               mind maps
             </a>{" "}
             interactives.
-            {/* <button onClick={handleurl}>Handle url</button> */}
           </h3>
         </div>
       </div>
