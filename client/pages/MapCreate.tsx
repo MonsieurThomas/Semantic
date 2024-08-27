@@ -70,6 +70,10 @@ const MapCreate = () => {
     );
   }, []);
 
+  const handleAddFile = () => {
+    router.push("/testUrl");
+  };
+
   return (
     <div className="h-[calc(100vh-90px)] overflow-hidden relative">
       <div className="absolute left-0 top-0 w-full h-full">
@@ -94,7 +98,7 @@ const MapCreate = () => {
         </motion.div>
         <div className="relative flex flex-col items-center z-10">
           <button
-            onClick={handleCreateMap}
+            onClick={handleAddFile}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
             <h1 className="text-center 2xl:pb-2">Crée ta</h1>
@@ -109,7 +113,7 @@ const MapCreate = () => {
             multiple
           />
           {userId && (
-            <div className="z-10 mt-1 text-center overflow-hidden  ">
+            <div className="absolute top-[127px] z-10 mt-1 text-center overflow-hidden  ">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
                 Maximum 400 pages{" "}
                 <a
@@ -127,7 +131,7 @@ const MapCreate = () => {
             </div>
           )}
         </div>
-        <div className="relative z-10">
+        <div className="relative z-10 mt-4">
           <h3 className="font-semibold text-center 2xl:mt-[30px] w-[750px] 2xl:text-xl">
             Semantic accélère votre recherche d&apos;informations en présentant
             le contenu de vos documents de manière structurée, sous forme de{" "}

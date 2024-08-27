@@ -117,11 +117,11 @@ function Header() {
                 </span>
               </div>
             ) : (
-              <Link href="/Login" className="flex items-center gap-2">
+              <Link href="/Login" className="flex items-center gap-">
                 <Image
                   src={profilLogo}
                   alt="Profile Logo"
-                  className="w-[42px] h-[40px] hover:cursor-pointer"
+                  className="w-10 h-10 hover:cursor-pointer"
                 />
               </Link>
             )}

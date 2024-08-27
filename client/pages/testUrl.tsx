@@ -16,7 +16,6 @@ function TestUrl() {
     setError('');
     setExtractedText('');
     try {
-      // Step 1: Fetch the HTML content from the URL
       const response = await axios.get(`/api/extract-text?url=${encodeURIComponent(url)}`);
       setExtractedText(response.data.text);
     } catch (err) {

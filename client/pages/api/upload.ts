@@ -186,6 +186,7 @@ export default async function handler(req: NextApiRequest, res: ExtendedNextApiR
         n: 1,
         stop: null,
         temperature: 0.4,
+        response_format: { type: "json_object" },
         messages: [
           {
             role: 'user',
