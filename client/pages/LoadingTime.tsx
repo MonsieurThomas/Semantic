@@ -17,6 +17,7 @@ interface WordType {
 
 const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   const router = useRouter();
+  const { taskId } = router.query;
   const [progress, setProgress] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [wordsToDisplay, setWordsToDisplay] = useState<WordType[]>([]);
@@ -26,22 +27,48 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   } | null>(null);
 
   useEffect(() => {
+    console.log("Establishing socket connection...");
     const socket = io({
       path: "/api/socket",
     });
-
+  
     socket.on(
       "loadingComplete",
-      (docInfo: { id: string; openaiResponse: string }) => {
-        setDocumentInfo(docInfo);
-        setLoadingComplete(true);
+      (docInfo: { id: string; openaiResponse: string; taskId: string }) => {
+        console.log("Received loadingComplete event:", docInfo);
+  
+        // Check if the taskId matches the current taskId
+        if (docInfo.taskId === taskId) {
+          console.log("Task IDs match. Updating state.");
+          setDocumentInfo(docInfo);
+          setLoadingComplete(true);
+        } else {
+          console.log("Task ID mismatch. Expected:", taskId, "but got:", docInfo.taskId);
+        }
       }
     );
-
+  
     return () => {
+      console.log("Disconnecting socket...");
       socket.disconnect();
     };
-  }, []);
+  }, [taskId]);
+
+  useEffect(() => {
+    console.log("Checking if loading is complete and document info is available...");
+    console.log("loadingComplete:", loadingComplete);
+    console.log("documentInfo:", documentInfo);
+    if (loadingComplete && documentInfo) {
+      console.log("Loading complete. Redirecting to /CanvasDrawing...");
+      router.push({
+        pathname: "/CanvasDrawing",
+        query: {
+          id: documentInfo.id,
+          openaiResponse: JSON.stringify(documentInfo.openaiResponse),
+        },
+      });
+    }
+  }, [loadingComplete, documentInfo, router]);
 
   useEffect(() => {
     const intervals = [
@@ -69,19 +96,6 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
     updateProgress();
   }, []);
 
-  useEffect(() => {
-    if (loadingComplete && documentInfo) {
-      router.push({
-        pathname: "/CanvasDrawing",
-        query: {
-          id: documentInfo.id,
-          openaiResponse: JSON.stringify(documentInfo.openaiResponse),
-        },
-      });
-    }
-  }, [loadingComplete, documentInfo, router]);
-
-  // Liste des mots regroupés par progressThreshold
   const groupedWords = {
     3: [
       { word: "Diagnostic", top: "80px", left: "300px" },
@@ -150,7 +164,7 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
         });
       }
 
-      console.log("selectedWordsForThreshold = ", selectedWordsForThreshold[0].progressThreshold);
+      // console.log("selectedWordsForThreshold = ", selectedWordsForThreshold[0].progressThreshold);
       return [...accumulatedWords, ...selectedWordsForThreshold];
     },
     [] as Array<{
@@ -162,12 +176,12 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   );
 
   useEffect(() => {
-    console.log("progress = ", progress)
+    // console.log("progress = ", progress)
     const wordsToAdd = selectedWords.filter(
       (word) => progress == word.progressThreshold
     );
-    console.log("Mots ajoutés pour progress:", progress);
-    console.log("Mots ajoutés pour wordsToAdd:", wordsToAdd, "\n");
+    // console.log("Mots ajoutés pour progress:", progress);
+    // console.log("Mots ajoutés pour wordsToAdd:", wordsToAdd, "\n");
     setWordsToDisplay((prevWords) => [...prevWords, ...wordsToAdd]);
   }, [progress]);
 

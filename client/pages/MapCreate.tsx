@@ -60,8 +60,8 @@ const MapCreate = () => {
     }
   };
 
-  const handleurl = () => {
-    router.push("/testUrl");
+  const handleButton = () => {
+    router.push("/AddFile");
   };
 
   useEffect(() => {
@@ -69,10 +69,6 @@ const MapCreate = () => {
       `Screen width: ${window.screen.width}px, Screen height: ${window.screen.height}px`
     );
   }, []);
-
-  const handleAddFile = () => {
-    router.push("/testUrl");
-  };
 
   return (
     <div className="h-[calc(100vh-90px)] overflow-hidden relative">
@@ -98,20 +94,13 @@ const MapCreate = () => {
         </motion.div>
         <div className="relative flex flex-col items-center z-10">
           <button
-            onClick={handleAddFile}
+            onClick={handleButton}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"
           >
             <h1 className="text-center 2xl:pb-2">Crée ta</h1>
             <h1 className="text-center">mind map</h1>
             <IoMdAddCircle className="absolute top-0 right-5 w-6" />
           </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-            multiple
-          />
           {userId && (
             <div className="absolute top-[127px] z-10 mt-1 text-center overflow-hidden  ">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
