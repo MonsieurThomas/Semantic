@@ -33,6 +33,7 @@ model Document {
   rawText        String?  // Ajout du nouveau champ rawText
   userId         Int      // Foreign key
   user           User     @relation(fields: [userId], references: [id])
+  elements       Json?    
 }
 
 

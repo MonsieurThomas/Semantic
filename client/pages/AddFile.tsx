@@ -1,15 +1,17 @@
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
 import axios from "axios";
 import io from "socket.io-client";
+import { UserContext } from "../src/context/UserContext";
 
 function AddFile() {
   const router = useRouter();
   const [fileList, setFileList] = useState<File[]>([]);
   const [url, setUrl] = useState("");
   const [urlList, setUrlList] = useState<string[]>([]);
+  const { username, logout } = useContext(UserContext);
 
   const handleMindMaps = () => {
     router.push("/MindMapping");
@@ -268,6 +270,8 @@ function AddFile() {
         <button
           className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
           onClick={handleCreateMindMap}
+          disabled={!username || (!urlList.length && !fileList.length)}
+
         >
           Créer votre mind map
         </button>

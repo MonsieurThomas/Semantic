@@ -210,6 +210,48 @@ function DrawSquare(
     caseWidth += 1000;
     caseHeight += 1000;
   }
+  //carré blanc pour opacité
+
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.moveTo(posX + cornerRadius, posY);
+  ctx.lineTo(posX + caseWidth - cornerRadius, posY);
+  ctx.arc(
+    posX + caseWidth - cornerRadius,
+    posY + cornerRadius,
+    cornerRadius,
+    1.5 * Math.PI,
+    2 * Math.PI
+  );
+  ctx.lineTo(posX + caseWidth, posY + caseHeight - cornerRadius);
+  ctx.arc(
+    posX + caseWidth - cornerRadius,
+    posY + caseHeight - cornerRadius,
+    cornerRadius,
+    0,
+    0.5 * Math.PI
+  );
+  ctx.lineTo(posX + cornerRadius, posY + caseHeight);
+  ctx.arc(
+    posX + cornerRadius,
+    posY + caseHeight - cornerRadius,
+    cornerRadius,
+    0.5 * Math.PI,
+    Math.PI
+  );
+  ctx.lineTo(posX, posY + cornerRadius);
+  ctx.arc(
+    posX + cornerRadius,
+    posY + cornerRadius,
+    cornerRadius,
+    Math.PI,
+    1.5 * Math.PI
+  );
+  ctx.closePath();
+  ctx.fill();
+
+  //fin de carre blanc
+
   ctx.beginPath();
   ctx.moveTo(posX + cornerRadius, posY);
   ctx.lineTo(posX + caseWidth - cornerRadius, posY);
@@ -328,6 +370,7 @@ function DrawCurveLine(
     }
     ctx.strokeStyle = obj2.color;
     ctx.lineWidth = 120;
+    ctx.globalAlpha = 0.9;
     ctx.stroke();
   } else {
     // ctx.beginPath();
@@ -349,6 +392,7 @@ function DrawCurveLine(
       );
     }
     ctx.strokeStyle = obj2.color;
+    ctx.globalAlpha = 0.9;
     ctx.lineWidth = 120;
 
     ctx.stroke();

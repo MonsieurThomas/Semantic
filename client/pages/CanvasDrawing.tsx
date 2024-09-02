@@ -109,6 +109,7 @@ const CanvasDrawing = () => {
               setApiResponse(textToParagraphs(document.rawText));
             }
           }
+          if (document.elements) setPistacheTab(document.elements);
         } catch (error) {
           console.error("Error fetching document:", error);
         }
@@ -161,8 +162,6 @@ const CanvasDrawing = () => {
         obj[key] !== null &&
         "bounding" in obj[key]
       ) {
-        // console.log("we are in value", obj[key]);
-        // Handle terminal nodes with value and offset
         if (depth === 1) {
           branchNb++;
         }
@@ -320,10 +319,17 @@ const CanvasDrawing = () => {
       obj.hover = false;
       obj.hide = false;
       obj.occurence = 2;
-    });
+      // console.log("obj = ", obj);
 
-    // console.log("this is type of fullText = ", typeof fullText);
-    // console.log("this is fullText = ", fullText);
+      for (let i = 0; i < pistacheTab.length; i++) {
+        if (pistacheTab[i].value === obj.value) {
+          Object.assign(obj, pistacheTab[i]);
+          obj.isPistache = false;
+          console.log("this is new obj = ", obj);
+          break; // Sort de la boucle dès qu'une correspondance est trouvée
+        }
+      }
+    });
   }
 
   function Color(tab: Array<any>) {
@@ -432,7 +438,24 @@ const CanvasDrawing = () => {
   );
 
   useEffect(() => {
-    console.log("pistacheTab dans le useEffect= ", pistacheTab);
+    console.log("pistacheTab dans le useEffect = ", pistacheTab);
+
+    if (pistacheTab?.length > 0) {
+      const updateDocument = async () => {
+        try {
+          const response = await axios.post("/api/updateDocument", {
+            id: id,
+            pistacheTab: pistacheTab,
+          });
+
+          console.log("Document updated:", response.data);
+        } catch (error) {
+          console.error("Error updating document:", error);
+        }
+      };
+
+      updateDocument();
+    }
   }, [pistacheTab]);
 
   const redrawCanvas = useCallback(() => {
@@ -718,7 +741,7 @@ const CanvasDrawing = () => {
           adjustedY <= obj.y
         ) {
           obj.isPistache = !obj.isPistache;
-          console.log("ici pistache", obj.isPistache);
+          // console.log("ici pistache", obj.isPistache);
           redrawCanvas();
         } else if (
           obj.isPistache &&
@@ -738,7 +761,6 @@ const CanvasDrawing = () => {
             )
           );
           newPistacheHovered = true;
-          // console.log("setPistacheTab", pistacheTab);
         }
         if (
           obj.isPistache &&
@@ -1834,7 +1856,7 @@ const CanvasDrawing = () => {
                     textOverflow: "ellipsis",
                     flexGrow: 1,
                     width: "100%",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                   onClick={() => zoomToValue(item)}
                 >
