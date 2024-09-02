@@ -102,7 +102,7 @@ const MapCreate = () => {
             <IoMdAddCircle className="absolute top-0 right-5 w-6" />
           </button>
           {userId && (
-            <div className="absolute top-[127px] z-10 mt-1 text-center overflow-hidden  ">
+            <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden  ">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
                 Maximum 400 pages{" "}
                 <a

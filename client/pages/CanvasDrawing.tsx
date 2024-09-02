@@ -431,6 +431,10 @@ const CanvasDrawing = () => {
     []
   );
 
+  useEffect(() => {
+    console.log("pistacheTab dans le useEffect= ", pistacheTab);
+  }, [pistacheTab]);
+
   const redrawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return; // Make sure the canvas is not null
@@ -685,18 +689,20 @@ const CanvasDrawing = () => {
     };
 
     const handleCanvasClick = (e: MouseEvent) => {
+      document.body.style.transform = "scale(1)";
+
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-    
+
       const x = e.clientX - rect.left - panOffset.x;
       const y = e.clientY - rect.top - panOffset.y;
       let newPistacheHovered = false;
-    
+
       localTab.forEach((obj) => {
         const adjustedX = x / zoomLevel;
         const adjustedY = y / zoomLevel;
-    
+
         if (
           adjustedX >= obj.x + 150 &&
           adjustedX <= obj.x + 700 &&
@@ -732,7 +738,7 @@ const CanvasDrawing = () => {
             )
           );
           newPistacheHovered = true;
-          console.log("newPistacheHovered", newPistacheHovered);
+          // console.log("setPistacheTab", pistacheTab);
         }
         if (
           obj.isPistache &&
@@ -752,12 +758,12 @@ const CanvasDrawing = () => {
         }
         redrawCanvas();
       });
-    
+
       // Maintenant vérifiez si vous devez afficher le texte ou non
       localTab.forEach((obj) => {
         const adjustedX = x / zoomLevel;
         const adjustedY = y / zoomLevel;
-    
+
         if (
           adjustedX >= obj.x &&
           adjustedX <= obj.x + caseWidth &&
@@ -780,7 +786,6 @@ const CanvasDrawing = () => {
         }
       });
     };
-    
 
     const handleScroll = () => {
       // console.log("programmaticScroll", programmaticScroll);
@@ -797,7 +802,13 @@ const CanvasDrawing = () => {
     };
     const modal = modalRef.current;
 
-    // window.addEventListener('resize', handleResize);
+    function getZoomLevel() {
+      return Math.round(window.devicePixelRatio * 100);
+    }
+
+    window.addEventListener("resize", () => {
+      console.log("Zoom level: " + getZoomLevel() + "%");
+    });
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("click", handleCanvasClick);
@@ -1823,6 +1834,7 @@ const CanvasDrawing = () => {
                     textOverflow: "ellipsis",
                     flexGrow: 1,
                     width: "100%",
+                    cursor: "pointer"
                   }}
                   onClick={() => zoomToValue(item)}
                 >

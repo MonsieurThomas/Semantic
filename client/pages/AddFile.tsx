@@ -102,6 +102,10 @@ function AddFile() {
     setFileList(newFileList); // Update the state with the new list
   };
 
+  const handleHomepage = () => {
+    router.push("/");
+  };
+
   const handleCreateMindMap = async () => {
     const taskId = new Date().getTime().toString(); // Unique task ID for this upload
     router.push({
@@ -111,10 +115,12 @@ function AddFile() {
     console.log("Navigated to /LoadingTime with taskId:", taskId);
 
     const fileText = await handleFileSubmit();
+    console.log("this is file text =", fileText)
     const urlText = await handleUrlSubmit();
 
     // Concaténer les textes extraits
     const combinedText = `${fileText}\n\n${urlText}`;
+    console.log("this is combinedText text =", combinedText)
 
     try {
       const gptResponse = await axios.post(
@@ -148,7 +154,7 @@ function AddFile() {
       <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
         <div className="flex justify-between items-center">
           <h1 className="text-center text-3xl flex-1">Ajouter vos fichiers</h1>
-          <GoX className="text-4xl m-3" />
+          <GoX className="text-4xl m-3" onClick={handleHomepage} />
         </div>
         <div className="flex justify-between items-start p-4 gap-x-4">
           <div className="flex-1">
@@ -182,17 +188,33 @@ function AddFile() {
                   onChange={handleFileChange}
                   multiple
                 />
-                <button
-                  onClick={() => {
-                    const fileInput = document.getElementById("fileInput");
-                    if (fileInput) {
-                      fileInput.click();
-                    }
-                  }}
-                  className="bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
-                >
-                  Ajouter plus de fichiers
-                </button>
+                {fileList.length == 0 ? (
+                  <Image
+                    className="cursor-pointer"
+                    src={"/CloudLogo.png"}
+                    alt="Cloud"
+                    width={200}
+                    height={50}
+                    onClick={() => {
+                      const fileInput = document.getElementById("fileInput");
+                      if (fileInput) {
+                        fileInput.click();
+                      }
+                    }}
+                  />
+                ) : (
+                  <button
+                    onClick={() => {
+                      const fileInput = document.getElementById("fileInput");
+                      if (fileInput) {
+                        fileInput.click();
+                      }
+                    }}
+                    className="bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+                  >
+                    Ajouter plus de fichiers
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -250,7 +272,7 @@ function AddFile() {
           Créer votre mind map
         </button>
       </div>
-      <h1 className="mt-4 mx-[300px] font-semibold text-center">
+      <h1 className="my-4 mx-[300px] font-semibold text-center text-l 2xl:text-xl">
         Semantic accélère votre recherche d&apos;informations en présentant le
         contenu de vos documents de manière structurée sous forme de{" "}
         <span onClick={handleMindMaps} className="text-[#FCA310]">
