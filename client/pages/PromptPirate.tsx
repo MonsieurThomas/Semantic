@@ -47,7 +47,6 @@ const PromptPirate = () => {
       </button>
       <h1>Prompt actuel :</h1>
       <pre>{prompt}</pre> {/* Affichage du prompt actuel */}
-      <h1 className="mt-2"> type = {typeof prompt}</h1>
     </div>
   );
 };
