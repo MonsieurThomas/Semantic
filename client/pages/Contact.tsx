@@ -36,7 +36,19 @@ const Contact = () => {
             intérêt pour tes équipes.
           </p>
         </div>
-        <div className="flex-1 relative mb-6 flex flex-col items-center justify-center text-center cursor-pointer">
+        <div
+          className="flex-1 relative mb-6 flex flex-col items-center justify-center text-center cursor-pointer"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const subject = encodeURIComponent("Support - Assistance nécessaire");
+            const body = encodeURIComponent(
+              "Bonjour,\n\nJ'ai une question concernant le logiciel et j'aimerais obtenir de l'aide.\n\nMerci d'avance."
+            );
+            window.location.href = `mailto:samuel.calef@hec.edu?subject=${subject}&body=${body}`;
+          }}
+          style={{ cursor: "pointer" }}
+        >
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${bg.src})`, opacity: 0.2 }}

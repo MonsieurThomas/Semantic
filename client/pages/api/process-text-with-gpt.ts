@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma"; // Ensure the path to prisma is correct
+import prisma from "../../lib/prisma"; // Assurez-vous que le chemin vers prisma est correct
 import axios from "axios";
 import { parseCookies } from "nookies";
 import jwt from "jsonwebtoken";
 import Prompt from "@/app/utils/Prompt";
-import dotenv from 'dotenv';
-import initializeSocketServer from '../../lib/socketServer';  // Assurez-vous de corriger le chemin d'importation
+import dotenv from "dotenv";
+import initializeSocketServer from "../../lib/socketServer"; // Assurez-vous que le chemin est correct
 
 dotenv.config();
 
@@ -13,24 +13,23 @@ export default async function processText(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { rawText } = req.body;
-  const taskId = req.query.taskId; // Assurez-vous que taskId est bien extrait des paramètres de la requête
+  const { rawText, fileNames, prompt } = req.body;
+  const taskId = req.query.taskId;
+
   console.log("Task ID received:", taskId);
+  console.log("This is prompt = ", prompt);
+  console.log("This is typeof prompt = ", typeof prompt);
 
   if (!taskId) {
     return res.status(400).json({ error: "Task ID is missing" });
   }
-  console.log("\n\n\n\n\n debut de api gpt \n\n\n\n\n");
 
   if (typeof rawText !== "string" || rawText.trim() === "") {
     return res.status(400).json({ error: "Invalid or empty text provided" });
   }
 
   try {
-    // Initialiser le serveur Socket.io
     const io = initializeSocketServer(res);
-
-    // Vérification de l'authentification
     const cookies = parseCookies({ req });
     const token = cookies.token;
     if (!token) {
@@ -48,37 +47,47 @@ export default async function processText(
       return res.status(401).json({ message: "Invalid token" });
     }
 
-    // Logique de génération de couleur
-    const colors = ['#EB473D', '#1C49A7', '#507543', '#E6A763', '#755591', '#FCA618', '#1BA024'];
-    const timestamp = Date.now();
-    const colorIndex = timestamp % colors.length;
+    // Color logic
+    const colors = [
+      "#EB473D",
+      "#1C49A7",
+      "#507543",
+      "#E6A763",
+      "#755591",
+      "#FCA618",
+      "#1BA024",
+    ];
+    const colorIndex = Date.now() % colors.length;
     const color = colors[colorIndex];
 
-    const prompt = Prompt;
-
+    // OpenAI request
     const openaiApiKey = process.env.OPENAI_KEY;
     if (!openaiApiKey) {
       throw new Error("OpenAI API key not configured");
     }
 
+    // Log prompt and make sure it's being sent correctly
+    console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    console.log("Sending prompt: ", prompt);
+
     const openAIResponse = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+      "https://api.openai.com/v1/chat/completions",
       {
-        model: 'gpt-4o-2024-08-06',
+        model: "gpt-4o-2024-08-06",
         n: 1,
         stop: null,
         temperature: 0.4,
-        response_format: { type: "json_object" },
+        // response_format: { type: "json_object" },
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: `${prompt} this is the text: \n\n\n ${rawText}`,
           },
         ],
       },
       {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${openaiApiKey}`,
         },
       }
@@ -86,32 +95,37 @@ export default async function processText(
 
     const { choices } = openAIResponse.data;
 
-    // Store the result in the database with Prisma
+    // Process fileNames as string array
+    const textEntries = Array.isArray(fileNames) ? fileNames : [];
+
+    console.log("Text entries: ", textEntries);
+
+    // Store in the database
     const newDocument = await prisma.document.create({
       data: {
         name: "Concatenated Text from URLs",
         mimeType: "text/plain",
-        path: "", // Optional
+        path: "",
         size: Buffer.byteLength(rawText, "utf8"),
         date: new Date(),
-        color: color, // Utilisation de la couleur générée dynamiquement
+        color: color,
         title: "",
-        url: "", // Optional
+        url: "",
         theme: [],
         themeSize: [],
         page: 0,
         createdAt: new Date(),
         userId: userId,
-        rawText: rawText, // Storing the raw text
-        openaiResponse: choices[0].message.content, // Storing the OpenAI response
+        rawText: rawText,
+        openaiResponse: choices[0].message.content,
+        texts: textEntries,
       },
     });
 
-    // Émettre l'événement via Socket.io après la création du document
-    io.emit('loadingComplete', {
+    io.emit("loadingComplete", {
       id: newDocument.id,
       openaiResponse: choices[0].message.content,
-      taskId: taskId,  // Assurez-vous que taskId est passé correctement dans la requête
+      taskId: taskId,
     });
 
     res.status(200).json({

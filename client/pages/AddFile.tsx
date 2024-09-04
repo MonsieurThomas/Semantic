@@ -5,13 +5,15 @@ import { GoX } from "react-icons/go";
 import axios from "axios";
 import io from "socket.io-client";
 import { UserContext } from "../src/context/UserContext";
+import { usePrompt } from "../src/context/PromptContext";
 
 function AddFile() {
   const router = useRouter();
   const [fileList, setFileList] = useState<File[]>([]);
   const [url, setUrl] = useState("");
   const [urlList, setUrlList] = useState<string[]>([]);
-  const { username, logout } = useContext(UserContext);
+  const { username } = useContext(UserContext);
+  const { prompt } = usePrompt();
 
   const handleMindMaps = () => {
     router.push("/MindMapping");
@@ -44,7 +46,7 @@ function AddFile() {
 
     try {
       const response = await axios.post("/api/extract-text-from-urls", {
-        urls: urlList, // Send the list of URLs to the backend
+        urls: urlList,
       });
 
       if (response.data.success) {
@@ -94,14 +96,14 @@ function AddFile() {
 
   const handleRemoveUrl = (index: number) => {
     const newUrlList = [...urlList];
-    newUrlList.splice(index, 1); // Remove the URL at the given index
-    setUrlList(newUrlList); // Update the state with the new list
+    newUrlList.splice(index, 1);
+    setUrlList(newUrlList);
   };
 
   const handleRemoveFile = (index: number) => {
     const newFileList = [...fileList];
-    newFileList.splice(index, 1); // Remove the file at the given index
-    setFileList(newFileList); // Update the state with the new list
+    newFileList.splice(index, 1);
+    setFileList(newFileList);
   };
 
   const handleHomepage = () => {
@@ -109,7 +111,7 @@ function AddFile() {
   };
 
   const handleCreateMindMap = async () => {
-    const taskId = new Date().getTime().toString(); // Unique task ID for this upload
+    const taskId = new Date().getTime().toString();
     router.push({
       pathname: "/LoadingTime",
       query: { taskId },
@@ -117,18 +119,17 @@ function AddFile() {
     console.log("Navigated to /LoadingTime with taskId:", taskId);
 
     const fileText = await handleFileSubmit();
-    console.log("this is file text =", fileText)
     const urlText = await handleUrlSubmit();
 
-    // Concaténer les textes extraits
     const combinedText = `${fileText}\n\n${urlText}`;
-    console.log("this is combinedText text =", combinedText)
-
+    const fileNames = fileList.map((file) => file.name);
     try {
       const gptResponse = await axios.post(
         `/api/process-text-with-gpt?taskId=${taskId}`,
         {
           rawText: combinedText,
+          prompt: prompt,
+          fileNames,
         }
       );
 
@@ -271,7 +272,6 @@ function AddFile() {
           className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
           onClick={handleCreateMindMap}
           disabled={!username || (!urlList.length && !fileList.length)}
-
         >
           Créer votre mind map
         </button>

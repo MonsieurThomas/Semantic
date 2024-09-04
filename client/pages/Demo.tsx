@@ -164,27 +164,21 @@ function Demo() {
           Réserve une démo!
         </h1>
         <div className="flex space-x-4 items-center justify-center">
-          <div
-            className="reservio-button-container"
-            data-text="Réserver maintenant"
-            data-size="large"
-            data-color="#FCA311"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              const subject = encodeURIComponent(
-                "Réservation pour une démo Semantic"
-              );
-              const body = encodeURIComponent(
-                "Bonjour,\n\nJe souhaiterais réserver un créneau pour une démo Semantic.\n\nMerci.\n\n(Messieurs je vous invite a me dire ce que vous voulez voir ecrit ici)"
-              );
-              window.location.href = `mailto:r.thomas06200@gmail.com?subject=${subject}&body=${body}`;
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            Réserver maintenant
-          </div>
+        <div
+          className="reservio-button-container"
+          data-text="Réserver maintenant"
+          data-size="large"
+          data-color="#FCA311"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.location.href = "https://semantic.reservio.com";
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          Réserver maintenant
         </div>
+      </div>
         <h1 className="font-bold text-center mt-10">
           Gratuite, en moins de 30 min et sans engagement
         </h1>

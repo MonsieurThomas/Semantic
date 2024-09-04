@@ -23,6 +23,7 @@ interface Document {
   createdAt: string;
   openaiResponse: any;
   rawText: any;
+  texts: string[];
 }
 
 const capitalizeFirstLetter = (string: string) => {
@@ -36,7 +37,7 @@ const isJSON = (str: any) => {
       .replace(/```json\n/g, "")
       .replace(/```/g, "")
       .trim();
-    console.log("cleanJsonString = ", cleanJsonString);
+    // console.log("cleanJsonString = ", cleanJsonString);
 
     JSON.parse(cleanJsonString);
     JSON.parse(str);
@@ -80,8 +81,8 @@ function MapChoice() {
         const cookies = parseCookies();
         const token = cookies.token;
 
-        console.log("cookies in mapchoice = ", cookies);
-        console.log("token in mapchoice = ", token);
+        // console.log("cookies in mapchoice = ", cookies);
+        // console.log("token in mapchoice = ", token);
 
         if (token) {
           const profileResponse = await axios.get("/api/profile", {
@@ -98,10 +99,9 @@ function MapChoice() {
                 Authorization: `Bearer ${token}`,
               },
             });
+            if (documentsResponse.data)
+              console.log("Condition validé pour:", documentsResponse.data);
             setDocuments(documentsResponse.data);
-            console.log("documentsResponse.data =", documentsResponse.data);
-            const openaiResponse = documentsResponse.data[0].openaiResponse;
-            // console.log("openaiResponse =", openaiResponse);
           }
         }
       } catch (error) {
@@ -201,10 +201,10 @@ function MapChoice() {
                                   cleanJson(obj.openaiResponse)
                                 );
                               } catch (error) {
-                                console.error(
-                                  "Error parsing JSON after cleaning:",
-                                  cleanJson(obj.openaiResponse)
-                                );
+                                // console.error(
+                                //   "Error parsing JSON after cleaning:",
+                                //   cleanJson(obj.openaiResponse)
+                                // );
                                 // Retourner un message d'erreur en cas de problème avec cleanJson
                                 return { error: "Invalid JSON after cleaning" };
                               }
@@ -212,10 +212,7 @@ function MapChoice() {
 
                         return Object.keys(response)[0];
                       } catch (error) {
-                        console.error(
-                          "Error parsing JSON:",
-                          obj.openaiResponse
-                        );
+                        console.error("Error parsing JSON:");
                         // Retourner un message d'erreur en cas de problème avec la première tentative de parsing
                         return "Invalid JSON";
                       }
@@ -253,58 +250,70 @@ function MapChoice() {
             const capitalizedDateStr = capitalizeFirstLetter(dateStr);
             let name = "";
             if (isJSON(cleanJson(obj.openaiResponse)))
-              name = Object.keys(JSON.parse(cleanJson(obj.openaiResponse)))[0]
-            
+              name = Object.keys(JSON.parse(cleanJson(obj.openaiResponse)))[0];
+
             if (name.toLowerCase().includes(searchQuery.toLowerCase()))
               return (
-              <div
-                key={key}
-                id={`scroll-${key}`}
-                className="bg-[#F2F2F2] mb-3 pb-6 rounded-2xl font-light"
-                onClick={() => handleDocumentClick(obj)}
-              >
-                <div className="flex justify-between">
-                  <p className="pb-4 p-4 font-bold">
-                    {capitalizedDateStr}
-                    <span
-                      className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
-                      style={{ backgroundColor: obj.color }}
-                    >
-                      {isJSON(cleanJson(obj.openaiResponse)) &&
-                        Object.keys(
-                          JSON.parse(cleanJson(obj.openaiResponse))
-                        )[0]}
-                    </span>
-                  </p>
-                  <div className="flex items-center pr-10 gap-1">
-                    <RemoveRedEyeIcon className="my-2 w-8" />
-                    <RxCross1
-                      className="cursor-pointer text-gray-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDocumentDelete(obj.id);
-                      }}
-                    />
-                  </div>
-                </div>
-                <ul className="pl-[50px]">
-                  {obj.theme.map((name, themeKey) => (
-                    <li key={themeKey} className="flex items-center">
-                      <span
-                        className="inline-block w-2 h-2 border border-black rounded-full mr-2"
-                        style={{ backgroundColor: "transparent" }}
-                      ></span>
-                      <div className="flex flex-grow items-center justify-between">
-                        <span>{name}</span>
-                        <span className="mr-[65px]">
-                          {formatSize(obj.themeSize[themeKey])}
+                <div
+                  key={key}
+                  id={`scroll-${key}`}
+                  className="bg-[#F2F2F2] mb-3 pb-6 rounded-2xl font-light"
+                  onClick={() => handleDocumentClick(obj)}
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="pb-4 p-4 font-bold">
+                        {capitalizedDateStr}
+                        <span
+                          className="mx-2 px-[12px] py-[5px] text-white rounded-xl font-medium"
+                          style={{ backgroundColor: obj.color }}
+                        >
+                          {isJSON(cleanJson(obj.openaiResponse)) &&
+                            Object.keys(
+                              JSON.parse(cleanJson(obj.openaiResponse))
+                            )[0]}
                         </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
+                      </p>
+                      {obj.texts && (
+                        <div className="ml-11">
+                          {obj.texts.map((text, index) => (
+                            <p key={index} className="flex items-center">
+                              <span className="w-[6px] h-[6px] border border-black rounded-full mr-1"></span>
+                              {text}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-start justify-start pr-10 gap-1">
+                      <RemoveRedEyeIcon className="my-2 w-8" />
+                      <RxCross1
+                        className="cursor-pointer text-gray-500 my-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDocumentDelete(obj.id);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <ul className="pl-[50px]">
+                    {obj.theme.map((name, themeKey) => (
+                      <li key={themeKey} className="flex items-center">
+                        <span
+                          className="inline-block w-2 h-2 border border-black rounded-full mr-2"
+                          style={{ backgroundColor: "transparent" }}
+                        ></span>
+                        <div className="flex flex-grow items-center justify-between">
+                          <span>{name}</span>
+                          <span className="mr-[65px]">
+                            {formatSize(obj.themeSize[themeKey])}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
           })}
         </div>
       </div>
