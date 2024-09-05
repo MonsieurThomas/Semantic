@@ -99,7 +99,7 @@ const MapCreate = () => {
         <div className="relative flex flex-col items-center z-10">
           <button
             onClick={handlePrompt}
-            className="bg-red-600 my-4 text-white p-4 rounded-lg absolute top-[10px] left-[400px]"
+            className="bg-red-600 my-4 text-white p-4 rounded-lg absolute top-[10px] left-[400px] 2xl:left-[550px]"
           >
             Prompt Pirate
           </button>
