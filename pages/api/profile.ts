@@ -20,13 +20,23 @@ export default async function handler(
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
+      select: {
+        id: true,
+        username: true,
+        remainingPages: true, // Récupération du champ remainingPages
+      },
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ id: user.id, username: user.username });
+    // Inclure remainingPages dans la réponse
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      remainingPages: user.remainingPages, // Ajouter remainingPages à la réponse
+    });
   } catch (error) {
     res.status(401).json({ message: "Unauthorized" });
   }

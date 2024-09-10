@@ -12,16 +12,16 @@ function AddFile() {
   const [fileList, setFileList] = useState<File[]>([]);
   const [url, setUrl] = useState("");
   const [urlList, setUrlList] = useState<string[]>([]);
-  const [totalCharacters, setTotalCharacters] = useState<number>(0);
   const [extractedText, setExtractedText] = useState<string>("");
   const [urlTextMap, setUrlTextMap] = useState<{ [url: string]: string }>({});
-  const [docxTextMap, setDocxTextMap] = useState<{
-    [fileName: string]: string;
-  }>({});
+  const [docxTextMap, setDocxTextMap] = useState<{ [fileName: string]: string }>({});
+  const [pdfTextMap, setPdfTextMap] = useState<{ [key: string]: string }>({});
   const [docxCharacters, setDocxCharacters] = useState<number>(0);
   const [urlCharacters, setUrlCharacters] = useState<number>(0);
+  const [pdfCharacters, setPdfCharacters] = useState<number>(0);
+  const [totalCharacters, setTotalCharacters] = useState<number>(0);
 
-  const { username } = useContext(UserContext);
+  const { login,username, remainingPages } = useContext(UserContext);
   const { prompt } = usePrompt();
 
   const handleMindMaps = () => {
@@ -95,54 +95,138 @@ function AddFile() {
     setExtractedText(newExtractedText);
   };
 
+  const handleRemoveFile = (index: number) => {
+    const fileToRemove = fileList[index];
+    const newFileList = [...fileList];
+    newFileList.splice(index, 1);
+    setFileList(newFileList);
+
+    // Vérifier si c'est un DOCX ou un PDF et mettre à jour les compteurs et textes en conséquence
+    if (
+      fileToRemove.type ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      const textToRemove = docxTextMap[fileToRemove.name] || "";
+      const textToRemoveLength = textToRemove.length;
+
+      setDocxCharacters(docxCharacters - textToRemoveLength);
+      // setUrlCharacters(urlCharacters - textToRemoveLength);
+      setTotalCharacters(totalCharacters - textToRemoveLength);
+
+      const { [fileToRemove.name]: _, ...newDocxTextMap } = docxTextMap;
+      setDocxTextMap(newDocxTextMap);
+
+      const newExtractedText = extractedText.replace(textToRemove, "");
+      setExtractedText(newExtractedText);
+    } else if (fileToRemove.type === "application/pdf") {
+      const textToRemove = pdfTextMap[fileToRemove.name] || "";
+      const textToRemoveLength = Math.floor(textToRemove.length * 1.18);
+
+      setPdfCharacters(pdfCharacters - textToRemoveLength);
+      // setUrlCharacters(urlCharacters - textToRemoveLength);
+      setTotalCharacters(totalCharacters - textToRemoveLength);
+
+      const { [fileToRemove.name]: _, ...newPdfTextMap } = pdfTextMap;
+      setPdfTextMap(newPdfTextMap);
+
+      const newExtractedText = extractedText.replace(textToRemove, "");
+      setExtractedText(newExtractedText);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newFiles = Array.from(files); // Convert FileList to an array of Files
+      const newFiles = Array.from(files); // Convertir FileList en un tableau de fichiers
       setFileList([...fileList, ...newFiles]);
 
-      // Traiter chaque fichier DOCX
+      // Variables locales pour accumuler les valeurs
+      let countDocx = 0;
+      let countPdf = 0;
+      let accumulatedDocxTextMap = { ...docxTextMap }; // Accumuler le texte PDF
+      let accumulatedPdfTextMap = { ...pdfTextMap }; // Accumuler le texte PDF
+
       for (const file of newFiles) {
         const formData = new FormData();
         formData.append("files", file);
 
         try {
-          const response = await axios.post(
-            "/api/extract-text-from-files",
-            formData,
-            {
+          let response;
+          if (
+            file.type ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ) {
+            // Appeler l'API pour les fichiers Word
+            response = await axios.post(
+              "/api/extract-text-from-files",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+            if (response?.data?.success) {
+              const extractedTextFromFile = response.data.rawText;
+
+              // Concaténer le texte extrait avec l'existant
+              const newExtractedText = extractedText + extractedTextFromFile;
+              setExtractedText(newExtractedText);
+
+              // Compter les caractères extraits
+              countDocx += extractedTextFromFile.length;
+              // setTotalCharacters(totalCharacters + newCharacters);
+
+              // Mettre à jour le compte des caractères DOCX
+              accumulatedDocxTextMap[file.name] = extractedTextFromFile;
+            }
+          } else if (file.type === "application/pdf") {
+            response = await axios.post("/api/pdf-parse", formData, {
               headers: {
                 "Content-Type": "multipart/form-data",
               },
-            }
-          );
-
-          if (response.data.success) {
-            const extractedTextFromDocx = response.data.rawText;
-
-            // Concaténer le texte extrait avec l'existant
-            const newExtractedText = extractedText + extractedTextFromDocx;
-            setExtractedText(newExtractedText); // Met à jour l'état avec le texte concaténé
-
-            const newCharacters = extractedTextFromDocx.replace(
-              /\s+/g,
-              ""
-            ).length;
-            setDocxCharacters(docxCharacters + newCharacters);
-            setTotalCharacters(totalCharacters + newCharacters);
-            setDocxTextMap({
-              ...docxTextMap,
-              [file.name]: extractedTextFromDocx,
             });
+            console.log("passage");
+            if (response?.data?.text) {
+              const extractedTextFromFile = response.data.text;
+
+              // Concaténer le texte extrait avec l'existant
+              const newExtractedText = extractedText + extractedTextFromFile;
+              setExtractedText(newExtractedText);
+
+              // Accumuler les caractères et le texte PDF
+              countPdf += Math.floor(response.data.text.length * 1.18);
+
+              accumulatedPdfTextMap[file.name] = extractedTextFromFile; // Ajouter à la map accumulée
+            }
           } else {
             console.error("Échec de l'extraction du texte du fichier.");
           }
         } catch (error) {
           console.error(
-            "Erreur lors de l'extraction du texte du fichier DOCX :",
+            `Erreur lors de l'extraction du texte du fichier ${
+              file.type === "application/pdf" ? "PDF" : "DOCX"
+            } :`,
             error
           );
         }
+      }
+
+      // Mise à jour finale après la boucle
+      if (countPdf && countDocx) {
+        setTotalCharacters(totalCharacters + countPdf + countDocx);
+        setPdfCharacters(pdfCharacters + countPdf);
+        setPdfTextMap(accumulatedPdfTextMap); // Mise à jour en une seule fois avec la map accumulée
+        setDocxCharacters(pdfCharacters + countDocx);
+        setDocxTextMap(accumulatedDocxTextMap); // Mise à jour en une seule fois avec la map accumulée
+      } else if (countPdf) {
+        setTotalCharacters(totalCharacters + countPdf);
+        setPdfCharacters(pdfCharacters + countPdf);
+        setPdfTextMap(accumulatedPdfTextMap); // Mise à jour en une seule fois avec la map accumulée
+      } else if (countDocx) {
+        setTotalCharacters(totalCharacters + countDocx);
+        setDocxCharacters(pdfCharacters + countDocx);
+        setDocxTextMap(accumulatedDocxTextMap); // Mise à jour en une seule fois avec la map accumulée
       }
     }
   };
@@ -177,26 +261,6 @@ function AddFile() {
     }
   };
 
-  const handleRemoveFile = (index: number) => {
-    const fileToRemove = fileList[index];
-    const newFileList = [...fileList];
-    newFileList.splice(index, 1);
-    setFileList(newFileList);
-
-    const textToRemove = docxTextMap[fileToRemove.name] || "";
-    const textToRemoveLength = textToRemove.replace(/\s+/g, "").length;
-
-    setDocxCharacters(docxCharacters - textToRemoveLength);
-    setUrlCharacters(urlCharacters - textToRemoveLength);
-    setTotalCharacters(totalCharacters - textToRemoveLength);
-
-    const { [fileToRemove.name]: _, ...newDocxTextMap } = docxTextMap;
-    setDocxTextMap(newDocxTextMap);
-
-    const newExtractedText = extractedText.replace(textToRemove, "");
-    setExtractedText(newExtractedText);
-  };
-
   const handleHomepage = () => {
     router.push("/");
   };
@@ -209,41 +273,76 @@ function AddFile() {
     });
     console.log("Navigated to /LoadingTime with taskId:", taskId);
 
-    const fileText = "abc";
-
-    const combinedText = `${fileText}`;
     const fileNames = fileList.map((file) => file.name);
     try {
-      const gptResponse = await axios.post(
-        `/api/process-text-with-gpt?taskId=${taskId}`,
+      const formData = new FormData();
+      fileList.forEach((file) => {
+        formData.append("files", file);
+      });
+      const fileTextResponse = await axios.post(
+        "/api/extract-text-from-pdf",
+        formData,
         {
-          rawText: combinedText,
-          prompt: prompt,
-          fileNames,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
-      if (gptResponse.data.success) {
-        const socket = io();
-        console.log("Socket connection established.");
-        setTimeout(() => {
-          socket.emit("loadingComplete", {
-            id: gptResponse.data.document.id,
-            openaiResponse: gptResponse.data.openaiResponse,
-            taskId: taskId,
-          });
-          console.log("Emitted loadingComplete event with taskId:", taskId);
-        }, 1000);
+      if (fileTextResponse?.data?.success) {
+        const combinedText = fileTextResponse.data.rawText;
+        console.log("combinedText avant gpt = ", combinedText);
+
+        // Envoi du texte combiné à GPT
+        const gptResponse = await axios.post(
+          `/api/process-text-with-gpt?taskId=${taskId}`,
+          {
+            rawText: combinedText,
+            prompt: prompt,
+            fileNames,
+          }
+        );
+
+        if (gptResponse.data.success) {
+          const socket = io();
+          console.log("Socket connection established.");
+          setTimeout(() => {
+            socket.emit("loadingComplete", {
+              id: gptResponse.data.document.id,
+              openaiResponse: gptResponse.data.openaiResponse,
+              taskId: taskId,
+            });
+            console.log("Emitted loadingComplete event with taskId:", taskId);
+          }, 1000);
+
+          const totalCharacters = combinedText.length;
+          const pagesToSubtract = Math.ceil(totalCharacters / 3000);
+
+          // Soustraction du nombre de pages à remainingPages de l'utilisateur
+        //   const response = await axios.post("/api/update-remaining-pages", 
+        //   { pagesToSubtract },
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${token}`, // Ajouter le token JWT dans les headers
+        //     },
+        //   }
+        // );
+
+        } else {
+          console.error("Échec du traitement du texte avec GPT.");
+        }
       } else {
-        console.error("Échec du traitement du texte avec GPT-4.");
+        console.error("Échec de l'extraction du texte des fichiers.");
       }
     } catch (error) {
-      console.error("Erreur lors du traitement du texte avec GPT-4 :", error);
+      console.error("Erreur lors du traitement du texte avec GPT ou extraction :", error);
     }
   };
 
   return (
     <div style={{ fontFamily: "Lexend" }}>
+      <p>Username: {username}</p>
+      <p>Remaining Pages: {remainingPages}</p>{" "}
       <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
         <div className="flex justify-between items-center">
           <h1 className="text-center text-3xl flex-1">Ajouter vos fichiers</h1>
@@ -258,6 +357,7 @@ function AddFile() {
             <div className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
               <div className="overflow-y-auto w-full ">
                 <h3>Total des char DOCX : {docxCharacters}</h3>
+                <h3>Total des char PDF : {pdfCharacters}</h3>
                 {fileList.map((file, index) => (
                   <div
                     key={index}
@@ -311,7 +411,8 @@ function AddFile() {
                 )}
               </div>
             </div>
-            <h3>Total des char  : {totalCharacters}</h3>
+            <h3>Total des char : {totalCharacters}</h3>
+            <h3>Total des pages : {Math.ceil(totalCharacters / 3000)}</h3>
           </div>
           {/* Debut de url */}
           <div className="flex-1">

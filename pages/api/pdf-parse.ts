@@ -1,7 +1,8 @@
-import { IncomingForm } from 'formidable';
-import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import pdfParse from 'pdf-parse';
+import { IncomingForm } from "formidable";
+import { NextApiRequest, NextApiResponse } from "next";
+import fs from "fs";
+// @ts-ignore
+import pdfParse from "pdf-parse";
 
 // Désactiver le bodyParser pour cette route API
 export const config = {
@@ -30,8 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Parser le formulaire pour obtenir le fichier
       const { files } = await parseForm(req);
 
-      // Accéder au premier fichier du tableau
-      const file = files.file[0]; // `files.file` est un tableau
+      // Vérification du nom du champ de fichier, ici 'files' correspondant au frontend
+      const file = files.files && Array.isArray(files.files) ? files.files[0] : files.files;
 
       // Vérifier si le fichier existe et possède un chemin
       if (!file || !file.filepath) {
@@ -45,10 +46,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const data = await pdfParse(fileBuffer);
       
       // Calculer le nombre de caractères sans les espaces
-      const numChars = data.text.length;
+      const text = data.text;
+      const numChars = text.replace(/\s+/g, '').length; // Compte sans les espaces
 
-      // Retourner le nombre de caractères
-      res.status(200).json({ characters: numChars });
+      // Retourner le texte extrait et le nombre de caractères
+      res.status(200).json({ characters: numChars, text });
     } catch (error) {
       console.error("Erreur lors de l'extraction du texte :", error);
       res.status(500).json({ error: 'Erreur lors de l\'extraction du texte.' });

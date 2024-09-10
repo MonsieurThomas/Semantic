@@ -1,4 +1,13 @@
 declare module 'pdf-parse' {
-  function pdfParse(buffer: Buffer | Uint8Array): Promise<{ text: string }>;
-  export default pdfParse;
+  interface PdfParseResult {
+    text: string;
+    numpages: number;
+    info: any;
+    metadata: any;
+    version: string;
+  }
+
+  export default function pdfParse(
+    buffer: Buffer | Uint8Array
+  ): Promise<PdfParseResult>;
 }

@@ -12,6 +12,8 @@ model User {
   username  String     @unique
   email     String     @unique
   password  String
+  remainingPages Int       @default(200)
+
   documents Document[] // Relation to documents
 }
 
