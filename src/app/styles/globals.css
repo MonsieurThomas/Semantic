@@ -58,3 +58,8 @@ input[type="number"] {
 .animate-progress {
   animation: progress 10s linear forwards;
 }
+
+/* Pour masquer la barre de défilement sur Webkit */
+textarea::-webkit-scrollbar {
+  display: none; /* Masquer la barre sur Chrome/Safari */
+}

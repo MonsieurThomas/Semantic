@@ -57,8 +57,9 @@ export default async function extractTextFromFiles(
         file.mimetype ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
-        extractedText = (await mammoth.extractRawText({ path: filePath }))
-          .value;
+        // extractedText = (await mammoth.extractRawText({ path: filePath }))
+        //   .value;
+        ;
       } else {
         const readStream = fs.createReadStream(filePath);
         const client = new DocumentAnalysisClient(

@@ -3,10 +3,13 @@ import { parseCookies } from "nookies";
 import React, { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
+import { FiX } from "react-icons/fi";
 import axios from "axios";
 import io from "socket.io-client";
 import { UserContext } from "../src/context/UserContext";
 import { usePrompt } from "../src/context/PromptContext";
+import { GrDocumentTxt } from "react-icons/gr";
+import { ClassNames } from "@emotion/react";
 
 function AddFile() {
   const router = useRouter();
@@ -14,6 +17,8 @@ function AddFile() {
   const [url, setUrl] = useState("");
   const [urlList, setUrlList] = useState<string[]>([]);
   const [extractedText, setExtractedText] = useState<string>("");
+  const [textArea, setTextArea] = useState<string>("");
+  const [showTextArea, setShowTextArea] = useState<boolean>(false);
   const [urlTextMap, setUrlTextMap] = useState<{ [url: string]: string }>({});
   const [docxTextMap, setDocxTextMap] = useState<{
     [fileName: string]: string;
@@ -172,13 +177,9 @@ function AddFile() {
             if (response?.data?.success) {
               const extractedTextFromFile = response.data.rawText;
 
-              // Concaténer le texte extrait avec l'existant
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
-
-              // Compter les caractères extraits
               countDocx += extractedTextFromFile.length;
-              // setTotalCharacters(totalCharacters + newCharacters);
 
               // Mettre à jour le compte des caractères DOCX
               accumulatedDocxTextMap[file.name] = extractedTextFromFile;
@@ -189,7 +190,6 @@ function AddFile() {
                 "Content-Type": "multipart/form-data",
               },
             });
-            console.log("passage");
             if (response?.data?.text) {
               const extractedTextFromFile = response.data.text;
 
@@ -229,38 +229,9 @@ function AddFile() {
       } else if (countDocx) {
         setTotalCharacters(totalCharacters + countDocx);
         setDocxCharacters(pdfCharacters + countDocx);
-        setDocxTextMap(accumulatedDocxTextMap); // Mise à jour en une seule fois avec la map accumulée
+        setDocxTextMap(accumulatedDocxTextMap);
+        console.log("docxTextMap dans la section word", docxTextMap);
       }
-    }
-  };
-
-  const handleFileSubmit = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(
-        "/api/extract-text-from-docx",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.data.success) {
-        const rawText = response.data.rawText;
-        return rawText;
-      } else {
-        return "";
-      }
-    } catch (error) {
-      console.error(
-        "Erreur lors de l'extraction du texte à partir du fichier DOCX :",
-        error
-      );
-      return "";
     }
   };
 
@@ -292,15 +263,12 @@ function AddFile() {
           },
         }
       );
-      console.log("token = ", token);
 
       const taskId = new Date().getTime().toString();
       router.push({
         pathname: "/LoadingTime",
         query: { taskId },
       });
-      console.log("Navigated to /LoadingTime with taskId:", taskId);
-
       const fileNames = fileList.map((file) => file.name);
 
       const formData = new FormData();
@@ -319,10 +287,25 @@ function AddFile() {
       );
 
       if (fileTextResponse?.data?.success) {
-        const combinedText = fileTextResponse.data.rawText;
+        let combinedText = fileTextResponse.data.rawText;
         console.log("combinedText avant gpt = ", combinedText);
+        console.log("extractedText avant gpt = ", extractedText);
 
-        // Envoi du texte combiné à GPT
+        Object.values(docxTextMap).forEach((docxText) => {
+          combinedText += `\n${docxText}`;
+        });
+
+        // Ajouter tous les textes de urlTextMap à combinedText
+        Object.values(urlTextMap).forEach((urlText) => {
+          combinedText += `\n${urlText}`;
+        });
+        combinedText += `\n${textArea}`;
+
+        console.log(
+          "\n\n\n\ncombinedText après ajout des DOCX et URLs = ",
+          combinedText
+        );
+
         const gptResponse = await axios.post(
           `/api/process-text-with-gpt?taskId=${taskId}`,
           {
@@ -356,6 +339,20 @@ function AddFile() {
         error
       );
     }
+  };
+
+  const handleIconClick = () => {
+    setShowTextArea(true); // Show the textarea when the icon is clicked
+  };
+
+  // Function to handle the text change in the textarea
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTextArea(event.target.value); // Update the state with the new text
+  };
+
+  // Function to close the textarea
+  const handleClose = () => {
+    setShowTextArea(false); // Hide the textarea when clicking the close button
   };
 
   return (
@@ -444,46 +441,78 @@ function AddFile() {
             <div className="text-center pb-2 h-[60px]">
               <h1>Copier/Coller vos URL</h1>
             </div>
-            <div className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
-              <div className="overflow-y-auto w-full">
-                <h1>Le nombre de char est = {urlCharacters}</h1>
-                {urlList.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1"
-                  >
-                    <a href={item} target="_blank" rel="noopener noreferrer">
-                      {item}
-                    </a>
-                    <button
-                      onClick={() => handleRemoveUrl(index)} // Call the remove function
-                      className="text-black text-xl ml-2"
+            <div className="flex flex-col gap-4 justify-between rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
+              <div>
+                <div className="overflow-y-auto w-full">
+                  <h1>Le nombre de char est = {urlCharacters}</h1>
+                  {urlList.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1"
                     >
-                      <GoX />
-                    </button>
-                  </div>
-                ))}
+                      <a href={item} target="_blank" rel="noopener noreferrer">
+                        {item}
+                      </a>
+                      <button
+                        onClick={() => handleRemoveUrl(index)} // Call the remove function
+                        className="text-black text-xl ml-2"
+                      >
+                        <GoX />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center items-center mt-2 lg:px-[50px]">
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={handleUrlChange}
+                    placeholder="Entrer un URL"
+                    className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddUrl(); // Call the function to add the URL when Enter is pressed
+                      }
+                    }}
+                  />
+
+                  <button
+                    onClick={handleAddUrl}
+                    className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+                  >
+                    OK
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-center items-center mt-2 lg:px-[50px]">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={handleUrlChange}
-                  placeholder="Entrer un URL"
-                  className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleAddUrl(); // Call the function to add the URL when Enter is pressed
-                    }
-                  }}
-                />
-                <button
-                  onClick={handleAddUrl}
-                  className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+              <div className="text-3xl flex justify-end m-4 cursor-pointer">
+                <GrDocumentTxt onClick={handleIconClick} />
+              </div>
+
+              {showTextArea && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
+                  onClick={handleClose} // Fermer si on clique sur l'arrière-plan
                 >
-                  OK
-                </button>
-              </div>
+                  <div
+                    className="bg-white p-4 w-1/3 h-2/3 relative rounded-2xl border-black border-2 translate-x-[100px]"
+                    onClick={(e) => e.stopPropagation()} // Empêche la fermeture quand on clique dans la boîte
+                  >
+                    <button
+                      onClick={handleClose}
+                      className="absolute top-2 right-2 text-black"
+                    >
+                      <FiX size={24} />
+                    </button>
+                    <textarea
+                      className="w-full h-full p-4 text-lg focus:outline-none focus:ring-0 rounded-2xl overflow-y-scroll scrollbar-hide"
+                      value={textArea}
+                      onChange={handleTextChange}
+                      placeholder="Enter your text here..."
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Masquer la barre sur Firefox et IE
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
