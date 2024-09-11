@@ -4,12 +4,12 @@ import React, { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
 import { FiX } from "react-icons/fi";
+import { IoInformationCircleOutline } from "react-icons/io5";
 import axios from "axios";
 import io from "socket.io-client";
 import { UserContext } from "../src/context/UserContext";
 import { usePrompt } from "../src/context/PromptContext";
 import { GrDocumentTxt } from "react-icons/gr";
-import { ClassNames } from "@emotion/react";
 
 function AddFile() {
   const router = useRouter();
@@ -30,6 +30,7 @@ function AddFile() {
   const [totalCharacters, setTotalCharacters] = useState<number>(0);
 
   const { login, username, remainingPages } = useContext(UserContext);
+  const [showError, setShowError] = useState(false); // Contrôler l'affichage de l'erreur
   const { prompt } = usePrompt();
 
   const handleMindMaps = () => {
@@ -251,6 +252,15 @@ function AddFile() {
       console.log("Token récupéré depuis le cookie :", token);
     }
 
+    const pagesToSubtract = Math.ceil(totalCharacters / 3000);
+
+    // Vérifier si remainingPages est suffisant
+    if (remainingPages)
+      if (remainingPages < pagesToSubtract) {
+        setShowError(true); // Afficher l'erreur
+        return; // Sortir de la fonction
+      }
+
     try {
       const pagesToSubtract = Math.ceil(totalCharacters / 3000);
       console.log("pagesToSubtract = ", pagesToSubtract);
@@ -357,6 +367,29 @@ function AddFile() {
 
   return (
     <div style={{ fontFamily: "Lexend" }}>
+      {showError && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center p-4"
+          onClick={() => setShowError(false)} // Ferme la boîte de dialogue en cliquant sur le fond
+        >
+          <div
+            className="bg-white p-4 rounded-2xl border-2 border-black"
+            onClick={(e) => e.stopPropagation()} // Empêche la fermeture en cliquant à l'intérieur
+          >
+            <p className="font-bold">
+              Vous avez dépassé le nombre de pages proposé par votre offre actuelle
+            </p>
+            <p>
+              Réduisez le nombre de pages ou passez à une offre supérieure pour
+              continuer. (Contacter le{" "}
+              <a href="./Contact" className="text-orange-500 underline">
+                support
+              </a>{" "}
+              pour en savoir plus)
+            </p>
+          </div>
+        </div>
+      )}
       <p>Username: {username}</p>
       <p>Remaining Pages: {remainingPages}</p>{" "}
       <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
@@ -508,7 +541,10 @@ function AddFile() {
                       value={textArea}
                       onChange={handleTextChange}
                       placeholder="Enter your text here..."
-                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Masquer la barre sur Firefox et IE
+                      style={{
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
+                      }} // Masquer la barre sur Firefox et IE
                     />
                   </div>
                 </div>
@@ -517,10 +553,19 @@ function AddFile() {
           </div>
         </div>
         <div>
-          <h3 className="text-center">
-            {Math.ceil(totalCharacters / 3000)} pages, 1 mind map. Simple et
-            rapide.
-          </h3>
+          <div className="flex justify-center">
+            <h3 className="inline-flex items-center">
+              {Math.ceil(totalCharacters / 3000)} pages, 1 mind map. Simple et
+              rapide.{" "}
+              <span className="ml-2 relative group text-xl">
+                <IoInformationCircleOutline />
+                <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 text-sm text-white bg-gray-700 p-2 rounded-lg">
+                  Le nombre total de pages est indexé sur le nombre total de
+                  caractères, une page = 3000 caractères.
+                </div>
+              </span>
+            </h3>
+          </div>
           <button
             className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
             onClick={handleCreateMindMap}
