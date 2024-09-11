@@ -18,14 +18,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = decoded.userId;
 
     // Mettre à jour remainingPages
-    await prisma.user.update({
-      where: { id: userId }, // Utiliser l'ID de l'utilisateur extrait du token JWT
+    console.log("\n\n\n\npage to substracte in the backend = ", pagesToSubtract);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
       data: {
         remainingPages: {
-          decrement: pagesToSubtract, // Soustraire les pages
+          decrement: pagesToSubtract,
         },
       },
     });
+    console.log("Remaining Pages after update:", updatedUser.remainingPages);
 
     res.status(200).json({ success: true });
   } catch (error) {

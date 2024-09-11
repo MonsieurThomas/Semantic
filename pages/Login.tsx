@@ -40,7 +40,7 @@ function Login() {
       }
 
       // Update the context with the logged-in user information
-      login(data.token, { id: data.id, username: data.username });
+      login(data.token, { id: data.id, username: data.username, remainingPages: data.remainingPages });
       console.log("data.token = ", data.token);
       console.log("data.id = ", data.id);
       console.log("data.username = ", data.username);

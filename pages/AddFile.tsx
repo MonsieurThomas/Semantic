@@ -1,5 +1,6 @@
 import Image from "next/image";
-import React, { useState, useContext } from "react";
+import { parseCookies } from "nookies";
+import React, { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
 import axios from "axios";
@@ -14,14 +15,16 @@ function AddFile() {
   const [urlList, setUrlList] = useState<string[]>([]);
   const [extractedText, setExtractedText] = useState<string>("");
   const [urlTextMap, setUrlTextMap] = useState<{ [url: string]: string }>({});
-  const [docxTextMap, setDocxTextMap] = useState<{ [fileName: string]: string }>({});
+  const [docxTextMap, setDocxTextMap] = useState<{
+    [fileName: string]: string;
+  }>({});
   const [pdfTextMap, setPdfTextMap] = useState<{ [key: string]: string }>({});
   const [docxCharacters, setDocxCharacters] = useState<number>(0);
   const [urlCharacters, setUrlCharacters] = useState<number>(0);
   const [pdfCharacters, setPdfCharacters] = useState<number>(0);
   const [totalCharacters, setTotalCharacters] = useState<number>(0);
 
-  const { login,username, remainingPages } = useContext(UserContext);
+  const { login, username, remainingPages } = useContext(UserContext);
   const { prompt } = usePrompt();
 
   const handleMindMaps = () => {
@@ -266,19 +269,45 @@ function AddFile() {
   };
 
   const handleCreateMindMap = async () => {
-    const taskId = new Date().getTime().toString();
-    router.push({
-      pathname: "/LoadingTime",
-      query: { taskId },
-    });
-    console.log("Navigated to /LoadingTime with taskId:", taskId);
+    // Récupérer le token à partir des cookies
+    const cookies = parseCookies();
+    const token = cookies.token;
 
-    const fileNames = fileList.map((file) => file.name);
+    if (!token) {
+      console.log("Aucun token trouvé dans les cookies.");
+      return;
+    } else {
+      console.log("Token récupéré depuis le cookie :", token);
+    }
+
     try {
+      const pagesToSubtract = Math.ceil(totalCharacters / 3000);
+      console.log("pagesToSubtract = ", pagesToSubtract);
+      const response = await axios.post(
+        "/api/update-remaining-pages",
+        { pagesToSubtract },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("token = ", token);
+
+      const taskId = new Date().getTime().toString();
+      router.push({
+        pathname: "/LoadingTime",
+        query: { taskId },
+      });
+      console.log("Navigated to /LoadingTime with taskId:", taskId);
+
+      const fileNames = fileList.map((file) => file.name);
+
       const formData = new FormData();
       fileList.forEach((file) => {
         formData.append("files", file);
       });
+
       const fileTextResponse = await axios.post(
         "/api/extract-text-from-pdf",
         formData,
@@ -314,20 +343,6 @@ function AddFile() {
             });
             console.log("Emitted loadingComplete event with taskId:", taskId);
           }, 1000);
-
-          const totalCharacters = combinedText.length;
-          const pagesToSubtract = Math.ceil(totalCharacters / 3000);
-
-          // Soustraction du nombre de pages à remainingPages de l'utilisateur
-        //   const response = await axios.post("/api/update-remaining-pages", 
-        //   { pagesToSubtract },
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${token}`, // Ajouter le token JWT dans les headers
-        //     },
-        //   }
-        // );
-
         } else {
           console.error("Échec du traitement du texte avec GPT.");
         }
@@ -335,7 +350,10 @@ function AddFile() {
         console.error("Échec de l'extraction du texte des fichiers.");
       }
     } catch (error) {
-      console.error("Erreur lors du traitement du texte avec GPT ou extraction :", error);
+      console.error(
+        "Erreur lors de la mise à jour des pages restantes ou du traitement GPT :",
+        error
+      );
     }
   };
 
