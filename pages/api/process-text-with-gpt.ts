@@ -13,7 +13,7 @@ export default async function processText(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { rawText, fileNames, prompt } = req.body;
+  const { rawText, fileNames, prompt, totalPages } = req.body;
   const taskId = req.query.taskId;
 
   console.log("Task ID received:", taskId);
@@ -81,7 +81,7 @@ export default async function processText(
         messages: [
           {
             role: "user",
-            content: `${prompt} this is the text: \n\n\n ${rawText}`,
+            content: `nb-pages=${totalPages}\n ${prompt} this is the text: \n\n\n ${rawText}`,
           },
         ],
       },

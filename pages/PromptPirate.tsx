@@ -52,30 +52,7 @@ const PromptPirate = () => {
 
   return (
     <div>
-      <div>
-        <h2>Uploader un fichier PDF et extraire le texte :</h2>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-        />
-        <button
-          onClick={handleExtractText}
-          style={{
-            marginTop: "10px",
-            padding: "10px 20px",
-            backgroundColor: "#FCA311",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Extraire le texte
-        </button>
-      </div>
-
-      {/* Affichage du texte extrait */}
+      {/* Affichage du texte extrait
       {extractedNumber && (
         <div style={{ marginTop: "20px" }}>
           <h2>Texte extrait :</h2>
@@ -83,7 +60,7 @@ const PromptPirate = () => {
         </div>
       )}
 
-      <div className="border-2 my-10"></div>
+      <div className="border-2 my-10"></div> */}
 
       <h1>Mettre à jour le prompt :</h1>
       <textarea

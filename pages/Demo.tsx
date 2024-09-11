@@ -68,11 +68,11 @@ function Demo() {
   }, []);
 
   return (
-    <div className="relative flex px-[100px] my-[0px] w-full h-[85vh] gap-[2px] z-0">
-      <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
+    <div className="relative flex px-[100px] w-full h-[calc(100vh-90px)] items-center gap-[0px] z-0">
+      <div className="absolute left-0 top-0 w-full h-full">
         <video
-          className="w-full h-full object-cover"
-          src="/NEURONES MINDMAPPING_v1a.mp4"
+          className="w-full h-full object-cover object-top transform translate-y-[30px] translate-x-[-4px]"
+          src="/NEURONES HOMEPAGE_v1a.mp4"
           autoPlay
           muted
           playsInline
@@ -164,21 +164,21 @@ function Demo() {
           Réserve une démo!
         </h1>
         <div className="flex space-x-4 items-center justify-center">
-        <div
-          className="reservio-button-container"
-          data-text="Réserver maintenant"
-          data-size="large"
-          data-color="#FCA311"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            window.location.href = "https://semantic.reservio.com";
-          }}
-          style={{ cursor: "pointer" }}
-        >
-          Réserver maintenant
+          <div
+            className="reservio-button-container"
+            data-text="Réserver maintenant"
+            data-size="large"
+            data-color="#FCA311"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              window.location.href = "https://semantic.reservio.com";
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            Réserver maintenant
+          </div>
         </div>
-      </div>
         <h1 className="font-bold text-center mt-10">
           Gratuite, en moins de 30 min et sans engagement
         </h1>

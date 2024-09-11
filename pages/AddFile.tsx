@@ -329,6 +329,7 @@ function AddFile() {
             rawText: combinedText,
             prompt: prompt,
             fileNames,
+            totalPages: Math.ceil(totalCharacters / 3000),
           }
         );
 
@@ -429,10 +430,16 @@ function AddFile() {
                 )}
               </div>
             </div>
-            <h3>Total des char : {totalCharacters}</h3>
-            <h3>Total des pages : {Math.ceil(totalCharacters / 3000)}</h3>
+            <h3>
+              Total des char : {totalCharacters} {"<-- J'enleverais plus tard"}
+            </h3>
+            <h3>
+              Total des pages : {Math.ceil(totalCharacters / 3000)}{" "}
+              {"<-- Ca aussi"}
+            </h3>
+            {/* Faire demo */}
           </div>
-          {/* Debut de url */}
+
           <div className="flex-1">
             <div className="text-center pb-2 h-[60px]">
               <h1>Copier/Coller vos URL</h1>
@@ -480,13 +487,19 @@ function AddFile() {
             </div>
           </div>
         </div>
-        <button
-          className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
-          onClick={handleCreateMindMap}
-          disabled={!username || (!urlList.length && !fileList.length)}
-        >
-          Créer votre mind map
-        </button>
+        <div>
+          <h3 className="text-center">
+            {Math.ceil(totalCharacters / 3000)} pages, 1 mind map. Simple et
+            rapide.
+          </h3>
+          <button
+            className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
+            onClick={handleCreateMindMap}
+            disabled={!username || (!urlList.length && !fileList.length)}
+          >
+            Créer votre mind map
+          </button>
+        </div>
       </div>
       <h1 className="my-4 mx-[300px] font-semibold text-center text-l 2xl:text-xl">
         Semantic accélère votre recherche d&apos;informations en présentant le
