@@ -77,7 +77,7 @@ export default async function processText(
         n: 1,
         stop: null,
         temperature: 0.4,
-        // response_format: { type: "json_object" },
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "user",

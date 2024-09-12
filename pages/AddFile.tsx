@@ -357,7 +357,13 @@ function AddFile() {
 
   // Function to handle the text change in the textarea
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextArea(event.target.value); // Update the state with the new text
+    const newText = event.target.value;
+
+    // Mettre à jour totalCharacters en fonction de la différence entre l'ancien et le nouveau texte
+    const diff = newText.length - textArea.length;
+
+    setTextArea(newText); // Met à jour textArea
+    setTotalCharacters((prevTotal) => prevTotal + diff); // Met à jour totalCharacters
   };
 
   // Function to close the textarea
@@ -377,7 +383,8 @@ function AddFile() {
             onClick={(e) => e.stopPropagation()} // Empêche la fermeture en cliquant à l'intérieur
           >
             <p className="font-bold">
-              Vous avez dépassé le nombre de pages proposé par votre offre actuelle
+              Vous avez dépassé le nombre de pages proposé par votre offre
+              actuelle
             </p>
             <p>
               Réduisez le nombre de pages ou passez à une offre supérieure pour
@@ -557,13 +564,14 @@ function AddFile() {
             <h3 className="inline-flex items-center">
               {Math.ceil(totalCharacters / 3000)} pages, 1 mind map. Simple et
               rapide.{" "}
-              <span className="ml-2 relative group text-xl">
-                <IoInformationCircleOutline />
-                <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 text-sm text-white bg-gray-700 p-2 rounded-lg">
-                  Le nombre total de pages est indexé sur le nombre total de
-                  caractères, une page = 3000 caractères.
-                </div>
-              </span>
+              {!showTextArea && (
+                <span className="ml-2 relative group text-xl">
+                  <IoInformationCircleOutline />
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 text-sm text-white bg-gray-700 p-2 rounded-lg">
+                    Le nombre total de pages est indexé sur le nombre total de caractères, une page = 3000 caractères.
+                  </div>
+                </span>
+              )}
             </h3>
           </div>
           <button
