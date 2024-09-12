@@ -90,6 +90,9 @@ const PromptPirate = () => {
         Mettre à jour le prompt
       </button>
 
+      <h1 className="text-bold py-4">
+        Le type du prompt actuel est : {typeof prompt}
+      </h1>
       <h1>Prompt actuel :</h1>
       <pre>{prompt}</pre>
     </div>
