@@ -279,42 +279,54 @@ function AddFile() {
         pathname: "/LoadingTime",
         query: { taskId },
       });
-      const fileNames = fileList.map((file) => file.name);
+      const fileNames = [...fileList.map((file) => file.name), ...urlList];
 
-      const formData = new FormData();
-      fileList.forEach((file) => {
-        formData.append("files", file);
+      const pdfFiles = fileList.filter(file => file.type === "application/pdf");
+
+      let fileTextResponse; // Initialiser fileTextResponse en dehors du bloc conditionnel
+
+      if (pdfFiles.length > 0) {
+        // S'il y a des fichiers PDF, exécuter la requête
+        const formData = new FormData();
+        pdfFiles.forEach((file) => {
+          formData.append("files", file);
+        });
+
+        fileTextResponse = await axios.post(
+          "/api/extract-text-from-pdf",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        ); 
+      }
+
+      let combinedText = '';
+
+      // Ajouter les textes des PDF s'ils sont présents
+      if (fileTextResponse?.data?.rawText) {
+        combinedText += fileTextResponse.data.rawText;
+      }
+      console.log("combinedText après ajout des PDF = ", combinedText);
+
+      // Ajouter les textes des DOCX
+      Object.values(docxTextMap).forEach((docxText) => {
+        combinedText += `\n${docxText}`;
       });
+      console.log("combinedText après ajout des DOCX = ", combinedText);
 
-      const fileTextResponse = await axios.post(
-        "/api/extract-text-from-pdf",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // Ajouter les textes des URLs
+      Object.values(urlTextMap).forEach((urlText) => {
+        combinedText += `\n${urlText}`;
+      });
+      console.log("combinedText après ajout des URLs = ", combinedText);
 
-      if (fileTextResponse?.data?.success) {
-        let combinedText = fileTextResponse.data.rawText;
-        console.log("combinedText avant gpt = ", combinedText);
-        console.log("extractedText avant gpt = ", extractedText);
-
-        Object.values(docxTextMap).forEach((docxText) => {
-          combinedText += `\n${docxText}`;
-        });
-
-        // Ajouter tous les textes de urlTextMap à combinedText
-        Object.values(urlTextMap).forEach((urlText) => {
-          combinedText += `\n${urlText}`;
-        });
-        combinedText += `\n${textArea}`;
-
-        console.log(
-          "\n\n\n\ncombinedText après ajout des DOCX et URLs = ",
-          combinedText
-        );
+      // Ajouter le contenu du textArea
+      combinedText += `\n${textArea}`;
+      console.log("combinedText après ajout du textArea = ", combinedText);
+      console.log("\n\n\n\nTexte combiné final = ", combinedText);
 
         const gptResponse = await axios.post(
           `/api/process-text-with-gpt?taskId=${taskId}`,
@@ -340,9 +352,6 @@ function AddFile() {
         } else {
           console.error("Échec du traitement du texte avec GPT.");
         }
-      } else {
-        console.error("Échec de l'extraction du texte des fichiers.");
-      }
     } catch (error) {
       console.error(
         "Erreur lors de la mise à jour des pages restantes ou du traitement GPT :",
