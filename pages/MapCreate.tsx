@@ -113,12 +113,21 @@ const MapCreate = () => {
           </button>
 
           {userId && (
-            <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden  ">
+            <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
                 Maximum 400 pages{" "}
                 <a
-                  href={"/Offer"}
+                  href="#"
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const subject = encodeURIComponent("Sales - Demande d'informations sur Lecteur Rapide");
+                    const body = encodeURIComponent(
+                      "Bonjour,\n\nJe souhaiterais en savoir plus sur Lecteur Rapide et comment il peut m'aider dans mon activité.\n\nMerci d'avance."
+                    );
+                    window.location.href = `mailto:thomas.criou@myscripta.app?subject=${subject}&body=${body}`;
+                  }}
                 >
                   Lecteur Rapide{" "}
                 </a>

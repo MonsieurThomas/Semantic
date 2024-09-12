@@ -530,11 +530,11 @@ function AddFile() {
 
               {showTextArea && (
                 <div
-                  className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
+                  className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center overflow-"
                   onClick={handleClose} // Fermer si on clique sur l'arrière-plan
                 >
                   <div
-                    className="bg-white p-4 w-1/3 h-2/3 relative rounded-2xl border-black border-2 translate-x-[100px]"
+                    className="bg-white p-4 w-1/3 h-1/2 relative rounded-2xl border-black border-2 translate-x-[100px]"
                     onClick={(e) => e.stopPropagation()} // Empêche la fermeture quand on clique dans la boîte
                   >
                     <button
@@ -551,7 +551,8 @@ function AddFile() {
                       style={{
                         scrollbarWidth: "none",
                         msOverflowStyle: "none",
-                      }} // Masquer la barre sur Firefox et IE
+                        resize: "none",
+                      }}
                     />
                   </div>
                 </div>
@@ -568,7 +569,8 @@ function AddFile() {
                 <span className="ml-2 relative group text-xl">
                   <IoInformationCircleOutline />
                   <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 text-sm text-white bg-gray-700 p-2 rounded-lg">
-                    Le nombre total de pages est indexé sur le nombre total de caractères, une page = 3000 caractères.
+                    Le nombre total de pages est indexé sur le nombre total de
+                    caractères, une page = 3000 caractères.
                   </div>
                 </span>
               )}
@@ -577,13 +579,16 @@ function AddFile() {
           <button
             className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
             onClick={handleCreateMindMap}
-            disabled={!username || (!urlList.length && !fileList.length)}
+            disabled={
+              !username ||
+              (!urlList.length && !fileList.length && !textArea.length)
+            }
           >
             Créer votre mind map
           </button>
         </div>
       </div>
-      <h1 className="my-4 mx-[300px] font-semibold text-center text-l 2xl:text-xl">
+      <h1 className="py-4 mx-[300px] font-semibold text-center text-l 2xl:text-xl">
         Semantic accélère votre recherche d&apos;informations en présentant le
         contenu de vos documents de manière structurée sous forme de{" "}
         <span onClick={handleMindMaps} className="text-[#FCA310]">
