@@ -1035,7 +1035,7 @@ const CanvasDrawing = () => {
     setShowBackground: any,
     setProgrammaticScroll: any
   ) => {
-    const separatorRegex = /\.{3}\s*[-–—]>\s*\.{3}/;
+    const separatorRegex = /\.{3}\s*[-–—]>\s*\.{3}|\s*[-–—]>\s*/;
     let searchText = String(selected.bounding[index]);
     if (searchText.endsWith("...")) {
       searchText = searchText.slice(0, -3);

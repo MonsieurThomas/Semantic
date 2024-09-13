@@ -143,22 +143,28 @@ function AddFile() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement> | FileList) => {
+    let files;
+  
+    if (e instanceof FileList) {
+      files = e; // Si c'est un FileList (drag & drop)
+    } else {
+      files = e.target.files; // Si c'est un événement ChangeEvent (input file)
+    }
     if (files) {
       const newFiles = Array.from(files); // Convertir FileList en un tableau de fichiers
       setFileList([...fileList, ...newFiles]);
-
+  
       // Variables locales pour accumuler les valeurs
       let countDocx = 0;
       let countPdf = 0;
-      let accumulatedDocxTextMap = { ...docxTextMap }; // Accumuler le texte PDF
+      let accumulatedDocxTextMap = { ...docxTextMap }; // Accumuler le texte DOCX
       let accumulatedPdfTextMap = { ...pdfTextMap }; // Accumuler le texte PDF
-
+  
       for (const file of newFiles) {
         const formData = new FormData();
         formData.append("files", file);
-
+  
         try {
           let response;
           if (
@@ -177,11 +183,11 @@ function AddFile() {
             );
             if (response?.data?.success) {
               const extractedTextFromFile = response.data.rawText;
-
+  
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
               countDocx += extractedTextFromFile.length;
-
+  
               // Mettre à jour le compte des caractères DOCX
               accumulatedDocxTextMap[file.name] = extractedTextFromFile;
             }
@@ -193,14 +199,14 @@ function AddFile() {
             });
             if (response?.data?.text) {
               const extractedTextFromFile = response.data.text;
-
+  
               // Concaténer le texte extrait avec l'existant
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
-
+  
               // Accumuler les caractères et le texte PDF
               countPdf += Math.floor(response.data.text.length * 1.18);
-
+  
               accumulatedPdfTextMap[file.name] = extractedTextFromFile; // Ajouter à la map accumulée
             }
           } else {
@@ -215,26 +221,22 @@ function AddFile() {
           );
         }
       }
-
+  
       // Mise à jour finale après la boucle
-      if (countPdf && countDocx) {
-        setTotalCharacters(totalCharacters + countPdf + countDocx);
-        setPdfCharacters(pdfCharacters + countPdf);
-        setPdfTextMap(accumulatedPdfTextMap); // Mise à jour en une seule fois avec la map accumulée
-        setDocxCharacters(pdfCharacters + countDocx);
+      if (countDocx > 0) {
+        setTotalCharacters((prev) => prev + countDocx);
+        setDocxCharacters((prev) => prev + countDocx);
         setDocxTextMap(accumulatedDocxTextMap); // Mise à jour en une seule fois avec la map accumulée
-      } else if (countPdf) {
-        setTotalCharacters(totalCharacters + countPdf);
-        setPdfCharacters(pdfCharacters + countPdf);
+      }
+  
+      if (countPdf > 0) {
+        setTotalCharacters((prev) => prev + countPdf);
+        setPdfCharacters((prev) => prev + countPdf);
         setPdfTextMap(accumulatedPdfTextMap); // Mise à jour en une seule fois avec la map accumulée
-      } else if (countDocx) {
-        setTotalCharacters(totalCharacters + countDocx);
-        setDocxCharacters(pdfCharacters + countDocx);
-        setDocxTextMap(accumulatedDocxTextMap);
-        console.log("docxTextMap dans la section word", docxTextMap);
       }
     }
   };
+  
 
   const handleHomepage = () => {
     router.push("/");
@@ -309,25 +311,27 @@ function AddFile() {
       if (fileTextResponse?.data?.rawText) {
         combinedText += fileTextResponse.data.rawText;
       }
-      console.log("combinedText après ajout des PDF = ", combinedText);
+      // console.log("combinedText après ajout des PDF = ", combinedText);
 
       // Ajouter les textes des DOCX
       Object.values(docxTextMap).forEach((docxText) => {
         combinedText += `\n${docxText}`;
       });
-      console.log("combinedText après ajout des DOCX = ", combinedText);
+      // console.log("combinedText après ajout des DOCX = ", combinedText);
 
       // Ajouter les textes des URLs
       Object.values(urlTextMap).forEach((urlText) => {
         combinedText += `\n${urlText}`;
       });
-      console.log("combinedText après ajout des URLs = ", combinedText);
+      // console.log("combinedText après ajout des URLs = ", combinedText);
 
       // Ajouter le contenu du textArea
-      combinedText += `\n${textArea}`;
-      console.log("combinedText après ajout du textArea = ", combinedText);
-      console.log("\n\n\n\nTexte combiné final = ", combinedText);
-
+      // combinedText += `\n${textArea}`;
+      // console.log("combinedText après ajout du textArea = ", combinedText);
+      // console.log("\n\n\n\nTexte combiné final = ", combinedText);
+      console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+      console.log(`Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${Math.ceil(totalCharacters / 3000)}\n ${prompt} this is the text: \n\n ${combinedText}`);
+  
         const gptResponse = await axios.post(
           `/api/process-text-with-gpt?taskId=${taskId}`,
           {
@@ -380,6 +384,14 @@ function AddFile() {
     setShowTextArea(false); // Hide the textarea when clicking the close button
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    
+    const files = e.dataTransfer.files; // Récupérer les fichiers déposés
+    handleFileChange(files); // Appeler handleFileChange directement avec FileList
+  };
+  
+  
   return (
     <div style={{ fontFamily: "Lexend" }}>
       {showError && (
@@ -419,7 +431,10 @@ function AddFile() {
               <h1>Déposer vos fichiers PDF/Word</h1>
               <h1>Ou cliquer pour parcourir</h1>
             </div>
-            <div className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
+            <div className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]"
+                onDragOver={(e) => e.preventDefault()} // Permettre le glisser
+                onDrop={handleDrop}
+            >
               <div className="overflow-y-auto w-full ">
                 <h3>Total des char DOCX : {docxCharacters}</h3>
                 <h3>Total des char PDF : {pdfCharacters}</h3>

@@ -68,7 +68,7 @@ export default async function processText(
 
     // Log prompt and make sure it's being sent correctly
     console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    console.log("Sending prompt: ", prompt);
+    console.log(`Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${totalPages}\n ${prompt} this is the text: \n\n ${rawText}`);
 
     const openAIResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
@@ -81,7 +81,7 @@ export default async function processText(
         messages: [
           {
             role: "user",
-            content: `nb-pages=${totalPages}\n ${prompt} this is the text: \n\n\n ${rawText}`,
+            content: `nb-pages=${totalPages}\n ${prompt} this is the text: \n\n ${rawText}`,
           },
         ],
       },

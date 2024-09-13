@@ -21,6 +21,7 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   const [progress, setProgress] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [wordsToDisplay, setWordsToDisplay] = useState<WordType[]>([]);
+  const [useWords, setUsedWords] = useState<string[]>([]);
   const [documentInfo, setDocumentInfo] = useState<{
     id: string;
     openaiResponse: string;
@@ -31,23 +32,28 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
     const socket = io({
       path: "/api/socket",
     });
-  
+
     socket.on(
       "loadingComplete",
       (docInfo: { id: string; openaiResponse: string; taskId: string }) => {
         console.log("Received loadingComplete event:", docInfo);
-  
+
         // Check if the taskId matches the current taskId
         if (docInfo.taskId === taskId) {
           console.log("Task IDs match. Updating state.");
           setDocumentInfo(docInfo);
           setLoadingComplete(true);
         } else {
-          console.log("Task ID mismatch. Expected:", taskId, "but got:", docInfo.taskId);
+          console.log(
+            "Task ID mismatch. Expected:",
+            taskId,
+            "but got:",
+            docInfo.taskId
+          );
         }
       }
     );
-  
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -55,7 +61,9 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   }, [taskId]);
 
   useEffect(() => {
-    console.log("Checking if loading is complete and document info is available...");
+    console.log(
+      "Checking if loading is complete and document info is available..."
+    );
     console.log("loadingComplete:", loadingComplete);
     console.log("documentInfo:", documentInfo);
     if (loadingComplete && documentInfo) {
@@ -73,12 +81,13 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
   useEffect(() => {
     const intervals = [
       { duration: 0, progress: 5 },
-      { duration: 1000, progress: 10 },
-      { duration: 1500, progress: 35 },
-      { duration: 800, progress: 50 },
-      { duration: 2000, progress: 65 },
-      { duration: 1200, progress: 85 },
-      { duration: 1000, progress: 98 },
+      { duration: 2000, progress: 10 },
+      { duration: 3000, progress: 35 },
+      { duration: 1600, progress: 50 },
+      { duration: 4000, progress: 65 },
+      { duration: 2400, progress: 85 },
+      { duration: 2000, progress: 98 },
+      { duration: 1000, progress: 99 },
     ];
 
     let currentInterval = 0;
@@ -177,13 +186,52 @@ const LoadingTime: React.FC<LoadingTimeProps> = ({ randomPhrase }) => {
 
   useEffect(() => {
     // console.log("progress = ", progress)
+    if (progress == 99) return;
     const wordsToAdd = selectedWords.filter(
       (word) => progress == word.progressThreshold
     );
     // console.log("Mots ajoutés pour progress:", progress);
     // console.log("Mots ajoutés pour wordsToAdd:", wordsToAdd, "\n");
     setWordsToDisplay((prevWords) => [...prevWords, ...wordsToAdd]);
+    console.log("wordsToDisplay = ", wordsToDisplay);
   }, [progress]);
+
+  useEffect(() => {
+    if (progress === 99 && wordsToDisplay.length < 15) {
+      const intervalId = setInterval(() => {
+        const newWord = getNewUniqueWord(); // Fonction pour obtenir un mot unique qui n'est pas encore affiché
+        if (newWord) {
+          setWordsToDisplay((prevWords) => [...prevWords, newWord]);
+        }
+      }, 3000); // Ajoute un mot toutes les 3 secondes
+
+      return () => clearInterval(intervalId); // Nettoyage de l'intervalle quand le composant est démonté
+    }
+  }, [progress, wordsToDisplay]);
+
+  // Fonction pour obtenir un mot aléatoire unique qui n'est pas déjà dans wordsToDisplay
+  const getNewUniqueWord = () => {
+    const allWords = Object.entries(groupedWords).flatMap(
+      ([threshold, words]) =>
+        words.map((word) => ({
+          ...word,
+          progressThreshold: Number(threshold),
+        }))
+    ); // Tous les mots disponibles avec progressThreshold
+
+    // Filtrer les mots qui ont déjà été affichés
+    const availableWords = allWords.filter(
+      (word) =>
+        !wordsToDisplay.some(
+          (displayedWord) => displayedWord.word === word.word
+        )
+    );
+
+    if (availableWords.length === 0) return null; // Aucun mot disponible
+
+    const randomIndex = Math.floor(Math.random() * availableWords.length);
+    return availableWords[randomIndex]; // Renvoie un mot aléatoire
+  };
 
   return (
     <div className="relative h-[85vh] w-screen">
