@@ -1557,7 +1557,10 @@ const CanvasDrawing = () => {
                         textRefs.current[index] = el;
                       }}
                     >
-                      {item.content.length >= 100 || hasRole || item.word ? (
+                      {(item.content.length >= 100 ||
+                      hasRole ||
+                      item.word) &&
+                      !item.content.startsWith("doc-nb-") ? (
                         <p
                           className={`${textStyle} p-5`}
                           style={{ backgroundColor }}

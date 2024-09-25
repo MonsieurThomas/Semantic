@@ -324,7 +324,7 @@ function AddFile() {
       // Ajouter les textes des DOCX
       Object.values(docxTextMap).forEach((docxText) => {
         const docxPages = calculatePages(docxText);
-        combinedText += `\ndoc-nb-${docNumber}-${docxPages}\n`; // Ajouter le doc-nb avec le nombre de pages
+        combinedText += `\ndoc-nb-${docNumber}-${docxPages}\n\n`; // Ajouter le doc-nb avec le nombre de pages
         combinedText += docxText;
         docNumber++; // Incrémenter le compteur de documents
       });
@@ -527,51 +527,50 @@ function AddFile() {
               <h1>Copier/Coller vos URL</h1>
             </div>
             <div className="flex flex-col gap-4 justify-between rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
-              <div>
-                <div className="overflow-y-auto w-full">
-                  {/* <h1>Le nombre de char est = {urlCharacters}</h1> */}
-                  {urlList.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1"
-                    >
-                      <a href={item} target="_blank" rel="noopener noreferrer">
-                        {item}
-                      </a>
-                      <button
-                        onClick={() => handleRemoveUrl(index)} // Call the remove function
-                        className="text-black text-xl ml-2"
-                      >
-                        <GoX />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-center items-center mt-2 lg:px-[50px]">
-                  <input
-                    type="text"
-                    value={url}
-                    onChange={handleUrlChange}
-                    placeholder="Entrer un URL"
-                    className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleAddUrl(); // Call the function to add the URL when Enter is pressed
-                      }
-                    }}
-                  />
+  <div className="flex flex-col gap-2 flex-grow overflow-hidden">
+    <div className="overflow-y-auto max-h-[120px]"> {/* Zone défilable avec hauteur max pour les URLs */}
+      {urlList.map((item, index) => (
+        <div
+          key={index}
+          className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1"
+        >
+          <a href={item} target="_blank" rel="noopener noreferrer">
+            {item}
+          </a>
+          <button
+            onClick={() => handleRemoveUrl(index)} // Call the remove function
+            className="text-black text-xl ml-2"
+          >
+            <GoX />
+          </button>
+        </div>
+      ))}
+    </div>
+    <div className="flex justify-center items-center mt-2 lg:px-[50px]">
+      <input
+        type="text"
+        value={url}
+        onChange={handleUrlChange}
+        placeholder="Entrer un URL"
+        className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleAddUrl(); // Call the function to add the URL when Enter is pressed
+          }
+        }}
+      />
+      <button
+        onClick={handleAddUrl}
+        className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+  <div className="text-3xl flex justify-end mt-4 cursor-pointer">
+    <GrDocumentTxt onClick={handleIconClick} />
+  </div>
 
-                  <button
-                    onClick={handleAddUrl}
-                    className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
-                  >
-                    OK
-                  </button>
-                </div>
-              </div>
-              <div className="text-3xl flex justify-end m-4 cursor-pointer">
-                <GrDocumentTxt onClick={handleIconClick} />
-              </div>
 
               {showTextArea && (
                 <div
