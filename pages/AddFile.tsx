@@ -532,9 +532,14 @@ function AddFile() {
       {urlList.map((item, index) => (
         <div
           key={index}
-          className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1"
+          className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1 break-words" // Ajouter break-words
         >
-          <a href={item} target="_blank" rel="noopener noreferrer">
+          <a
+            href={item}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="break-all overflow-wrap" // Ajouter break-all ici
+          >
             {item}
           </a>
           <button
@@ -570,6 +575,8 @@ function AddFile() {
   <div className="text-3xl flex justify-end mt-4 cursor-pointer">
     <GrDocumentTxt onClick={handleIconClick} />
   </div>
+
+
 
 
               {showTextArea && (
