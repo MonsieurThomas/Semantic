@@ -97,12 +97,12 @@ const MapCreate = () => {
           </h1>
         </motion.div>
         <div className="relative flex flex-col items-center z-10">
-          <button
+          {/* <button
             onClick={handlePrompt}
             className="bg-red-600 my-4 text-white p-4 rounded-lg absolute top-[10px] left-[400px] 2xl:left-[550px]"
           >
             Prompt Pirate
-          </button>
+          </button> */}
           <button
             onClick={handleButton}
             className="relative text-4xl 2xl:text-[55px] bg-[#FCA311] text-white p-3 font-semibold w-[328px] 2xl:w-[440px] h-[130px] 2xl:h-[170px] rounded-[40px] hover:bg-[#FFE3B7]"

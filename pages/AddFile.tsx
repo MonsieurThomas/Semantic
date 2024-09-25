@@ -143,9 +143,11 @@ function AddFile() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement> | FileList) => {
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement> | FileList
+  ) => {
     let files;
-  
+
     if (e instanceof FileList) {
       files = e; // Si c'est un FileList (drag & drop)
     } else {
@@ -154,17 +156,17 @@ function AddFile() {
     if (files) {
       const newFiles = Array.from(files); // Convertir FileList en un tableau de fichiers
       setFileList([...fileList, ...newFiles]);
-  
+
       // Variables locales pour accumuler les valeurs
       let countDocx = 0;
       let countPdf = 0;
       let accumulatedDocxTextMap = { ...docxTextMap }; // Accumuler le texte DOCX
       let accumulatedPdfTextMap = { ...pdfTextMap }; // Accumuler le texte PDF
-  
+
       for (const file of newFiles) {
         const formData = new FormData();
         formData.append("files", file);
-  
+
         try {
           let response;
           if (
@@ -183,11 +185,11 @@ function AddFile() {
             );
             if (response?.data?.success) {
               const extractedTextFromFile = response.data.rawText;
-  
+
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
               countDocx += extractedTextFromFile.length;
-  
+
               // Mettre à jour le compte des caractères DOCX
               accumulatedDocxTextMap[file.name] = extractedTextFromFile;
             }
@@ -199,14 +201,14 @@ function AddFile() {
             });
             if (response?.data?.text) {
               const extractedTextFromFile = response.data.text;
-  
+
               // Concaténer le texte extrait avec l'existant
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
-  
+
               // Accumuler les caractères et le texte PDF
               countPdf += Math.floor(response.data.text.length * 1.18);
-  
+
               accumulatedPdfTextMap[file.name] = extractedTextFromFile; // Ajouter à la map accumulée
             }
           } else {
@@ -221,14 +223,14 @@ function AddFile() {
           );
         }
       }
-  
+
       // Mise à jour finale après la boucle
       if (countDocx > 0) {
         setTotalCharacters((prev) => prev + countDocx);
         setDocxCharacters((prev) => prev + countDocx);
         setDocxTextMap(accumulatedDocxTextMap); // Mise à jour en une seule fois avec la map accumulée
       }
-  
+
       if (countPdf > 0) {
         setTotalCharacters((prev) => prev + countPdf);
         setPdfCharacters((prev) => prev + countPdf);
@@ -236,7 +238,6 @@ function AddFile() {
       }
     }
   };
-  
 
   const handleHomepage = () => {
     router.push("/");
@@ -283,7 +284,9 @@ function AddFile() {
       });
       const fileNames = [...fileList.map((file) => file.name), ...urlList];
 
-      const pdfFiles = fileList.filter(file => file.type === "application/pdf");
+      const pdfFiles = fileList.filter(
+        (file) => file.type === "application/pdf"
+      );
 
       let fileTextResponse; // Initialiser fileTextResponse en dehors du bloc conditionnel
 
@@ -302,10 +305,10 @@ function AddFile() {
               "Content-Type": "multipart/form-data",
             },
           }
-        ); 
+        );
       }
 
-      let combinedText = '';
+      let combinedText = "";
 
       // Ajouter les textes des PDF s'ils sont présents
       if (fileTextResponse?.data?.rawText) {
@@ -330,32 +333,36 @@ function AddFile() {
       // console.log("combinedText après ajout du textArea = ", combinedText);
       // console.log("\n\n\n\nTexte combiné final = ", combinedText);
       console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-      console.log(`Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${Math.ceil(totalCharacters / 3000)}\n ${prompt} this is the text: \n\n ${combinedText}`);
-  
-        const gptResponse = await axios.post(
-          `/api/process-text-with-gpt?taskId=${taskId}`,
-          {
-            rawText: combinedText,
-            prompt: prompt,
-            fileNames,
-            totalPages: Math.ceil(totalCharacters / 3000),
-          }
-        );
+      console.log(
+        `Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${Math.ceil(
+          totalCharacters / 3000
+        )}\n ${prompt} this is the text: \n\n ${combinedText}`
+      );
 
-        if (gptResponse.data.success) {
-          const socket = io();
-          console.log("Socket connection established.");
-          setTimeout(() => {
-            socket.emit("loadingComplete", {
-              id: gptResponse.data.document.id,
-              openaiResponse: gptResponse.data.openaiResponse,
-              taskId: taskId,
-            });
-            console.log("Emitted loadingComplete event with taskId:", taskId);
-          }, 1000);
-        } else {
-          console.error("Échec du traitement du texte avec GPT.");
+      const gptResponse = await axios.post(
+        `/api/process-text-with-gpt?taskId=${taskId}`,
+        {
+          rawText: combinedText,
+          prompt: prompt,
+          fileNames,
+          totalPages: Math.ceil(totalCharacters / 3000),
         }
+      );
+
+      if (gptResponse.data.success) {
+        const socket = io();
+        console.log("Socket connection established.");
+        setTimeout(() => {
+          socket.emit("loadingComplete", {
+            id: gptResponse.data.document.id,
+            openaiResponse: gptResponse.data.openaiResponse,
+            taskId: taskId,
+          });
+          console.log("Emitted loadingComplete event with taskId:", taskId);
+        }, 1000);
+      } else {
+        console.error("Échec du traitement du texte avec GPT.");
+      }
     } catch (error) {
       console.error(
         "Erreur lors de la mise à jour des pages restantes ou du traitement GPT :",
@@ -386,12 +393,11 @@ function AddFile() {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    
+
     const files = e.dataTransfer.files; // Récupérer les fichiers déposés
     handleFileChange(files); // Appeler handleFileChange directement avec FileList
   };
-  
-  
+
   return (
     <div style={{ fontFamily: "Lexend" }}>
       {showError && (
@@ -431,13 +437,14 @@ function AddFile() {
               <h1>Déposer vos fichiers PDF/Word</h1>
               <h1>Ou cliquer pour parcourir</h1>
             </div>
-            <div className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]"
-                onDragOver={(e) => e.preventDefault()} // Permettre le glisser
-                onDrop={handleDrop}
+            <div
+              className="flex flex-col gap-4 justify-start rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]"
+              onDragOver={(e) => e.preventDefault()} // Permettre le glisser
+              onDrop={handleDrop}
             >
               <div className="overflow-y-auto w-full ">
-                <h3>Total des char DOCX : {docxCharacters}</h3>
-                <h3>Total des char PDF : {pdfCharacters}</h3>
+                {/* <h3>Total des char DOCX : {docxCharacters}</h3> */}
+                {/* <h3>Total des char PDF : {pdfCharacters}</h3> */}
                 {fileList.map((file, index) => (
                   <div
                     key={index}
@@ -491,13 +498,13 @@ function AddFile() {
                 )}
               </div>
             </div>
-            <h3>
+            {/* <h3>
               Total des char : {totalCharacters} {"<-- J'enleverais plus tard"}
             </h3>
             <h3>
               Total des pages : {Math.ceil(totalCharacters / 3000)}{" "}
               {"<-- Ca aussi"}
-            </h3>
+            </h3> */}
             {/* Faire demo */}
           </div>
 
@@ -508,7 +515,7 @@ function AddFile() {
             <div className="flex flex-col gap-4 justify-between rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
               <div>
                 <div className="overflow-y-auto w-full">
-                  <h1>Le nombre de char est = {urlCharacters}</h1>
+                  {/* <h1>Le nombre de char est = {urlCharacters}</h1> */}
                   {urlList.map((item, index) => (
                     <div
                       key={index}

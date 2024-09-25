@@ -12,7 +12,7 @@ model User {
   username  String     @unique
   email     String     @unique
   password  String
-  remainingPages Int       @default(10000)
+  remainingPages Int       @default(120)
 
   documents Document[] // Relation to documents
 }
