@@ -288,15 +288,15 @@ function AddFile() {
         (file) => file.type === "application/pdf"
       );
 
-      let fileTextResponse; // Initialiser fileTextResponse en dehors du bloc conditionnel
+      let fileTextResponse;
+      let docNumber = 1;
 
       if (pdfFiles.length > 0) {
-        // S'il y a des fichiers PDF, exécuter la requête
         const formData = new FormData();
         pdfFiles.forEach((file) => {
           formData.append("files", file);
         });
-
+        formData.append("docNumber", docNumber.toString()); // Passer le numéro de document
         fileTextResponse = await axios.post(
           "/api/extract-text-from-pdf",
           formData,
@@ -310,26 +310,40 @@ function AddFile() {
 
       let combinedText = "";
 
+      const calculatePages = (text: string) => {
+        return Math.ceil(text.length / 3000);
+      };
+
       // Ajouter les textes des PDF s'ils sont présents
       if (fileTextResponse?.data?.rawText) {
         combinedText += fileTextResponse.data.rawText;
+        docNumber = fileTextResponse.data.docNumber
       }
       // console.log("combinedText après ajout des PDF = ", combinedText);
 
       // Ajouter les textes des DOCX
       Object.values(docxTextMap).forEach((docxText) => {
-        combinedText += `\n${docxText}`;
+        const docxPages = calculatePages(docxText);
+        combinedText += `\ndoc-nb-${docNumber}-${docxPages}\n`; // Ajouter le doc-nb avec le nombre de pages
+        combinedText += docxText;
+        docNumber++; // Incrémenter le compteur de documents
       });
-      // console.log("combinedText après ajout des DOCX = ", combinedText);
 
       // Ajouter les textes des URLs
       Object.values(urlTextMap).forEach((urlText) => {
-        combinedText += `\n${urlText}`;
+        const urlPages = calculatePages(urlText);
+        combinedText += `\ndoc-nb-${docNumber}-${urlPages}\n`; // Ajouter le doc-nb avec le nombre de pages
+        combinedText += urlText;
+        docNumber++; // Incrémenter le compteur de documents
       });
       // console.log("combinedText après ajout des URLs = ", combinedText);
 
       // Ajouter le contenu du textArea
-      // combinedText += `\n${textArea}`;
+      if (textArea){
+        const textAreaPages = calculatePages(textArea);
+        combinedText += `\ndoc-nb-${docNumber}-${textAreaPages}\n`;
+        combinedText += `\n${textArea}`;
+      }
       // console.log("combinedText après ajout du textArea = ", combinedText);
       // console.log("\n\n\n\nTexte combiné final = ", combinedText);
       console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -424,7 +438,7 @@ function AddFile() {
           </div>
         </div>
       )}
-      <p>Username: {username}</p>
+      {/* <p>Username: {username}</p> */}
       <p>Remaining Pages: {remainingPages}</p>{" "}
       <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
         <div className="flex justify-between items-center">
