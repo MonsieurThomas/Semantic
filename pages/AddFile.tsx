@@ -324,7 +324,7 @@ function AddFile() {
       // Ajouter les textes des DOCX
       Object.values(docxTextMap).forEach((docxText) => {
         const docxPages = calculatePages(docxText);
-        combinedText += `\ndoc-nb-${docNumber}-${docxPages}\n\n`; // Ajouter le doc-nb avec le nombre de pages
+        combinedText += `\n Document ${docNumber}\n\n`; // Ajouter le doc-nb avec le nombre de pages
         combinedText += docxText;
         docNumber++; // Incrémenter le compteur de documents
       });
@@ -332,7 +332,7 @@ function AddFile() {
       // Ajouter les textes des URLs
       Object.values(urlTextMap).forEach((urlText) => {
         const urlPages = calculatePages(urlText);
-        combinedText += `\ndoc-nb-${docNumber}-${urlPages}\n`; // Ajouter le doc-nb avec le nombre de pages
+        combinedText += `\n Document ${docNumber}\n`; // Ajouter le doc-nb avec le nombre de pages
         combinedText += urlText;
         docNumber++; // Incrémenter le compteur de documents
       });
@@ -341,16 +341,16 @@ function AddFile() {
       // Ajouter le contenu du textArea
       if (textArea){
         const textAreaPages = calculatePages(textArea);
-        combinedText += `\ndoc-nb-${docNumber}-${textAreaPages}\n`;
+        combinedText += `\n Document ${docNumber}\n`;
         combinedText += `\n${textArea}`;
       }
       // console.log("combinedText après ajout du textArea = ", combinedText);
       // console.log("\n\n\n\nTexte combiné final = ", combinedText);
       console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
       console.log(
-        `Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${Math.ceil(
-          totalCharacters / 3000
-        )}\n ${prompt} this is the text: \n\n ${combinedText}`
+        `Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=
+        
+        \n ${prompt} \n\nnb-pages=${Math.ceil(totalCharacters / 3000)}\n \n\n ${combinedText}`
       );
 
       const gptResponse = await axios.post(

@@ -78,7 +78,7 @@ export default async function extractTextFromFiles(
       }
 
       const pdfPages = calculatePages(extractedText); // Calculer le nombre de pages du PDF
-      concatenatedText += `doc-nb-${docNumber}-${pdfPages}\n\n`; // Ajouter le doc-nb-x avec le nombre de pages
+      concatenatedText += `Document ${docNumber}\n\n`; // Ajouter le doc-nb-x avec le nombre de pages
       concatenatedText += extractedText + "\n\n";
 
       docNumber++; // Incrémenter le numéro de document après chaque fichier traité

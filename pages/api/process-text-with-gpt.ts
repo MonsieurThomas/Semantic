@@ -81,7 +81,7 @@ export default async function processText(
         messages: [
           {
             role: "user",
-            content: `nb-pages=${totalPages}\n ${prompt} this is the text: \n\n ${rawText}`,
+            content: ` ${prompt} \n\nnb-pages=${totalPages}\n \n\n ${rawText}`,
           },
         ],
       },
