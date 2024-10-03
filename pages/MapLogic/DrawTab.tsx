@@ -144,6 +144,7 @@ function wrapText(ctx: CanvasRenderingContext2D, obj: any, boxWidth: number) {
   }
 
   if (obj.branch == 0 && obj.hover == true) {
+  } else if (obj.hover) {
   } else {
     // Truncate lines and add "..." if necessary
     if (lines.length > 2) {
@@ -209,6 +210,30 @@ function DrawSquare(
     posY = obj.y - 500;
     caseWidth += 1000;
     caseHeight += 1000;
+  }
+
+  if (obj.hover && obj.branch != 0) {
+    let lines: string[] = [];
+    let line = "";
+    const words = obj.value.split(" ");
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + " ";
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+
+      if (testWidth > caseWidth) {
+        lines.push(line.trim());
+        line = words[i] + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    if (lines.length > 1) {
+      // console.log("lines = ", lines);
+      // posX = obj.x;
+      posY = obj.y - (lines.length * 200) / 2;
+      caseHeight += lines.length * 200;
+    }
   }
   //carré blanc pour opacité
 
@@ -305,7 +330,8 @@ function DrawSquare(
   else ctx.fillStyle = "black";
   if (obj.branch == 0) ctx.font = "80px Lexend";
   wrapText(ctx, obj, caseWidth); // affichage texte
-  if (obj.hover && obj.branch != 0 && !obj.bounding) eyeShape(ctx, obj);
+  if (obj.hover && obj.branch != 0 && !obj.bounding)
+    eyeShape(ctx, obj, caseWidth, caseHeight);
   if (obj.hover && obj.branch != 0) drawMagicWand(ctx, obj, caseWidth);
   if (obj.pistacheColor) {
     // pistache part
@@ -399,11 +425,46 @@ function DrawCurveLine(
   }
 }
 
-function eyeShape(ctx: CanvasRenderingContext2D, obj: any) {
+function getLineNumber(
+  ctx: CanvasRenderingContext2D,
+  obj: any,
+  caseWidth: number
+) {
+  console.log("obj = ", obj);
+  if (!obj.value) return 0;
+  let lines: string[] = [];
+  let line = "";
+  const words = obj.value.split(" ");
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + " ";
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > caseWidth) {
+      lines.push(line.trim());
+      line = words[i] + " ";
+    } else {
+      line = testLine;
+    }
+  }
+  return lines.length;
+}
+
+function eyeShape(
+  ctx: CanvasRenderingContext2D,
+  obj: any,
+  caseWidth: number,
+  caseHeight: number
+) {
   ctx.save();
 
   const x = obj.x + 360;
-  const y = obj.y - 160;
+  let y = obj.y - 160;
+
+  //s'il y a pleins de lignes
+  const lineNumber = getLineNumber(ctx, obj, caseWidth);
+  console.log("lineNumber = ", lineNumber);
+  if (lineNumber > 1) y -= (lineNumber * 200) / 2;
 
   const startX = x - 180;
   const endX = x + 180;
@@ -453,6 +514,11 @@ function drawMagicWand(
 ) {
   let startX = obj.x + caseWidh - 500;
   let startY = obj.y + 20;
+
+  const lineNumber = getLineNumber(ctx, obj, caseWidh);
+  console.log("lineNumber = ", lineNumber);
+  if (lineNumber > 1) startY -= (lineNumber * 200) / 2;
+
   let color = "black";
   let length = 240;
   ctx.save();

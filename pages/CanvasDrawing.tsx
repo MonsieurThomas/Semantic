@@ -494,7 +494,7 @@ const CanvasDrawing = () => {
         if (
           adjustedX >= obj.x &&
           adjustedX <= obj.x + 4800 &&
-          adjustedY >= obj.y - 300 &&
+          adjustedY >= obj.y - 600 &&
           adjustedY <= obj.y + 1200
         ) {
           obj.hover = true;
@@ -737,7 +737,7 @@ const CanvasDrawing = () => {
         } else if (
           adjustedX >= obj.x + caseWidth - 500 &&
           adjustedX <= obj.x + caseWidth &&
-          adjustedY >= obj.y - 400 &&
+          adjustedY >= obj.y - 600 &&
           adjustedY <= obj.y
         ) {
           obj.isPistache = !obj.isPistache;
@@ -1557,9 +1557,7 @@ const CanvasDrawing = () => {
                         textRefs.current[index] = el;
                       }}
                     >
-                      {(item.content.length >= 100 ||
-                      hasRole ||
-                      item.word) &&
+                      {(item.content.length >= 100 || hasRole || item.word) &&
                       !item.content.startsWith("doc-nb-") ? (
                         <p
                           className={`${textStyle} p-5`}

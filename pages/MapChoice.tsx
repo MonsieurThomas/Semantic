@@ -269,9 +269,9 @@ function MapChoice() {
                           style={{ backgroundColor: obj.color }}
                         >
                           {isJSON(cleanJson(obj.openaiResponse)) &&
-                            Object.keys(
-                              JSON.parse(cleanJson(obj.openaiResponse))
-                            )[0]}
+                            JSON.parse(cleanJson(obj.openaiResponse))[
+                              "Titre Global"
+                            ].value}
                         </span>
                       </p>
                       {obj.texts && (
