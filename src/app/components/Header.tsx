@@ -149,11 +149,11 @@ function Header() {
                     Se connecter
                   </Link>
                 )}
-                {router.pathname === "/CanvasDrawing" && (
+                {/* {router.pathname === "/CanvasDrawing" && (
                   <Link href="/MapChoice">
                     <p onClick={toggleToFalse}>Enregistrer</p>
                   </Link>
-                )}
+                )} */}
               </div>
             )}
           </div>

@@ -291,10 +291,10 @@ const CanvasDrawing = () => {
     });
 
     tab.forEach((obj) => {
-      if (obj.branch >= midBranch) {
-        obj.y = obj.y - midCount;
+      if (obj.branch < midBranch) {
+        // obj.y = obj.y - midCount;
         obj.x = -obj.x;
-      }
+      } else obj.y = obj.y - midCount;
     });
 
     tab.forEach((obj) => {
@@ -568,13 +568,9 @@ const CanvasDrawing = () => {
           if (canvas) {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            // console.log("canvas.width = ", canvas.width)
-            // console.log("canvas.height = ", canvas.height)
             const minZoom = 0.02;
             const maxZoom = 0.1;
             const newZoomLevel = minZoom + (maxZoom - minZoom) * zoomFraction;
-            // console.log("panOffset.x = ", panOffset.x)
-            // console.log("panOffset.y = ", panOffset.y)
 
             const newPanOffsetX =
               panOffset.x + (centerX - (centerX * newZoomLevel) / zoomLevel);
@@ -1270,7 +1266,7 @@ const CanvasDrawing = () => {
     fullText: string | null
   ): string[] => {
     const contexts: string[] = [];
-
+    if (searchValue.length < 3) return [];
     if (fullText) {
       const lowerCaseSearchValue = searchValue.toLowerCase();
       const fullTextLowerCase = fullText.toLowerCase();
@@ -1282,7 +1278,12 @@ const CanvasDrawing = () => {
           searchIndex
         )) !== -1
       ) {
-        // Find the word boundaries around the search term
+        // if (fullTextLowerCase[searchIndex - 1] != " ")
+        // {
+        //   searchIndex--;
+        //   while (fullTextLowerCase[searchIndex] != " ")
+        //     searchIndex--
+        // }
         const beforeText = fullTextLowerCase.slice(0, searchIndex).split(/\s+/);
         const afterText = fullTextLowerCase
           .slice(searchIndex + lowerCaseSearchValue.length)
@@ -1295,13 +1296,38 @@ const CanvasDrawing = () => {
         const afterWords = afterText.slice(0, 5);
 
         // Reconstruct the context with 5 words before, the search term, and 5 words after
-        const context = [
-          ...beforeWords,
-          fullText.slice(searchIndex, searchIndex + searchValue.length), // The exact match from the original text
-          ...afterWords,
-        ].join(" ");
+        let context: string[] = [];
 
-        contexts.push(context);
+        context.push(...beforeWords);
+        context.push(
+          fullText.slice(searchIndex, searchIndex + searchValue.length).trim()
+        );
+        context.push(...afterWords);
+
+        contexts.push(context.join(" ").replace(/\s+/g, " "));
+
+        // console.log(
+        //   'fullText.slice(searchIndex, searchIndex + searchValue.length) "',
+        //   fullText[searchIndex - 1],
+        //   '"'
+        // );
+        // if (fullText[searchIndex - 1] != " ")
+        // context = [
+        //   ...beforeWords,
+        //   fullText.slice(searchIndex, searchIndex + searchValue.length), // Remove spaces around the search term
+        //   // ...afterWords,
+        // ].join(" ");
+        // else
+        // {
+        //   context = [
+        //     ...beforeWords,
+        //     fullText.slice(searchIndex, searchIndex + searchValue.length), // Remove spaces around the search term
+        //     // ...afterWords,
+        //   ].join(" ");
+
+        // }
+
+        // contexts.push(context);
         searchIndex += lowerCaseSearchValue.length;
       }
     }
@@ -1504,8 +1530,8 @@ const CanvasDrawing = () => {
                       }
                     >
                       <div
-                        className="whitespace-nowrap overflow-hidden text-ellipsis text-center p-1"
-                        style={{ maxWidth: "320px", fontFamily: "Lexend" }}
+                        className="whitespace-nowra overflow-hidde text-ellipss text-center p-1"
+                        style={{ maxWidth: "180px", fontFamily: "Lexend" }}
                       >
                         {selected.value}
                       </div>
