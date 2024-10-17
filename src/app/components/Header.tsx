@@ -12,7 +12,6 @@ function Header() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProfileHovered, setIsProfileHovered] = useState(false);
   const { username, logout } = useContext(UserContext);
-  const { setUsername: setContextUsername, setId: setContextId } =
     useContext(UserContext);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);

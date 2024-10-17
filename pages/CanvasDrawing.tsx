@@ -931,9 +931,17 @@ const CanvasDrawing = () => {
       if (
         obj.path.includes(objPath.path) &&
         obj.path.startsWith(objPath.path) &&
-        obj.path.length != objPath.path.length
+        obj.path.length != objPath.path.length 
+        
       ) {
-        obj.hide = !obj.hide;
+        if (Math.max(obj.path.length - objPath.path.length) != 2 && obj.hide)
+          console.log("ok");
+        else
+          obj.hide = !obj.hide;
+        console.log(
+          "Math.max(obj.path - objPath.path) =",
+          Math.max(obj.path.length - objPath.path.length)
+        );
       }
     });
     redrawCanvas();
@@ -993,7 +1001,7 @@ const CanvasDrawing = () => {
   const scrollNeeded = dynamicHeight > maxHeight;
 
   useEffect(() => {
-    console.log("isPistacheHovered = ", isPistacheHovered);
+    // console.log("isPistacheHovered = ", isPistacheHovered);
   }, [isPistacheHovered]);
 
   useEffect(() => {
@@ -1149,11 +1157,9 @@ const CanvasDrawing = () => {
     // console.log("context", context);
 
     const contextWords = context.split(" ");
+    // console.log("THis is context", context);
 
-    // Create startText with the first 6 words
     const startText = contextWords.slice(0, 6).join(" ");
-
-    // Create endText with words from the 5th to the 11th (last 6 words)
     const endText = contextWords.slice(5, 11).join(" ");
 
     // console.log("startText", startText);
@@ -1163,15 +1169,16 @@ const CanvasDrawing = () => {
 
     // Find paragraph containing both startText and endText
     let combinedText = apiResponse?.find((item: any) =>
-      removeDots(item.content).includes(context)
+      removeDots(item.content.toLowerCase()).includes(context)
     );
+    // console.log("combinedText = ", combinedText);
 
     // If the entire context is not found, look for startText and endText
     if (!combinedText) {
       combinedText = apiResponse?.find(
         (item: any) =>
-          removeDots(item.content).includes(startText) &&
-          removeDots(item.content).includes(endText)
+          removeDots(item.content.toLowerCase()).includes(startText) &&
+          removeDots(item.content.toLowerCase()).includes(endText)
       );
     }
 
@@ -1183,7 +1190,7 @@ const CanvasDrawing = () => {
     } else {
       // Find paragraph containing startText
       let startTextParagraph = apiResponse?.find((item: any) =>
-        removeDots(item.content).includes(startText)
+        removeDots(item.content.toLowerCase()).includes(startText)
       );
       if (!startTextParagraph) {
         // apiResponse?.forEach((item: any, idx: number) => {
@@ -1191,7 +1198,7 @@ const CanvasDrawing = () => {
         // });
 
         startTextParagraph = apiResponse?.find((item: any) =>
-          startText.includes(removeDots(item.content))
+          removeDots(item.content.toLowerCase()).includes(startText)
         );
         // console.log(
         //   "startTextParagraph apres le nouveau if = ",
@@ -1200,7 +1207,7 @@ const CanvasDrawing = () => {
       }
       // Find paragraph containing endText
       let endTextParagraph = apiResponse?.find((item: any) =>
-        removeDots(item.content).includes(endText)
+        removeDots(item.content.toLowerCase()).includes(endText)
       );
 
       if (startTextParagraph) {
@@ -1278,15 +1285,16 @@ const CanvasDrawing = () => {
           searchIndex
         )) !== -1
       ) {
-        // if (fullTextLowerCase[searchIndex - 1] != " ")
-        // {
-        //   searchIndex--;
-        //   while (fullTextLowerCase[searchIndex] != " ")
-        //     searchIndex--
-        // }
-        const beforeText = fullTextLowerCase.slice(0, searchIndex).split(/\s+/);
+        if (fullTextLowerCase[searchIndex - 1] != " ") {
+          searchIndex++;
+          while (fullTextLowerCase[searchIndex] != " ") searchIndex++;
+        }
+        const beforeText = fullTextLowerCase
+          .slice(searchIndex - 60, searchIndex)
+          .split(/\s+/);
         const afterText = fullTextLowerCase
-          .slice(searchIndex + lowerCaseSearchValue.length)
+          // .slice(searchIndex + lowerCaseSearchValue.length)
+          .slice(searchIndex)
           .split(/\s+/);
 
         // Get the 5 words before the search term
@@ -1299,9 +1307,11 @@ const CanvasDrawing = () => {
         let context: string[] = [];
 
         context.push(...beforeWords);
-        context.push(
-          fullText.slice(searchIndex, searchIndex + searchValue.length).trim()
-        );
+        // context.push("abc");
+        // context.push(
+        //   fullText.slice(searchIndex, searchIndex + searchValue.length).trim()
+        // );
+        // context.push("def");
         context.push(...afterWords);
 
         contexts.push(context.join(" ").replace(/\s+/g, " "));

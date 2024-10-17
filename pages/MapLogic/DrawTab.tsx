@@ -430,7 +430,7 @@ function getLineNumber(
   obj: any,
   caseWidth: number
 ) {
-  console.log("obj = ", obj);
+  // console.log("obj = ", obj);
   if (!obj.value) return 0;
   let lines: string[] = [];
   let line = "";
@@ -463,7 +463,7 @@ function eyeShape(
 
   //s'il y a pleins de lignes
   const lineNumber = getLineNumber(ctx, obj, caseWidth);
-  console.log("lineNumber = ", lineNumber);
+  // console.log("lineNumber = ", lineNumber);
   if (lineNumber > 1) y -= (lineNumber * 200) / 2;
 
   const startX = x - 180;
@@ -516,7 +516,7 @@ function drawMagicWand(
   let startY = obj.y + 20;
 
   const lineNumber = getLineNumber(ctx, obj, caseWidh);
-  console.log("lineNumber = ", lineNumber);
+  // console.log("lineNumber = ", lineNumber);
   if (lineNumber > 1) startY -= (lineNumber * 200) / 2;
 
   let color = "black";

@@ -21,7 +21,7 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (password != "testsemantic") return;
     try {
       const res = await fetch("/api/register", {
         method: "POST",
