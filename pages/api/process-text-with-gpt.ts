@@ -1,37 +1,76 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma"; // Assurez-vous que le chemin vers prisma est correct
+import prisma from "../../lib/prisma";
 import axios from "axios";
-import { parseCookies } from "nookies";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import jwt from "jsonwebtoken";
-import Prompt from "@/app/utils/Prompt";
+import { parseCookies } from "nookies";
+import initializeSocketServer from "../../lib/socketServer";
 import dotenv from "dotenv";
-import initializeSocketServer from "../../lib/socketServer"; // Assurez-vous que le chemin est correct
+import { convertWordToPdf } from "./convert-word-to-pdf"; // Import your conversion function
+import { mergePdfs } from "./merge-pdfs"; // Assuming this function merges the PDFs
 
 dotenv.config();
 
+// Extend NextApiRequest to include the files property
+interface NextApiRequestWithFiles extends NextApiRequest {
+  files: Express.Multer.File[]; // Add the 'files' property
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: "./uploads/", // Specify the folder where files will be stored
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname); // Generate a unique filename
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Utility to handle Multer in Next.js API routes
+export const runMiddleware = (req: any, res: any, fn: any) => {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+};
+
+// Main process-text-with-gpt function
 export default async function processText(
-  req: NextApiRequest,
+  req: NextApiRequestWithFiles,
   res: NextApiResponse
 ) {
-  const { rawText, fileNames, prompt, totalPages } = req.body;
-  const taskId = req.query.taskId;
-
-  console.log("Task ID received:", taskId);
-  console.log("This is prompt = ", prompt);
-  console.log("This is typeof prompt = ", typeof prompt);
-
-  if (!taskId) {
-    return res.status(400).json({ error: "Task ID is missing" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
-
-  if (typeof rawText !== "string" || rawText.trim() === "") {
-    return res.status(400).json({ error: "Invalid or empty text provided" });
-  }
+  console.log("\n\n\n Debut de processText\n");
 
   try {
+    // Use Multer to handle file uploads
+    await runMiddleware(req, res, upload.any());
+
+    // Extract the prompt and totalPages from the request body
+    const { prompt, totalPages, rawText, fileNames } = req.body;
+    const taskId = req.query.taskId;
+
+    if (!taskId) {
+      return res.status(400).json({ error: "Task ID is missing" });
+    }
+
+    if (!prompt || typeof prompt !== "string") {
+      return res.status(400).json({ error: "Invalid or missing prompt" });
+    }
+
     const io = initializeSocketServer(res);
     const cookies = parseCookies({ req });
     const token = cookies.token;
+
     if (!token) {
       return res.status(401).json({ message: "Authentication required" });
     }
@@ -47,28 +86,52 @@ export default async function processText(
       return res.status(401).json({ message: "Invalid token" });
     }
 
-    // Color logic
-    const colors = [
-      "#EB473D",
-      "#1C49A7",
-      "#507543",
-      "#E6A763",
-      "#755591",
-      "#FCA618",
-      "#1BA024",
-    ];
-    const colorIndex = Date.now() % colors.length;
-    const color = colors[colorIndex];
+    // Processing uploaded files
+    const uploadedFiles = req.files; // req.files is available thanks to the extended interface
+    console.log("These are uploaded files = ", uploadedFiles);
 
-    // OpenAI request
+    // Array to store paths of the processed PDF files
+    let pdfFiles: string[] = [];
+
+    // Loop through uploaded files, convert DOCX to PDF, and collect PDF paths
+    for (const file of uploadedFiles) {
+      if (
+        file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        // Convert DOCX to PDF
+        const pdfPath = await convertWordToPdf(file.path);
+        pdfFiles.push(pdfPath.startsWith("/") ? pdfPath : `/${pdfPath}`); // Ensure leading slash
+      } else if (file.mimetype === "application/pdf") {
+        // Move the original PDF to public/uploads if needed
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        const originalPdfPath = path.join(uploadDir, path.basename(file.path));
+
+        if (!fs.existsSync(originalPdfPath)) {
+          fs.copyFileSync(file.path, originalPdfPath); // Copy PDF to public/uploads
+        }
+
+        // Ensure the path starts with a leading '/'
+        pdfFiles.push(
+          originalPdfPath.startsWith("/")
+            ? originalPdfPath
+            : `/${originalPdfPath}`
+        );
+      }
+    }
+
+    console.log("\n2nd api debut: ", pdfFiles, "\n");
+    // Once all files are processed, merge PDFs
+    const mergedPdfPath = await mergePdfs(pdfFiles); // Assuming you have a mergePdfs function
+
+    // Send the merged PDF path or perform further actions
+    console.log("\n2nd api retour: ", mergedPdfPath, "\n");
+
+    // Request OpenAI processing
     const openaiApiKey = process.env.OPENAI_KEY;
     if (!openaiApiKey) {
       throw new Error("OpenAI API key not configured");
     }
-
-    // Log prompt and make sure it's being sent correctly
-    // console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    // console.log(`Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=${totalPages}\n ${prompt} this is the text: \n\n ${rawText}`);
 
     const openAIResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
@@ -93,16 +156,27 @@ export default async function processText(
       }
     );
 
-    const { choices } = openAIResponse.data;
+    // Color logic
+    const colors = [
+      "#EB473D",
+      "#1C49A7",
+      "#507543",
+      "#E6A763",
+      "#755591",
+      "#FCA618",
+      "#1BA024",
+    ];
+    const colorIndex = Date.now() % colors.length;
+    const color = colors[colorIndex];
 
-    // Process fileNames as string array
+    const { choices } = openAIResponse.data;
+    const fileBuffer = await fs.promises.readFile(mergedPdfPath); // Read the merged PDF as a buffer
     const textEntries = Array.isArray(fileNames) ? fileNames : [];
 
-    console.log("Text entries: ", textEntries);
-
-    // Store in the database
+    // Save document details in the database
     const newDocument = await prisma.document.create({
       data: {
+        fileData: fileBuffer, // Save the binary data of the PDF
         name: "Concatenated Text from URLs",
         mimeType: "text/plain",
         path: "",
@@ -122,6 +196,7 @@ export default async function processText(
       },
     });
 
+    // Emit socket event and send response
     io.emit("loadingComplete", {
       id: newDocument.id,
       openaiResponse: choices[0].message.content,
@@ -135,6 +210,12 @@ export default async function processText(
     });
   } catch (error) {
     console.error("Error processing text:", error);
-    res.status(500).json({ error: "Failed to process text." });
+    res.status(500).json({ error: "Failed to process text and files." });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: false, // Disable body parsing for multer to handle file uploads
+  },
+};

@@ -19,6 +19,14 @@ import { RxCross1 } from "react-icons/rx";
 import { FaFontAwesomeFlag } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
+import { Viewer, Worker, ProgressBar } from "@react-pdf-viewer/core";
+import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+import { searchPlugin } from "@react-pdf-viewer/search";
+
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import "@react-pdf-viewer/search/lib/styles/index.css";
 
 interface NestedObject {
   [key: string]: any;
@@ -98,7 +106,6 @@ const CanvasDrawing = () => {
           if (document.rawText) {
             try {
               setApiResponse(JSON.parse(document.rawText));
-              console.log("document.rawText dans l'api", document.rawText);
               setFullText(paragraphsToText(document.rawText));
               setFullTextSplit(
                 paragraphsToTextSplit(paragraphsToText(document.rawText))
@@ -110,6 +117,9 @@ const CanvasDrawing = () => {
             }
           }
           if (document.elements) setPistacheTab(document.elements);
+          setFileData(document.fileData);
+          console.log("document.fileData == ", document.fileData);
+          console.log("document.rawText dans l'api", document.rawText);
         } catch (error) {
           console.error("Error fetching document:", error);
         }
@@ -401,6 +411,7 @@ const CanvasDrawing = () => {
   const [isHoveringObject, setIsHoveringObject] = useState(false);
   const [pistacheTab, setPistacheTab] = useState<any>([]);
   const [searchValue, setSearchValue] = useState<string>("");
+  const [fileData, setFileData] = useState<Uint8Array>(new Uint8Array());
   const [showPistacheTab, setShowPistacheTab] = useState(false);
   const [isTextShown, setIsTextShown] = useState(false);
   const [isMenuShown, setIsMenuShown] = useState(false);
@@ -931,13 +942,11 @@ const CanvasDrawing = () => {
       if (
         obj.path.includes(objPath.path) &&
         obj.path.startsWith(objPath.path) &&
-        obj.path.length != objPath.path.length 
-        
+        obj.path.length != objPath.path.length
       ) {
         if (Math.max(obj.path.length - objPath.path.length) != 2 && obj.hide)
           console.log("ok");
-        else
-          obj.hide = !obj.hide;
+        else obj.hide = !obj.hide;
         console.log(
           "Math.max(obj.path - objPath.path) =",
           Math.max(obj.path.length - objPath.path.length)
@@ -1355,6 +1364,35 @@ const CanvasDrawing = () => {
     ? getContexts(searchValue, fullText)
     : [];
 
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
+  const searchPluginInstance = searchPlugin();
+  const { highlight } = searchPluginInstance;
+
+  const base64ToArrayBuffer = (base64: any) => {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  useEffect(() => {
+    if (fileData) {
+      const bufferArray = new Uint8Array(fileData.data); // Convert to Uint8Array
+      const blob = new Blob([bufferArray], { type: "application/pdf" }); // Create a Blob
+      const url = URL.createObjectURL(blob); // Create Blob URL
+      setFileUrl(url); // Set the Blob URL
+
+      // Clean up the object URL after the component is unmounted
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [fileData]);
+
   return (
     <>
       <div
@@ -1512,8 +1550,69 @@ const CanvasDrawing = () => {
       </div>
 
       {isTextShown && (
-        <div className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10">
-          <div className="flex w-full max-w-[1000px] mr-[300px]">
+        <div
+          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10 max-h-[100vh]"
+          onClick={handleClickOutside}
+        >
+          <div
+            className="flex w-full max-w-[1000px] mr-[300px] "
+            ref={modalRef}
+            onClick={handleClickInside}
+          >
+            {selected &&
+              selected.bounding.map((offset: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center my-[80px] gap-3"
+                >
+                  <div
+                    className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    onClick={() =>
+                      findFullString(
+                        index,
+                        selected,
+                        textRefs,
+                        setSelectedParagraphIndices,
+                        setShowBackground,
+                        setProgrammaticScroll
+                      )
+                    }
+                  >
+                    <div
+                      className="whitespace-nowra overflow-hidde text-ellipss text-center p-1"
+                      style={{ maxWidth: "180px", fontFamily: "Lexend" }}
+                    >
+                      {selected.value}
+                    </div>
+                  </div>
+                  <div
+                    className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    {String.fromCharCode(65 + index)}
+                  </div>
+                </div>
+              ))}
+
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+              {fileUrl ? (
+                <Viewer
+                  fileUrl={fileUrl}
+                  plugins={[defaultLayoutPluginInstance, searchPluginInstance]}
+                  renderLoader={(progress: number) => (
+                    <div style={{ width: "240px", margin: "0 auto" }}>
+                      <ProgressBar progress={Math.round(progress * 100)} />
+                    </div>
+                  )}
+                />
+              ) : (
+                <p>No PDF file loaded</p>
+              )}
+            </Worker>
+            {/* 
             <div
               className="flex flex-col overflow-auto px-5 py-3"
               style={{ flex: 2, width: "300px", maxHeight: "100vh" }}
@@ -1605,8 +1704,8 @@ const CanvasDrawing = () => {
                     </div>
                   );
                 })}
-              </div>
-            </div>
+                </div>
+              </div> */}
           </div>
         </div>
       )}

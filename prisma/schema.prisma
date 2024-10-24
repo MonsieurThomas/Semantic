@@ -37,6 +37,7 @@ model Document {
   user           User     @relation(fields: [userId], references: [id])
   elements       Json?
   texts          String[]
+  fileData       Bytes @default("") // Providing a default empty value
 }
 
 

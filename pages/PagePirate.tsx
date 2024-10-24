@@ -1,194 +1,38 @@
-// import { useRouter } from "next/navigation";
-// import { ChangeEvent, useState } from "react";
-
-// const UploadPdf = () => {
-//   const router = useRouter();
-//   const [pdfUrl, setPdfUrl] = useState<string>("");
-//   const [citation, setCitation] = useState<string>("");
-//   const [wordFile, setWordFile] = useState<File | null>(null); // State for Word file
-
-//   // Handle PDF upload
-//   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
-//     const file = event.target.files?.[0];
-//     if (file) {
-//       const fileUrl = URL.createObjectURL(file); // Generate a temporary URL for the uploaded file
-//       setPdfUrl(fileUrl);
-//     }
-//   };
-
-//   // Handle Word file upload
-//   const handleWordUpload = (event: ChangeEvent<HTMLInputElement>) => {
-//     const file = event.target.files?.[0];
-//     if (file) {
-//       setWordFile(file); // Store the Word file
-//     }
-//   };
-
-//   // Handle PDF submission
-//   const handleSubmitPdf = () => {
-//     if (pdfUrl && citation) {
-//       router.push(
-//         `/JumpToFirstMatchExample?url=${encodeURIComponent(pdfUrl)}&citation=${encodeURIComponent(
-//           citation
-//         )}`
-//       );
-//     } else {
-//       alert("Please upload a PDF file and enter a citation.");
-//     }
-//   };
-
-//   // Handle Word to PDF conversion and submission
-//   const handleWordSubmit = async () => {
-//     if (wordFile && citation) {
-//       const formData = new FormData();
-//       formData.append('file', wordFile);
-
-//       try {
-//         // Call your backend API to convert the Word document to PDF
-//         const response = await fetch('/api/convert-word-to-pdf', {
-//           method: 'POST',
-//           body: formData,
-//         });
-//         const result = await response.json();
-
-//         if (result.pdfUrl) {
-//           router.push(
-//             `/JumpToFirstMatchExample?url=${encodeURIComponent(result.pdfUrl)}&citation=${encodeURIComponent(
-//               citation
-//             )}`
-//           );
-//         } else {
-//           alert('Failed to convert Word document to PDF.');
-//         }
-//       } catch (error) {
-//         console.error('Error during conversion:', error);
-//         alert('Error during Word to PDF conversion.');
-//       }
-//     } else {
-//       alert('Please upload a Word file and enter a citation.');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       {/* PDF Upload Section */}
-//       <div>
-//         <h2>Upload PDF</h2>
-//         <input type="file" accept="application/pdf" onChange={handleFileUpload} />
-//         <input
-//           type="text"
-//           value={citation}
-//           onChange={(e) => setCitation(e.target.value)}
-//           placeholder="Enter citation"
-//           className="border p-2 mt-2"
-//         />
-//         <button onClick={handleSubmitPdf} className="p-2 bg-blue-500 text-white mt-2">
-//           Upload and Search Citation in PDF
-//         </button>
-//       </div>
-
-//       <hr className="my-4" />
-
-//       {/* Word to PDF Upload Section */}
-//       <div>
-//         <h2>Convert Word to PDF</h2>
-//         <input type="file" accept=".doc,.docx" onChange={handleWordUpload} />
-//         <input
-//           type="text"
-//           value={citation}
-//           onChange={(e) => setCitation(e.target.value)}
-//           placeholder="Enter citation"
-//           className="border p-2 mt-2"
-//         />
-//         <button onClick={handleWordSubmit} className="p-2 bg-green-500 text-white mt-2">
-//           Convert Word to PDF and Search Citation
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default UploadPdf;
-
-
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
+import { handleSubmit } from "./api/fileUploadHelpers"; // Import the function from the new file
 
-const UploadPdf = () => {
+const UploadFiles = () => {
   const router = useRouter();
-  const [pdfUrl, setPdfUrl] = useState<string>("");
+  const [files, setFiles] = useState<File[]>([]); // State for multiple files (PDFs and Word files)
   const [citation, setCitation] = useState<string>("");
-  const [wordFile, setWordFile] = useState<File | null>(null); // State for Word file
 
-  // Handle PDF upload
+  // Handle file uploads (both PDF and Word files)
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const fileUrl = URL.createObjectURL(file); // Generate a temporary URL for the uploaded file
-      setPdfUrl(fileUrl);
+    const selectedFiles = event.target.files;
+    if (selectedFiles) {
+      setFiles((prevFiles) => [
+        ...prevFiles,
+        ...(Array.from(selectedFiles) as File[]),
+      ]); // Append the new files to the existing array
     }
   };
 
-  // Handle Word file upload
-  const handleWordUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setWordFile(file); // Store the Word file
-    }
-  };
-
-  // Handle PDF submission
-  const handleSubmitPdf = () => {
-    if (pdfUrl && citation) {
-      router.push(
-        `/JumpToFirstMatchExample?url=${encodeURIComponent(pdfUrl)}&citation=${encodeURIComponent(
-          citation
-        )}`
-      );
-    } else {
-      alert("Please upload a PDF file and enter a citation.");
-    }
-  };
-
-  // Handle Word to PDF conversion and submission
-  const handleWordSubmit = async () => {
-    if (wordFile && citation) {
-      const formData = new FormData();
-      formData.append('file', wordFile);
-
-      try {
-        // Call your backend API to convert the Word document to PDF
-        const response = await fetch('/api/convert-word-to-pdf', {
-          method: 'POST',
-          body: formData,
-        });
-        const result = await response.json();
-
-        if (result.pdfUrl) {
-          router.push(
-            `/JumpToFirstMatchExample?url=${encodeURIComponent(result.pdfUrl)}&citation=${encodeURIComponent(
-              citation
-            )}`
-          );
-        } else {
-          alert('Failed to convert', );
-          console.log(result)
-        }
-      } catch (error) {
-        console.error('Error during conversion:', error);
-        alert('Error during Word to PDF conversion.');
-      }
-    } else {
-      alert('Please upload a Word file and enter a citation.');
-    }
+  // Use the imported handleSubmit function for submission
+  const handleSubmission = async () => {
+    await handleSubmit(files, citation, router);
   };
 
   return (
     <div>
-      {/* PDF Upload Section */}
       <div>
-        <h2>Upload PDF</h2>
-        <input type="file" accept="application/pdf" onChange={handleFileUpload} />
+        <h2>Upload Files (PDFs or Word)</h2>
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx"
+          onChange={handleFileUpload}
+          multiple
+        />
         <input
           type="text"
           value={citation}
@@ -196,30 +40,15 @@ const UploadPdf = () => {
           placeholder="Enter citation"
           className="border p-2 mt-2"
         />
-        <button onClick={handleSubmitPdf} className="p-2 bg-blue-500 text-white mt-2">
-          Upload and Search Citation in PDF
-        </button>
-      </div>
-
-      <hr className="my-4" />
-
-      {/* Word to PDF Upload Section */}
-      <div>
-        <h2>Convert Word to PDF</h2>
-        <input type="file" accept=".doc,.docx" onChange={handleWordUpload} />
-        <input
-          type="text"
-          value={citation}
-          onChange={(e) => setCitation(e.target.value)}
-          placeholder="Enter citation"
-          className="border p-2 mt-2"
-        />
-        <button onClick={handleWordSubmit} className="p-2 bg-green-500 text-white mt-2">
-          Convert Word to PDF and Search Citation
+        <button
+          onClick={handleSubmission}
+          className="p-2 bg-blue-500 text-white mt-2"
+        >
+          Submit and Search
         </button>
       </div>
     </div>
   );
 };
 
-export default UploadPdf;
+export default UploadFiles;

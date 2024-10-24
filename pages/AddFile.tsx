@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { parseCookies } from "nookies";
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
 import { FiX } from "react-icons/fi";
@@ -67,7 +67,6 @@ function AddFile() {
     }
   };
 
-  // Ajout d'une URL et extraction du texte immédiatement
   const handleAddUrl = async () => {
     if (url) {
       setUrlList([...urlList, url]);
@@ -202,13 +201,10 @@ function AddFile() {
             if (response?.data?.text) {
               const extractedTextFromFile = response.data.text;
 
-              // Concaténer le texte extrait avec l'existant
               const newExtractedText = extractedText + extractedTextFromFile;
               setExtractedText(newExtractedText);
 
-              // Accumuler les caractères et le texte PDF
               countPdf += Math.floor(response.data.text.length * 1.18);
-
               accumulatedPdfTextMap[file.name] = extractedTextFromFile; // Ajouter à la map accumulée
             }
           } else {
@@ -224,7 +220,6 @@ function AddFile() {
         }
       }
 
-      // Mise à jour finale après la boucle
       if (countDocx > 0) {
         setTotalCharacters((prev) => prev + countDocx);
         setDocxCharacters((prev) => prev + countDocx);
@@ -257,11 +252,10 @@ function AddFile() {
 
     const pagesToSubtract = Math.ceil(totalCharacters / 3000);
 
-    // Vérifier si remainingPages est suffisant
     if (remainingPages)
       if (remainingPages < pagesToSubtract) {
-        setShowError(true); // Afficher l'erreur
-        return; // Sortir de la fonction
+        setShowError(true);
+        return;
       }
 
     try {
@@ -296,7 +290,7 @@ function AddFile() {
         pdfFiles.forEach((file) => {
           formData.append("files", file);
         });
-        formData.append("docNumber", docNumber.toString()); // Passer le numéro de document
+        formData.append("docNumber", docNumber.toString());
         fileTextResponse = await axios.post(
           "/api/extract-text-from-pdf",
           formData,
@@ -353,15 +347,26 @@ function AddFile() {
         \n ${prompt} \n\nnb-pages=${Math.ceil(totalCharacters / 3000)}\n \n\n ${combinedText}`
       );
 
+      const formData = new FormData();
+      formData.append('rawText', combinedText);
+      formData.append('prompt', prompt);
+      formData.append('totalPages', String(Math.ceil(totalCharacters / 3000)));
+
+      // Ajouter chaque fichier à FormData
+      fileList.forEach((file, index) => {
+        formData.append(`file${index}`, file);
+      });
+
       const gptResponse = await axios.post(
         `/api/process-text-with-gpt?taskId=${taskId}`,
+        formData,
         {
-          rawText: combinedText,
-          prompt: prompt,
-          fileNames,
-          totalPages: Math.ceil(totalCharacters / 3000),
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
       );
+      
 
       if (gptResponse.data.success) {
         const socket = io();
