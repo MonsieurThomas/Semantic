@@ -26,6 +26,7 @@ const JumpToFirstMatchExample: React.FC = () => {
       highlight(keyword);
     }
   }, [isDocumentLoaded]);
+  
 
   if (!fileUrl) {
     return <p>Error: No PDF file provided.</p>;

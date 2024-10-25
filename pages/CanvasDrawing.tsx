@@ -993,8 +993,10 @@ const CanvasDrawing = () => {
   }
 
   const handleClickOutside = () => {
-    if (hoveredIndex == null) setIsTextShown(false);
-    else setShowBackground(false);
+    if (hoveredIndex == null) {
+      setIsTextShown(false);
+      setDocumentLoaded(false);
+    } else setShowBackground(false);
   };
 
   const handleClickInside = () => {
@@ -1061,7 +1063,13 @@ const CanvasDrawing = () => {
 
     const parts = searchText.split(separatorRegex);
     const startText = removeDots(parts[0]);
+    console.log("type of startText.content", typeof startText);
+    console.log("startText = ", startText);
     const endText = removeDots(parts[1]);
+    console.log("endText = ", endText);
+
+    if (startText) setKeyword(startText);
+    else setKeyword(endText);
 
     let apiText: any[] = [];
 
@@ -1072,7 +1080,20 @@ const CanvasDrawing = () => {
         removeDots(item.content).includes(endText)
     );
     if (combinedText) {
-      apiText.push(combinedText);
+      const content = combinedText.content;
+      const startIndex = content.indexOf(startText);
+      const endIndex = content.indexOf(endText, startIndex + startText.length);
+
+      if (startIndex !== -1 && endIndex !== -1) {
+        // Extract only the text between startText and endText
+        const sectionText = content.slice(
+          startIndex,
+          endIndex + endText.length
+        );
+        apiText.push({ ...combinedText, content: sectionText });
+        console.log("\nExtracted sectionText = ", sectionText, "\n");
+        // setKeyword(sectionText);
+      }
     } else {
       // Find paragraph containing startText
       let startTextParagraph = apiResponse?.find((item: any) =>
@@ -1167,13 +1188,14 @@ const CanvasDrawing = () => {
 
     const contextWords = context.split(" ");
     // console.log("THis is context", context);
-
+    // setKeyword(contextWords)
     const startText = contextWords.slice(0, 6).join(" ");
     const endText = contextWords.slice(5, 11).join(" ");
 
     // console.log("startText", startText);
     // console.log("endText", endText);
-
+    console.log("startText", startText);
+    setKeyword(startText);
     let apiText: any[] = [];
 
     // Find paragraph containing both startText and endText
@@ -1367,7 +1389,6 @@ const CanvasDrawing = () => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const searchPluginInstance = searchPlugin();
-  const { highlight } = searchPluginInstance;
 
   const base64ToArrayBuffer = (base64: any) => {
     const binaryString = window.atob(base64);
@@ -1392,6 +1413,19 @@ const CanvasDrawing = () => {
       };
     }
   }, [fileData]);
+
+  const [isDocumentLoaded, setDocumentLoaded] = React.useState(false);
+  const [keyword, setKeyword] = useState<string>("");
+
+  const handleDocumentLoad = () => setDocumentLoaded(true);
+  const { highlight } = searchPluginInstance;
+  React.useEffect(() => {
+    // Ensure the keyword is a valid string and sanitize it if necessary
+    if (isDocumentLoaded && keyword) {
+      console.log("keyword dans highlight = ", keyword);
+      highlight(keyword);
+    }
+  }, [isDocumentLoaded]);
 
   return (
     <>
@@ -1540,27 +1574,31 @@ const CanvasDrawing = () => {
         </div>
       )}
 
-      <div className=" flex justify-center">
-        <canvas
-          ref={canvasRef}
-          width={dimensions.width}
-          height={dimensions.height}
-          style={{ width: "100%", height: "100%" }}
-        />
-      </div>
+      {!isTextShown && (
+        <div className="flex justify-center">
+          <canvas
+            ref={canvasRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      )}
 
       {isTextShown && (
         <div
-          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center px-4 z-10 max-h-[100vh]"
+          className="fixed inset-0 bg-[rgba(0,0,20,0.90)] flex justify-center z-10 h-[100vh]"
           onClick={handleClickOutside}
         >
           <div
-            className="flex w-full max-w-[1000px] mr-[300px] "
+            className="flex w-full gap-10 justify-center items-cente h-screen"
             ref={modalRef}
             onClick={handleClickInside}
           >
             {selected &&
-              selected.bounding.map((offset: any, index: number) => (
+              selected.bounding.map((offset: any, index: number) => {
+                console.log("okok")
+                return(
                 <div
                   key={index}
                   className="flex justify-between items-center my-[80px] gap-3"
@@ -1594,20 +1632,24 @@ const CanvasDrawing = () => {
                   >
                     {String.fromCharCode(65 + index)}
                   </div>
-                </div>
-              ))}
+                </div>)
+                })}
 
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
               {fileUrl ? (
-                <Viewer
-                  fileUrl={fileUrl}
-                  plugins={[defaultLayoutPluginInstance, searchPluginInstance]}
-                  renderLoader={(progress: number) => (
-                    <div style={{ width: "240px", margin: "0 auto" }}>
-                      <ProgressBar progress={Math.round(progress * 100)} />
-                    </div>
-                  )}
-                />
+                <div
+                  onClick={(event) => event.stopPropagation()}
+                  className="w-full max-w-[900px] mr-[150px]"
+                >
+                  <Viewer
+                    fileUrl={fileUrl}
+                    plugins={[
+                      defaultLayoutPluginInstance,
+                      searchPluginInstance,
+                    ]}
+                    onDocumentLoad={handleDocumentLoad}
+                  />
+                </div>
               ) : (
                 <p>No PDF file loaded</p>
               )}
