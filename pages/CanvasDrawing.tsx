@@ -117,8 +117,11 @@ const CanvasDrawing = () => {
             }
           }
           if (document.elements) setPistacheTab(document.elements);
-          setFileData(document.fileData);
-          console.log("document.fileData == ", document.fileData);
+          setFileData(document.fileData.data);
+          // console.log("document.fileData == ", document.fileData);
+          // console.log("fileData length:", document.fileData.length);
+          // console.log("document.fileData sample:", document.fileData.slice(0, 20));
+
           console.log("document.rawText dans l'api", document.rawText);
         } catch (error) {
           console.error("Error fetching document:", error);
@@ -1402,17 +1405,22 @@ const CanvasDrawing = () => {
 
   useEffect(() => {
     if (fileData) {
-      const bufferArray = new Uint8Array(fileData.data); // Convert to Uint8Array
-      const blob = new Blob([bufferArray], { type: "application/pdf" }); // Create a Blob
-      const url = URL.createObjectURL(blob); // Create Blob URL
-      setFileUrl(url); // Set the Blob URL
-
+      // Convert the data array to a Uint8Array
+      const arrayBuffer = new Uint8Array(fileData);
+  
+      // Create a Blob from the ArrayBuffer
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      setFileUrl(url);
+  
       // Clean up the object URL after the component is unmounted
       return () => {
         URL.revokeObjectURL(url);
       };
     }
   }, [fileData]);
+  
+  
 
   const [isDocumentLoaded, setDocumentLoaded] = React.useState(false);
   const [keyword, setKeyword] = useState<string>("");
@@ -1597,43 +1605,44 @@ const CanvasDrawing = () => {
           >
             {selected &&
               selected.bounding.map((offset: any, index: number) => {
-                console.log("okok")
-                return(
-                <div
-                  key={index}
-                  className="flex justify-between items-center my-[80px] gap-3"
-                >
+                console.log("okok");
+                return (
                   <div
-                    className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    onClick={() =>
-                      findFullString(
-                        index,
-                        selected,
-                        textRefs,
-                        setSelectedParagraphIndices,
-                        setShowBackground,
-                        setProgrammaticScroll
-                      )
-                    }
+                    key={index}
+                    className="flex justify-between items-center my-[80px] gap-3"
                   >
                     <div
-                      className="whitespace-nowra overflow-hidde text-ellipss text-center p-1"
-                      style={{ maxWidth: "180px", fontFamily: "Lexend" }}
+                      className="bg-gray-200 rounded-lg text-black text-sm p-2 px-[30px] cursor-pointer"
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onClick={() =>
+                        findFullString(
+                          index,
+                          selected,
+                          textRefs,
+                          setSelectedParagraphIndices,
+                          setShowBackground,
+                          setProgrammaticScroll
+                        )
+                      }
                     >
-                      {selected.value}
+                      <div
+                        className="whitespace-nowra overflow-hidde text-ellipss text-center p-1"
+                        style={{ maxWidth: "180px", fontFamily: "Lexend" }}
+                      >
+                        {selected.value}
+                      </div>
+                    </div>
+                    <div
+                      className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                      {String.fromCharCode(65 + index)}
                     </div>
                   </div>
-                  <div
-                    className="bg-gray-200 rounded-lg text-black text-sm py-1 min-w-[40px] text-center"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    {String.fromCharCode(65 + index)}
-                  </div>
-                </div>)
-                })}
+                );
+              })}
 
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
               {fileUrl ? (
