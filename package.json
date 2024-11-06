@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "npx puppeteer browsers install chrome && prisma generate",
+    "postinstall": "npx puppeteer install",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
