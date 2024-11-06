@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "npx puppeteer install",
+    "postinstall": "npx puppeteer browsers install chrome 130.0.6723.91",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
