@@ -19,6 +19,8 @@ export default async function capturePageAsPdfAndText(
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+    console.log("Using Chromium executable at:", puppeteer.executablePath());
+
     const page = await browser.newPage();
     const results = [];
 
@@ -35,13 +37,21 @@ export default async function capturePageAsPdfAndText(
       } catch (error) {
         const gotoError = error as Error;
         console.error(`Failed to load URL: ${url}`, gotoError);
-        return res.status(500).json({ error: `Failed to load URL: ${url}`, details: gotoError.message });
+        return res
+          .status(500)
+          .json({
+            error: `Failed to load URL: ${url}`,
+            details: gotoError.message,
+          });
       }
 
       let rawText;
       try {
         rawText = await page.evaluate(() => {
-          const contentElement = document.querySelector("#bodyContent") || document.querySelector(".mw-parser-output") || document.body;
+          const contentElement =
+            document.querySelector("#bodyContent") ||
+            document.querySelector(".mw-parser-output") ||
+            document.body;
           if (!contentElement) return "";
 
           const paragraphs = contentElement.querySelectorAll("p");
@@ -52,7 +62,12 @@ export default async function capturePageAsPdfAndText(
       } catch (error) {
         const evaluateError = error as Error;
         console.error(`Error extracting text from URL: ${url}`, evaluateError);
-        return res.status(500).json({ error: `Error extracting text from URL: ${url}`, details: evaluateError.message });
+        return res
+          .status(500)
+          .json({
+            error: `Error extracting text from URL: ${url}`,
+            details: evaluateError.message,
+          });
       }
 
       // Generate PDF and ensure it is valid
@@ -64,16 +79,24 @@ export default async function capturePageAsPdfAndText(
         });
 
         // Check if the buffer is valid
-        if (!pdfBuffer || pdfBuffer.length < 1024) { // Arbitrary size check for validation
+        if (!pdfBuffer || pdfBuffer.length < 1024) {
+          // Arbitrary size check for validation
           throw new Error("Generated PDF is empty or invalid");
         }
       } catch (error) {
         const pdfError = error as Error;
         console.error(`Error generating PDF for URL: ${url}`, pdfError);
-        return res.status(500).json({ error: `Error generating PDF for URL: ${url}`, details: pdfError.message });
+        return res
+          .status(500)
+          .json({
+            error: `Error generating PDF for URL: ${url}`,
+            details: pdfError.message,
+          });
       }
 
-      const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
+      const fileName = `${url
+        .replace(/https?:\/\//, "")
+        .replace(/[^\w]/g, "_")}.pdf`;
       const filePath = path.join("uploads", fileName);
       const fullFilePath = path.join(uploadDir, fileName);
       fs.writeFileSync(fullFilePath, pdfBuffer);
@@ -95,6 +118,11 @@ export default async function capturePageAsPdfAndText(
   } catch (error) {
     const apiError = error as Error;
     console.error("Error capturing page as PDF and extracting text:", apiError);
-    res.status(500).json({ error: "Failed to process URLs and create PDF.", details: apiError.message });
+    res
+      .status(500)
+      .json({
+        error: "Failed to process URLs and create PDF.",
+        details: apiError.message,
+      });
   }
 }
