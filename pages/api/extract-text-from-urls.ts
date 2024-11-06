@@ -15,6 +15,14 @@ export default async function capturePageAsPdfAndText(
   }
 
   try {
+
+    console.log("Puppeteer puppeteer.connect:", puppeteer.connect);
+    console.log("Puppeteer puppeteer.defaultBrowser:", puppeteer.defaultBrowser);
+    console.log("Puppeteer puppeteer.product:", puppeteer.product);
+    console.log("Checking Puppeteer executable path...");
+    
+    // This will show the path Puppeteer is expecting to find Chromium
+    console.log("Expected Chromium executable path:", puppeteer.executablePath());
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
