@@ -87,7 +87,7 @@ export default async function processText(
     }
 
     // Processing uploaded files
-    const uploadedFiles = req.files; // req.files is available thanks to the extended interface
+    const uploadedFiles = req.files;
     console.log("These are uploaded files = ", uploadedFiles);
 
     // Array to store paths of the processed PDF files
@@ -102,11 +102,11 @@ export default async function processText(
         // Convert DOCX to PDF
         const pdfPath = await convertWordToPdf(file.path);
         pdfFiles.push(pdfPath.startsWith("/") ? pdfPath : `/${pdfPath}`); // Ensure leading slash
-      } else if (file.mimetype === "application/pdf") {
+      } else if (file.mimetype === "application/pdf" || file.mimetype === "text/html") {
         // Move the original PDF to public/uploads if needed
         const uploadDir = path.join(process.cwd(), "public", "uploads");
         const originalPdfPath = path.join(uploadDir, path.basename(file.path));
-
+        console.log("\noriginalPdfPath = ", originalPdfPath, "\n");
         if (!fs.existsSync(originalPdfPath)) {
           fs.copyFileSync(file.path, originalPdfPath); // Copy PDF to public/uploads
         }
@@ -216,6 +216,6 @@ export default async function processText(
 
 export const config = {
   api: {
-    bodyParser: false, // Disable body parsing for multer to handle file uploads
+    bodyParser: false,
   },
 };

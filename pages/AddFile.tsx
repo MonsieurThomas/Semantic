@@ -14,8 +14,9 @@ import { GrDocumentTxt } from "react-icons/gr";
 function AddFile() {
   const router = useRouter();
   const [fileList, setFileList] = useState<File[]>([]);
+  const [urlList, setUrlList] = useState<File[]>([]);
+  const [urlListRawText, setUrlListRawText] = useState<string[]>([]);
   const [url, setUrl] = useState("");
-  const [urlList, setUrlList] = useState<string[]>([]);
   const [extractedText, setExtractedText] = useState<string>("");
   const [textArea, setTextArea] = useState<string>("");
   const [showTextArea, setShowTextArea] = useState<boolean>(false);
@@ -41,55 +42,87 @@ function AddFile() {
     setUrl(e.target.value);
   };
 
-  // Appel de l'API pour extraire du texte d'une URL
   const handleUrlSubmit = async (newUrl: string) => {
     if (!newUrl) {
       console.error("No URL to send.");
-      return "";
+      return { rawText: "", pdfData: "" };
     }
 
     try {
       const response = await axios.post("/api/extract-text-from-urls", {
-        urls: [newUrl], // Envoyer la nouvelle URL
+        urls: [newUrl],
       });
 
-      if (response.data.success) {
-        const rawText = response.data.rawText;
+      console.log("API Response:", response.data);
+
+      if (
+        response.data.success &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
+        const { rawText, filePath } = response.data.data[0];
         console.log("Extracted Text from URL:", rawText);
-        return rawText;
+        return { rawText, pdfData: filePath };
       } else {
-        console.error("Failed to extract text from the URL.");
-        return "";
+        console.error(
+          "Failed to extract text from the URL. Unexpected response format or no data."
+        );
+        return { rawText: "", pdfData: "" };
       }
     } catch (error) {
       console.error("Error processing URL:", error);
-      return "";
+      return { rawText: "", pdfData: "" };
     }
   };
 
   const handleAddUrl = async () => {
     if (url) {
-      setUrlList([...urlList, url]);
+      setUrlListRawText([...urlListRawText, url]);
       const extractedTextFromUrl = await handleUrlSubmit(url);
 
-      const newExtractedText = extractedText + extractedTextFromUrl;
+      const newExtractedText = extractedText + extractedTextFromUrl.rawText;
       setExtractedText(newExtractedText);
 
-      const newCharacters = extractedTextFromUrl.length;
+      const newCharacters = extractedTextFromUrl.rawText.length;
       setUrlCharacters(urlCharacters + newCharacters);
       setTotalCharacters(totalCharacters + newCharacters);
 
-      setUrlTextMap({ ...urlTextMap, [url]: extractedTextFromUrl });
+      // Fetch the file from the URL and create a File object
+      if (extractedTextFromUrl.pdfData) {
+        try {
+          const response = await fetch(extractedTextFromUrl.pdfData);
+          const blob = await response.blob();
+          const fileName = extractedTextFromUrl.pdfData.split("/").pop(); // Extract filename from the URL
+          const file = new File([blob], fileName, { type: blob.type });
+
+          // Use the File object to update urlList
+          setUrlList([...urlList, file]);
+          console.log("This is urllist apres la maj", urlList);
+        } catch (error) {
+          console.error("Failed to convert URL to File:", error);
+        }
+      }
+
+      setUrlTextMap({ ...urlTextMap, [url]: extractedTextFromUrl.rawText });
       setUrl("");
     }
   };
 
   const handleRemoveUrl = (index: number) => {
-    const urlToRemove = urlList[index];
+    console.log("handleRemoveUrl index =", index);
+
+    // Remove URL from urlListRawText
+    const urlToRemove = urlListRawText[index];
+    const newUrlListRawText = [...urlListRawText];
+    newUrlListRawText.splice(index, 1);
+    setUrlListRawText(newUrlListRawText);
+
+    // Remove corresponding file from urlList
     const newUrlList = [...urlList];
     newUrlList.splice(index, 1);
     setUrlList(newUrlList);
 
+    // Update character counts and text mapping
     const textToRemove = urlTextMap[urlToRemove] || "";
     const textToRemoveLength = textToRemove.length;
 
@@ -99,6 +132,7 @@ function AddFile() {
     const { [urlToRemove]: _, ...newUrlTextMap } = urlTextMap;
     setUrlTextMap(newUrlTextMap);
 
+    // Update extractedText
     const newExtractedText = extractedText.replace(textToRemove, "");
     setExtractedText(newExtractedText);
   };
@@ -148,19 +182,18 @@ function AddFile() {
     let files;
 
     if (e instanceof FileList) {
-      files = e; // Si c'est un FileList (drag & drop)
+      files = e;
     } else {
-      files = e.target.files; // Si c'est un événement ChangeEvent (input file)
+      files = e.target.files;
     }
     if (files) {
-      const newFiles = Array.from(files); // Convertir FileList en un tableau de fichiers
+      const newFiles = Array.from(files);
       setFileList([...fileList, ...newFiles]);
 
-      // Variables locales pour accumuler les valeurs
       let countDocx = 0;
       let countPdf = 0;
-      let accumulatedDocxTextMap = { ...docxTextMap }; // Accumuler le texte DOCX
-      let accumulatedPdfTextMap = { ...pdfTextMap }; // Accumuler le texte PDF
+      let accumulatedDocxTextMap = { ...docxTextMap };
+      let accumulatedPdfTextMap = { ...pdfTextMap };
 
       for (const file of newFiles) {
         const formData = new FormData();
@@ -205,7 +238,7 @@ function AddFile() {
               setExtractedText(newExtractedText);
 
               countPdf += Math.floor(response.data.text.length * 1.18);
-              accumulatedPdfTextMap[file.name] = extractedTextFromFile; // Ajouter à la map accumulée
+              accumulatedPdfTextMap[file.name] = extractedTextFromFile;
             }
           } else {
             console.error("Échec de l'extraction du texte du fichier.");
@@ -276,7 +309,10 @@ function AddFile() {
         pathname: "/LoadingTime",
         query: { taskId },
       });
-      const fileNames = [...fileList.map((file) => file.name), ...urlList];
+      const fileNames = [
+        ...fileList.map((file) => file.name),
+        ...urlListRawText,
+      ];
 
       const pdfFiles = fileList.filter(
         (file) => file.type === "application/pdf"
@@ -302,6 +338,49 @@ function AddFile() {
         );
       }
 
+      async function saveTextAsPdf(textArea: string) {
+        console.log("On est dans saveTextAsPdf");
+        try {
+          const response = await fetch("/api/extract-text-from-textArea", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: textArea,
+            }),
+          });
+
+          const result = await response.json();
+          console.log("\n\n\n avant result.success\n\n\n");
+
+          if (result.success) {
+            console.log("PDF created at:", result.filePath);
+            try {
+              // Fetch the PDF from the file path and create a Blob
+              const pdfResponse = await fetch(result.filePath);
+              const pdfBlob = await pdfResponse.blob();
+              const fileName = result.filePath.split("/").pop(); // Extract filename from the file path
+
+              // Create a File object from the Blob
+              const pdfFile = new File([pdfBlob], fileName || "document.pdf", {
+                type: pdfBlob.type,
+              });
+
+              // Use the File object to update urlList
+              console.log("PDF File created:", pdfFile);
+              return pdfFile;
+            } catch (error) {
+              console.error("Failed to convert generated PDF to File:", error);
+            }
+          } else {
+            console.error("Failed to create PDF:", result.error);
+          }
+        } catch (error) {
+          console.error("Error saving text as PDF:", error);
+        }
+      }
+
       let combinedText = "";
 
       const calculatePages = (text: string) => {
@@ -311,7 +390,7 @@ function AddFile() {
       // Ajouter les textes des PDF s'ils sont présents
       if (fileTextResponse?.data?.rawText) {
         combinedText += fileTextResponse.data.rawText;
-        docNumber = fileTextResponse.data.docNumber
+        docNumber = fileTextResponse.data.docNumber;
       }
       // console.log("combinedText après ajout des PDF = ", combinedText);
 
@@ -333,40 +412,60 @@ function AddFile() {
       // console.log("combinedText après ajout des URLs = ", combinedText);
 
       // Ajouter le contenu du textArea
-      if (textArea){
-        const textAreaPages = calculatePages(textArea);
-        combinedText += `\n Document ${docNumber}\n`;
+      let textAreaFile;
+      if (textArea) {
+        console.log(
+          "\nOn est dans texteAre au tout debut premiere condition\n"
+        );
+        // const textAreaPages = calculatePages(textArea);
+        textAreaFile = saveTextAsPdf(textArea);
+        // combinedText += `\n Document ${docNumber}\n`;
         combinedText += `\n${textArea}`;
       }
       // console.log("combinedText après ajout du textArea = ", combinedText);
       // console.log("\n\n\n\nTexte combiné final = ", combinedText);
       console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+      console.log("urlList:", urlList, "\n");
+
       console.log(
         `Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=
         
-        \n ${prompt} \n\nnb-pages=${Math.ceil(totalCharacters / 3000)}\n \n\n ${combinedText}`
+        \n ${prompt} \n\nnb-pages=${Math.ceil(
+          totalCharacters / 3000
+        )}\n \n\n ${combinedText}`
       );
 
+      console.log("urlList:", urlList, "\n");
+
       const formData = new FormData();
-      formData.append('rawText', combinedText);
-      formData.append('prompt', prompt);
-      formData.append('totalPages', String(Math.ceil(totalCharacters / 3000)));
+      formData.append("rawText", combinedText);
+      formData.append("prompt", prompt);
+      formData.append("totalPages", String(Math.ceil(totalCharacters / 3000)));
 
       // Ajouter chaque fichier à FormData
       fileList.forEach((file, index) => {
         formData.append(`file${index}`, file);
       });
+      urlList.forEach((file, index) => {
+        formData.append(`file${index}`, file);
+      });
+      if (textAreaFile) {
+        const resolvedTextAreaFile = await textAreaFile; // Await the promise to get the File object
+        if (resolvedTextAreaFile) {
+          formData.append("textAreafile", resolvedTextAreaFile); // Append the resolved File to FormData
+        }
+      }
 
       const gptResponse = await axios.post(
         `/api/process-text-with-gpt?taskId=${taskId}`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-      
 
       if (gptResponse.data.success) {
         const socket = io();
@@ -445,10 +544,15 @@ function AddFile() {
       )}
       {/* <p>Username: {username}</p> */}
       <p>Remaining Pages: {remainingPages}</p>{" "}
-      <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
-        <div className="flex justify-between items-center">
-          <h1 className="text-center text-3xl flex-1">Ajouter vos fichiers</h1>
-          <GoX className="text-4xl m-3" onClick={handleHomepage} />
+      <div className="border mx-[300px] rounded-xl border-1 border-black">
+        <div className="relative flex justify-between items-center">
+          <h1 className="text-center text-3xl flex-1 py-3">
+            Ajouter vos fichiers
+          </h1>
+          <GoX
+            className="text-4xl m-3 absolute right-1 top-[1px] cursor-pointer"
+            onClick={handleHomepage}
+          />
         </div>
         <div className="flex justify-between items-start p-4 gap-x-4">
           <div className="flex-1">
@@ -469,7 +573,10 @@ function AddFile() {
                     key={index}
                     className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer"
                   >
-                    <p>{file?.name}</p>
+                    {/* <p>{file?.name}</p> */}
+                    <p className="truncate max-w-[300px] overflow-hidden whitespace-nowrap">
+                      {file?.name}
+                    </p>
                     <button
                       onClick={() => handleRemoveFile(index)}
                       className="text-black text-xl ml-2"
@@ -528,61 +635,57 @@ function AddFile() {
           </div>
 
           <div className="flex-1">
-            <div className="text-center pb-2 h-[60px]">
-              <h1>Copier/Coller vos URL</h1>
-            </div>
+            <h1 className="text-center pb-2 h-[60px]">Copier/Coller vos URL</h1>
             <div className="flex flex-col gap-4 justify-between rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
-  <div className="flex flex-col gap-2 flex-grow overflow-hidden">
-    <div className="overflow-y-auto max-h-[120px]"> {/* Zone défilable avec hauteur max pour les URLs */}
-      {urlList.map((item, index) => (
-        <div
-          key={index}
-          className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1 break-words" // Ajouter break-words
-        >
-          <a
-            href={item}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="break-all overflow-wrap" // Ajouter break-all ici
-          >
-            {item}
-          </a>
-          <button
-            onClick={() => handleRemoveUrl(index)} // Call the remove function
-            className="text-black text-xl ml-2"
-          >
-            <GoX />
-          </button>
-        </div>
-      ))}
-    </div>
-    <div className="flex justify-center items-center mt-2 lg:px-[50px]">
-      <input
-        type="text"
-        value={url}
-        onChange={handleUrlChange}
-        placeholder="Entrer un URL"
-        className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleAddUrl(); // Call the function to add the URL when Enter is pressed
-          }
-        }}
-      />
-      <button
-        onClick={handleAddUrl}
-        className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-  <div className="text-3xl flex justify-end mt-4 cursor-pointer">
-    <GrDocumentTxt onClick={handleIconClick} />
-  </div>
-
-
-
+              <div className="flex flex-col gap-2 flex-grow overflow-hidden">
+                <div className="overflow-y-auto max-h-[120px]">
+                  {urlListRawText.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1 break-words" // Ajouter break-words
+                    >
+                      <a
+                        href={item}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate max-w-[300px] overflow-hidden whitespace-nowrap" // Ajouter break-all ici
+                      >
+                         
+                        {item}
+                      </a>
+                      <button
+                        onClick={() => handleRemoveUrl(index)} // Call the remove function
+                        className="text-black text-xl ml-2"
+                      >
+                        <GoX />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center items-center mt-2 lg:px-[50px]">
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={handleUrlChange}
+                    placeholder="Entrer un URL"
+                    className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddUrl(); // Call the function to add the URL when Enter is pressed
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleAddUrl}
+                    className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+              <div className="text-3xl flex justify-end mt-4 cursor-pointer">
+                <GrDocumentTxt onClick={handleIconClick} />
+              </div>
 
               {showTextArea && (
                 <div
@@ -637,7 +740,7 @@ function AddFile() {
             onClick={handleCreateMindMap}
             disabled={
               !username ||
-              (!urlList.length && !fileList.length && !textArea.length)
+              (!urlListRawText.length && !fileList.length && !textArea.length)
             }
           >
             Créer votre mind map

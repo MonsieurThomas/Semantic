@@ -115,7 +115,7 @@ const MapCreate = () => {
           {userId && (
             <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-                Maximum 400 pages{" "}
+                Maximum 100 pages / jour {" "}
                 <a
                   href="#"
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
