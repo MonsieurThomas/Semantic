@@ -18,16 +18,12 @@ export default async function capturePageAsPdfAndText(
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      executablePath:
-        process.env.NODE_ENV === "production"
-          ? process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome-stable"
-          : undefined,
     });
 
     const page = await browser.newPage();
     const results = [];
 
-    const uploadDir = path.join(process.cwd(), "public/uploads");
+    const uploadDir = "/tmp/uploads";
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -82,9 +78,11 @@ export default async function capturePageAsPdfAndText(
         });
       }
 
-      const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
-      const filePath = path.join("uploads", fileName);
-      const fullFilePath = path.join(uploadDir, fileName);
+      const fileName = `${url
+        .replace(/https?:\/\//, "")
+        .replace(/[^\w]/g, "_")}.pdf`;
+        const filePath = path.join(uploadDir, fileName);
+        const fullFilePath = path.join(uploadDir, fileName);
       fs.writeFileSync(fullFilePath, pdfBuffer);
       console.log(`PDF saved to ${fullFilePath}`);
 
@@ -107,5 +105,5 @@ export default async function capturePageAsPdfAndText(
       error: "Failed to process URLs and create PDF.",
       details: (error as Error).message,
     });
-  }
+  } 
 }
