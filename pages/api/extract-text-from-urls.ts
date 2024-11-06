@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import puppeteer from "puppeteer"; // Use puppeteer instead of puppeteer-core
+import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
 
@@ -15,14 +15,13 @@ export default async function capturePageAsPdfAndText(
   }
 
   try {
-    // Use system Chrome only in production; otherwise, use Puppeteer's Chromium
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
       executablePath:
         process.env.NODE_ENV === "production"
           ? process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome-stable"
-          : undefined, // Undefined in development to use Puppeteer's bundled Chromium
+          : undefined,
     });
 
     const page = await browser.newPage();
@@ -39,13 +38,19 @@ export default async function capturePageAsPdfAndText(
         await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
       } catch (error) {
         console.error(`Failed to load URL: ${url}`, error);
-        return res.status(500).json({ error: `Failed to load URL: ${url}`, details: error.message });
+        return res.status(500).json({
+          error: `Failed to load URL: ${url}`,
+          details: (error as Error).message,
+        });
       }
 
       let rawText;
       try {
         rawText = await page.evaluate(() => {
-          const contentElement = document.querySelector("#bodyContent") || document.querySelector(".mw-parser-output") || document.body;
+          const contentElement =
+            document.querySelector("#bodyContent") ||
+            document.querySelector(".mw-parser-output") ||
+            document.body;
           if (!contentElement) return "";
           const paragraphs = contentElement.querySelectorAll("p");
           return Array.from(paragraphs)
@@ -54,7 +59,10 @@ export default async function capturePageAsPdfAndText(
         });
       } catch (error) {
         console.error(`Error extracting text from URL: ${url}`, error);
-        return res.status(500).json({ error: `Error extracting text from URL: ${url}`, details: error.message });
+        return res.status(500).json({
+          error: `Error extracting text from URL: ${url}`,
+          details: (error as Error).message,
+        });
       }
 
       let pdfBuffer;
@@ -68,7 +76,10 @@ export default async function capturePageAsPdfAndText(
         }
       } catch (error) {
         console.error(`Error generating PDF for URL: ${url}`, error);
-        return res.status(500).json({ error: `Error generating PDF for URL: ${url}`, details: error.message });
+        return res.status(500).json({
+          error: `Error generating PDF for URL: ${url}`,
+          details: (error as Error).message,
+        });
       }
 
       const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
@@ -92,6 +103,9 @@ export default async function capturePageAsPdfAndText(
     });
   } catch (error) {
     console.error("Error capturing page as PDF and extracting text:", error);
-    res.status(500).json({ error: "Failed to process URLs and create PDF.", details: error.message });
+    res.status(500).json({
+      error: "Failed to process URLs and create PDF.",
+      details: (error as Error).message,
+    });
   }
 }
