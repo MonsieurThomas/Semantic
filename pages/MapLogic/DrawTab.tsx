@@ -816,7 +816,7 @@ function DrawTab(ctx: CanvasRenderingContext2D, tab: Array<any>, zoom: number) {
   ParseLine(ctx, tab, caseWidth, caseHeight);
   tab.forEach((obj) => {
     DrawSquare(ctx, obj, caseWidth, caseHeight);
-    DrawBubble(ctx, obj, zoom, caseWidth);
+    // DrawBubble(ctx, obj, zoom, caseWidth);
   });
   tab.forEach((obj) => {
     if (obj.isPistache) Pistache(ctx, obj, caseWidth, caseHeight + 2000);

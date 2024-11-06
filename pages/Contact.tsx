@@ -36,7 +36,7 @@ const Contact = () => {
             const body = encodeURIComponent(
               "Bonjour,\n\nJe souhaiterais en savoir plus sur Semantic et son intérêt pour mes équipes.\n\nMerci d'avance."
             );
-            window.location.href = `mailto:thomas.criou@myscripta.app?subject=${subject}&body=${body}`;
+            window.location.href = `mailto:salesatsemantic@gmail.com?subject=${subject}&body=${body}`;
           }}
           style={{ cursor: "pointer" }}
         >
@@ -61,7 +61,7 @@ const Contact = () => {
             const body = encodeURIComponent(
               "Bonjour,\n\nJ'ai une question concernant le logiciel et j'aimerais obtenir de l'aide.\n\nMerci d'avance."
             );
-            window.location.href = `mailto:samuel.calef@hec.edu?subject=${subject}&body=${body}`;
+            window.location.href = `mailto:sprtsemantic@gmail.com?subject=${subject}&body=${body}`;
           }}
           style={{ cursor: "pointer" }}
         >

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer"; // Use puppeteer instead of puppeteer-core
 import fs from "fs";
 import path from "path";
 
@@ -15,10 +15,16 @@ export default async function capturePageAsPdfAndText(
   }
 
   try {
+    // Use system Chrome only in production; otherwise, use Puppeteer's Chromium
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      executablePath:
+        process.env.NODE_ENV === "production"
+          ? process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome-stable"
+          : undefined, // Undefined in development to use Puppeteer's bundled Chromium
     });
+
     const page = await browser.newPage();
     const results = [];
 
@@ -29,13 +35,11 @@ export default async function capturePageAsPdfAndText(
 
     for (const url of urls) {
       console.log(`Navigating to URL: ${url}`);
-
       try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+        await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
       } catch (error) {
-        const gotoError = error as Error;
-        console.error(`Failed to load URL: ${url}`, gotoError);
-        return res.status(500).json({ error: `Failed to load URL: ${url}`, details: gotoError.message });
+        console.error(`Failed to load URL: ${url}`, error);
+        return res.status(500).json({ error: `Failed to load URL: ${url}`, details: error.message });
       }
 
       let rawText;
@@ -43,34 +47,28 @@ export default async function capturePageAsPdfAndText(
         rawText = await page.evaluate(() => {
           const contentElement = document.querySelector("#bodyContent") || document.querySelector(".mw-parser-output") || document.body;
           if (!contentElement) return "";
-
           const paragraphs = contentElement.querySelectorAll("p");
           return Array.from(paragraphs)
             .map((p) => p.textContent || "")
             .join("\n\n");
         });
       } catch (error) {
-        const evaluateError = error as Error;
-        console.error(`Error extracting text from URL: ${url}`, evaluateError);
-        return res.status(500).json({ error: `Error extracting text from URL: ${url}`, details: evaluateError.message });
+        console.error(`Error extracting text from URL: ${url}`, error);
+        return res.status(500).json({ error: `Error extracting text from URL: ${url}`, details: error.message });
       }
 
-      // Generate PDF and ensure it is valid
       let pdfBuffer;
       try {
         pdfBuffer = await page.pdf({
           format: "A4",
           printBackground: true,
         });
-
-        // Check if the buffer is valid
-        if (!pdfBuffer || pdfBuffer.length < 1024) { // Arbitrary size check for validation
+        if (!pdfBuffer || pdfBuffer.length < 1024) {
           throw new Error("Generated PDF is empty or invalid");
         }
       } catch (error) {
-        const pdfError = error as Error;
-        console.error(`Error generating PDF for URL: ${url}`, pdfError);
-        return res.status(500).json({ error: `Error generating PDF for URL: ${url}`, details: pdfError.message });
+        console.error(`Error generating PDF for URL: ${url}`, error);
+        return res.status(500).json({ error: `Error generating PDF for URL: ${url}`, details: error.message });
       }
 
       const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
@@ -93,8 +91,7 @@ export default async function capturePageAsPdfAndText(
       data: results,
     });
   } catch (error) {
-    const apiError = error as Error;
-    console.error("Error capturing page as PDF and extracting text:", apiError);
-    res.status(500).json({ error: "Failed to process URLs and create PDF.", details: apiError.message });
+    console.error("Error capturing page as PDF and extracting text:", error);
+    res.status(500).json({ error: "Failed to process URLs and create PDF.", details: error.message });
   }
 }

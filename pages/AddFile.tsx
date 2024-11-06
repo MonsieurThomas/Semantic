@@ -517,7 +517,7 @@ function AddFile() {
   };
 
   return (
-    <div style={{ fontFamily: "Lexend" }}>
+    <div className="max-h-[80vh]" style={{ fontFamily: "Lexend" }}>
       {showError && (
         <div
           className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center p-4"
@@ -543,7 +543,7 @@ function AddFile() {
         </div>
       )}
       {/* <p>Username: {username}</p> */}
-      <p>Remaining Pages: {remainingPages}</p>{" "}
+      {/* <p>Remaining Pages: {remainingPages}</p>{" "} */}
       <div className="border mx-[300px] rounded-xl border-1 border-black">
         <div className="relative flex justify-between items-center">
           <h1 className="text-center text-3xl flex-1 py-3">
@@ -650,7 +650,6 @@ function AddFile() {
                         rel="noopener noreferrer"
                         className="truncate max-w-[300px] overflow-hidden whitespace-nowrap" // Ajouter break-all ici
                       >
-                         
                         {item}
                       </a>
                       <button
