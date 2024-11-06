@@ -19,70 +19,63 @@ export default async function capturePageAsPdfAndText(
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
-
     const page = await browser.newPage();
     const results = [];
 
-    const uploadDir = "/tmp/uploads";
+    const uploadDir = path.join(process.cwd(), "public/uploads");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
     for (const url of urls) {
       console.log(`Navigating to URL: ${url}`);
+
       try {
-        await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
       } catch (error) {
-        console.error(`Failed to load URL: ${url}`, error);
-        return res.status(500).json({
-          error: `Failed to load URL: ${url}`,
-          details: (error as Error).message,
-        });
+        const gotoError = error as Error;
+        console.error(`Failed to load URL: ${url}`, gotoError);
+        return res.status(500).json({ error: `Failed to load URL: ${url}`, details: gotoError.message });
       }
 
       let rawText;
       try {
         rawText = await page.evaluate(() => {
-          const contentElement =
-            document.querySelector("#bodyContent") ||
-            document.querySelector(".mw-parser-output") ||
-            document.body;
+          const contentElement = document.querySelector("#bodyContent") || document.querySelector(".mw-parser-output") || document.body;
           if (!contentElement) return "";
+
           const paragraphs = contentElement.querySelectorAll("p");
           return Array.from(paragraphs)
             .map((p) => p.textContent || "")
             .join("\n\n");
         });
       } catch (error) {
-        console.error(`Error extracting text from URL: ${url}`, error);
-        return res.status(500).json({
-          error: `Error extracting text from URL: ${url}`,
-          details: (error as Error).message,
-        });
+        const evaluateError = error as Error;
+        console.error(`Error extracting text from URL: ${url}`, evaluateError);
+        return res.status(500).json({ error: `Error extracting text from URL: ${url}`, details: evaluateError.message });
       }
 
+      // Generate PDF and ensure it is valid
       let pdfBuffer;
       try {
         pdfBuffer = await page.pdf({
           format: "A4",
           printBackground: true,
         });
-        if (!pdfBuffer || pdfBuffer.length < 1024) {
+
+        // Check if the buffer is valid
+        if (!pdfBuffer || pdfBuffer.length < 1024) { // Arbitrary size check for validation
           throw new Error("Generated PDF is empty or invalid");
         }
       } catch (error) {
-        console.error(`Error generating PDF for URL: ${url}`, error);
-        return res.status(500).json({
-          error: `Error generating PDF for URL: ${url}`,
-          details: (error as Error).message,
-        });
+        const pdfError = error as Error;
+        console.error(`Error generating PDF for URL: ${url}`, pdfError);
+        return res.status(500).json({ error: `Error generating PDF for URL: ${url}`, details: pdfError.message });
       }
 
-      const fileName = `${url
-        .replace(/https?:\/\//, "")
-        .replace(/[^\w]/g, "_")}.pdf`;
-        const filePath = path.join(uploadDir, fileName);
-        const fullFilePath = path.join(uploadDir, fileName);
+      const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
+      const filePath = path.join("uploads", fileName);
+      const fullFilePath = path.join(uploadDir, fileName);
       fs.writeFileSync(fullFilePath, pdfBuffer);
       console.log(`PDF saved to ${fullFilePath}`);
 
@@ -100,10 +93,8 @@ export default async function capturePageAsPdfAndText(
       data: results,
     });
   } catch (error) {
-    console.error("Error capturing page as PDF and extracting text:", error);
-    res.status(500).json({
-      error: "Failed to process URLs and create PDF.",
-      details: (error as Error).message,
-    });
-  } 
+    const apiError = error as Error;
+    console.error("Error capturing page as PDF and extracting text:", apiError);
+    res.status(500).json({ error: "Failed to process URLs and create PDF.", details: apiError.message });
+  }
 }
