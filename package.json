@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "PUPPETEER_DOWNLOAD_PATH=./.chromium-cache npx puppeteer install",
+    "postinstall": "PUPPETEER_DOWNLOAD_PATH=./.chromium-cache npx puppeteer install && echo 'Chromium cache contents:' && ls -R .chromium-cache",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

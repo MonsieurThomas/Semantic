@@ -14,13 +14,16 @@ export default async function capturePageAsPdfAndText(
     return res.status(400).json({ error: "Invalid or empty URLs array" });
   }
 
+  console.log(
+    "Environment PUPPETEER_EXECUTABLE_PATH:",
+    process.env.PUPPETEER_EXECUTABLE_PATH
+  );
+  console.log("Environment CHROME_BIN:", process.env.CHROME_BIN);
+
   try {
-    const executablePath = path.resolve(
-      ".chromium-cache",
-      "chromium",
-      "chrome-linux",
-      "chrome"
-    );
+    const executablePath =
+      process.env.PUPPETEER_EXECUTABLE_PATH ||
+      path.resolve(".chromium-cache", "chromium", "chrome-linux", "chrome");
 
     console.log("Expected Chromium executable path:", executablePath);
 
@@ -35,15 +38,23 @@ export default async function capturePageAsPdfAndText(
 
     // Check directory structure and contents
     console.log("Listing .chromium-cache directory contents...");
-    const chromiumCacheContents = fs.readdirSync(path.resolve(".chromium-cache"));
+    const chromiumCacheContents = fs.readdirSync(
+      path.resolve(".chromium-cache")
+    );
     console.log(".chromium-cache directory contents:", chromiumCacheContents);
 
     console.log("Listing chrome-linux directory contents...");
-    const chromeLinuxPath = path.resolve(".chromium-cache", "chromium", "chrome-linux");
+    const chromeLinuxPath = path.resolve(
+      ".chromium-cache",
+      "chromium",
+      "chrome-linux"
+    );
     const chromeLinuxContents = fs.readdirSync(chromeLinuxPath);
     console.log("chrome-linux directory contents:", chromeLinuxContents);
 
-    console.log("Attempting to launch Puppeteer with custom executable path...");
+    console.log(
+      "Attempting to launch Puppeteer with custom executable path..."
+    );
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -71,9 +82,10 @@ export default async function capturePageAsPdfAndText(
       } catch (error) {
         const gotoError = error as Error;
         console.error(`Failed to load URL: ${url}`, gotoError);
-        return res
-          .status(500)
-          .json({ error: `Failed to load URL: ${url}`, details: gotoError.message });
+        return res.status(500).json({
+          error: `Failed to load URL: ${url}`,
+          details: gotoError.message,
+        });
       }
 
       let rawText;
@@ -94,12 +106,10 @@ export default async function capturePageAsPdfAndText(
       } catch (error) {
         const evaluateError = error as Error;
         console.error(`Error extracting text from URL: ${url}`, evaluateError);
-        return res
-          .status(500)
-          .json({
-            error: `Error extracting text from URL: ${url}`,
-            details: evaluateError.message,
-          });
+        return res.status(500).json({
+          error: `Error extracting text from URL: ${url}`,
+          details: evaluateError.message,
+        });
       }
 
       // Generate PDF and ensure it is valid
@@ -117,15 +127,15 @@ export default async function capturePageAsPdfAndText(
       } catch (error) {
         const pdfError = error as Error;
         console.error(`Error generating PDF for URL: ${url}`, pdfError);
-        return res
-          .status(500)
-          .json({
-            error: `Error generating PDF for URL: ${url}`,
-            details: pdfError.message,
-          });
+        return res.status(500).json({
+          error: `Error generating PDF for URL: ${url}`,
+          details: pdfError.message,
+        });
       }
 
-      const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
+      const fileName = `${url
+        .replace(/https?:\/\//, "")
+        .replace(/[^\w]/g, "_")}.pdf`;
       const filePath = path.join("uploads", fileName);
       const fullFilePath = path.join(uploadDir, fileName);
       fs.writeFileSync(fullFilePath, pdfBuffer);
@@ -148,11 +158,9 @@ export default async function capturePageAsPdfAndText(
   } catch (error) {
     const apiError = error as Error;
     console.error("Error capturing page as PDF and extracting text:", apiError);
-    res
-      .status(500)
-      .json({
-        error: "Failed to process URLs and create PDF.",
-        details: apiError.message,
-      });
+    res.status(500).json({
+      error: "Failed to process URLs and create PDF.",
+      details: apiError.message,
+    });
   }
 }
