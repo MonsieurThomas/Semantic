@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { parseCookies } from "nookies";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GoX } from "react-icons/go";
 import { FiX } from "react-icons/fi";
@@ -77,6 +77,7 @@ function AddFile() {
 
   const handleAddUrl = async () => {
     if (url) {
+      console.log("Debut de handleAddUrl avec url = ", url);
       setUrlListRawText([...urlListRawText, url]);
       const extractedTextFromUrl = await handleUrlSubmit(url);
 
@@ -107,6 +108,10 @@ function AddFile() {
       setUrl("");
     }
   };
+
+  useEffect(() => {
+    console.log("urlListRawText = ", urlListRawText);
+  }, [urlListRawText, url]);
 
   const handleRemoveUrl = (index: number) => {
     console.log("handleRemoveUrl index =", index);
@@ -735,12 +740,12 @@ function AddFile() {
             </h3>
           </div>
           <button
-            className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg"
+            className="text-center w-[calc(100%-2rem)] bg-[#FCA310] text-white p-2 font-semibold m-4 rounded-lg cursor-pointer"
             onClick={handleCreateMindMap}
-            disabled={
-              !username ||
-              (!urlListRawText.length && !fileList.length && !textArea.length)
-            }
+            // disabled={
+            //   !username ||
+            //   (!urlListRawText.length && !fileList.length && !textArea.length)
+            // }
           >
             Créer votre mind map
           </button>

@@ -1,0 +1,10 @@
+version: "3"
+services:
+  mon-service:
+    build:
+      context: . # Dossier où se trouve votre Dockerfile
+    ports:
+      - "3000:3000" # Remplacez par le port souhaité
+    volumes:
+      - .:/app # Monte le dossier actuel dans /app dans le conteneur
+    command: ["npm", "run", "dev"] # Démarre Next.js en mode développement avec rechargement automatique
