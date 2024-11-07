@@ -65,8 +65,16 @@ COPY package*.json ./
 # Installer les dépendances Node.js (y compris les dépendances de développement)
 RUN npm install
 
+# Copier le reste de votre application dans le conteneur
+COPY . .
+
+# Générer le client Prisma (si vous utilisez Prisma)
+RUN npx prisma generate
+
+# Construire l'application Next.js (pour la production)
+RUN npm run build
 # Exposer le port sur lequel l'application s'exécute
 EXPOSE 3000
 
 # Commande de démarrage pour le développement
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
