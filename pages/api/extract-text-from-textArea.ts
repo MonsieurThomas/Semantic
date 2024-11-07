@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import fs from "fs";
 import path from "path";
 
@@ -10,7 +10,6 @@ export default async function convertTextToPdf(
   const { text } = req.body;
 
   console.log("Received request to convert text to PDF"); // Initial log
-//   console.log("Document Number:", docNumber); // Log document number
   console.log("Text content:", text ? text.substring(0, 100) + "..." : "No text provided"); // Log first 100 characters of text
 
   if (!text || typeof text !== "string") {
@@ -19,8 +18,11 @@ export default async function convertTextToPdf(
   }
 
   try {
+    const executablePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: executablePath,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     console.log("Puppeteer browser launched"); // Log browser launch
