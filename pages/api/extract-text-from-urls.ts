@@ -3,100 +3,134 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
 
-export default async function convertTextToPdf(
+export default async function capturePageAsPdfAndText(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { text } = req.body;
+  const { urls } = req.body;
 
-  console.log("Received request to convert text to PDF"); // Initial log
-  console.log("Text content:", text ? text.substring(0, 100) + "..." : "No text provided"); // Log first 100 characters of text
-
-  if (!text || typeof text !== "string") {
-    console.log("Invalid text input:", text);
-    return res.status(400).json({ error: "Invalid or empty text input" });
+  if (!Array.isArray(urls) || urls.length === 0) {
+    console.log("Invalid URLs array:", urls);
+    return res.status(400).json({ error: "Invalid or empty URLs array" });
   }
 
   try {
-    const executablePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
-    console.log("Launching Puppeteer with executablePath:", executablePath); // Log executable path
-
+    console.log("Puppeteer puppeteer.connect:", puppeteer.connect);
+    console.log("Puppeteer puppeteer.defaultBrowser:", puppeteer.defaultBrowser);
+    console.log("Puppeteer puppeteer.producttt:", puppeteer.product);
+    console.log("Checking Puppeteer executable path...");
+    
+    // This will show the path Puppeteer is expecting to find Chromium
+    console.log("Expected Chromium executable path:", puppeteer.executablePath());
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
-    console.log("Puppeteer browser launched"); // Log browser launch
+    console.log("Using Chromium executable at:", puppeteer.executablePath());
 
     const page = await browser.newPage();
-    console.log("New page created in Puppeteer"); // Log new page creation
+    const results = [];
 
-    // Define HTML content for PDF generation
-    const htmlContent = `
-      <html>
-        <body style="font-family: Arial, sans-serif; padding: 20px;">
-          <pre style="white-space: pre-wrap;">${text}</pre>
-        </body>
-      </html>
-    `;
-    console.log("HTML content for PDF generation prepared"); // Log HTML content preparation
-
-    // Set the page content
-    await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
-    console.log("Page content set in Puppeteer"); // Log page content setting
-
-    // Define upload directory
     const uploadDir = path.join(process.cwd(), "public/uploads");
-    console.log("Upload directory path:", uploadDir); // Log upload directory path
-
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
-      console.log("Upload directory created at:", uploadDir); // Log directory creation
-    } else {
-      console.log("Upload directory already exists:", uploadDir); // Log directory exists
     }
 
-    // Generate PDF and ensure it is valid
-    let pdfBuffer;
-    try {
-      console.log("Generating PDF..."); // Log PDF generation start
-      pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-      });
-      console.log("PDF generated"); // Log PDF generation
+    for (const url of urls) {
+      console.log(`Navigating to URL: ${url}`);
 
-      if (!pdfBuffer || pdfBuffer.length < 1024) {
-        console.log("Generated PDF is empty or too small"); // Log invalid PDF
-        throw new Error("Generated PDF is empty or invalid");
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+      } catch (error) {
+        const gotoError = error as Error;
+        console.error(`Failed to load URL: ${url}`, gotoError);
+        return res
+          .status(500)
+          .json({
+            error: `Failed to load URL: ${url}`,
+            details: gotoError.message,
+          });
       }
-    } catch (error) {
-      const pdfError = error as Error;
-      console.error("Error generating PDF:", pdfError);
-      return res.status(500).json({ error: "Error generating PDF", details: pdfError.message });
-    }
 
-    // Generate filename and save PDF
-    const fileName = `TextArea.pdf`;
-    const filePath = path.join("uploads", fileName);
-    const fullFilePath = path.join(uploadDir, fileName);
-    console.log("Saving PDF to:", fullFilePath); // Log PDF save path
-    fs.writeFileSync(fullFilePath, pdfBuffer);
-    console.log(`PDF saved to ${fullFilePath}`); // Log PDF save location
+      let rawText;
+      try {
+        rawText = await page.evaluate(() => {
+          const contentElement =
+            document.querySelector("#bodyContent") ||
+            document.querySelector(".mw-parser-output") ||
+            document.body;
+          if (!contentElement) return "";
+
+          const paragraphs = contentElement.querySelectorAll("p");
+          return Array.from(paragraphs)
+            .map((p) => p.textContent || "")
+            .join("\n\n");
+        });
+      } catch (error) {
+        const evaluateError = error as Error;
+        console.error(`Error extracting text from URL: ${url}`, evaluateError);
+        return res
+          .status(500)
+          .json({
+            error: `Error extracting text from URL: ${url}`,
+            details: evaluateError.message,
+          });
+      }
+
+      // Generate PDF and ensure it is valid
+      let pdfBuffer;
+      try {
+        pdfBuffer = await page.pdf({
+          format: "A4",
+          printBackground: true,
+        });
+
+        // Check if the buffer is valid
+        if (!pdfBuffer || pdfBuffer.length < 1024) {
+          // Arbitrary size check for validation
+          throw new Error("Generated PDF is empty or invalid");
+        }
+      } catch (error) {
+        const pdfError = error as Error;
+        console.error(`Error generating PDF for URL: ${url}`, pdfError);
+        return res
+          .status(500)
+          .json({
+            error: `Error generating PDF for URL: ${url}`,
+            details: pdfError.message,
+          });
+      }
+
+      const fileName = `${url
+        .replace(/https?:\/\//, "")
+        .replace(/[^\w]/g, "_")}.pdf`;
+      const filePath = path.join("uploads", fileName);
+      const fullFilePath = path.join(uploadDir, fileName);
+      fs.writeFileSync(fullFilePath, pdfBuffer);
+      console.log(`PDF saved to ${fullFilePath}`);
+
+      results.push({
+        url,
+        rawText,
+        filePath: `/${filePath}`,
+      });
+    }
 
     await browser.close();
-    console.log("Browser closed"); // Log browser close
 
-    // Return the path to the saved PDF
     res.status(200).json({
       success: true,
-      filePath: `/${filePath}`,
+      data: results,
     });
-    console.log("Response sent with file path:", `/${filePath}`); // Log response
   } catch (error) {
     const apiError = error as Error;
-    console.error("Error processing text to PDF:", apiError);
-    res.status(500).json({ error: "Failed to convert text to PDF.", details: apiError.message });
+    console.error("Error capturing page as PDF and extracting text:", apiError);
+    res
+      .status(500)
+      .json({
+        error: "Failed to process URLs and create PDF.",
+        details: apiError.message,
+      });
   }
 }

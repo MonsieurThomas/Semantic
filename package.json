@@ -11,7 +11,6 @@
     "prisma:generate": "prisma generate",
     "postinstall": "PUPPETEER_SKIP_DOWNLOAD=false npx puppeteer install"
   },
-
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.0.0",
     "@azure/cognitiveservices-computervision": "^8.2.0",
@@ -67,14 +66,17 @@
     "pg": "^8.12.0",
     "pg-pool": "^3.6.2",
     "postcss-import": "^15.1.0",
-    "puppeteer": "^23.7.0",
+    "puppeteer": "^23.7.1",
+    "puppeteer-core": "^23.7.1",
     "react": "^18.3.1",
     "react-d3-tree": "^3.6.2",
     "react-dom": "^18.3.1",
     "react-icons": "^5.2.1",
+    "selenium": "^2.20.0",
     "sharp": "^0.33.3",
     "socket.io": "^4.7.5",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "webdriver-manager": "^12.1.9"
   },
   "devDependencies": {
     "@react-pdf-viewer/core": "^3.12.0",
