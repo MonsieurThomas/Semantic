@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "npx puppeteer browsers install chrome 130.0.6723.91",
+    "postinstall": "PUPPETEER_CACHE_DIR=./.chromium-cache npx puppeteer install",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

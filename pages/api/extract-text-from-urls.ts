@@ -15,22 +15,23 @@ export default async function capturePageAsPdfAndText(
   }
 
   try {
+    const executablePath = path.resolve(
+      ".chromium-cache",
+      "chromium",
+      "chrome-linux",
+      "chrome"
+    );
 
-    console.log("Puppeteer puppeteer.connect:", puppeteer.connect);
-    console.log("Puppeteer puppeteer.defaultBrowser:", puppeteer.defaultBrowser);
-    console.log("Puppeteer puppeteer.producttt:", puppeteer.product);
-    console.log("Checking Puppeteer executable path...");
-    
-    // This will show the path Puppeteer is expecting to find Chromium
-    console.log("Expected Chromium executable path:", puppeteer.executablePath());
+    console.log("Expected Chromium executable path:", executablePath);
+
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      executablePath: executablePath,
     });
-    console.log("Using Chromium executable at:", puppeteer.executablePath());
 
     const page = await browser.newPage();
-    const results = [];
+    const results: { url: string; rawText: string; filePath: string }[] = [];
 
     const uploadDir = path.join(process.cwd(), "public/uploads");
     if (!fs.existsSync(uploadDir)) {
@@ -47,10 +48,7 @@ export default async function capturePageAsPdfAndText(
         console.error(`Failed to load URL: ${url}`, gotoError);
         return res
           .status(500)
-          .json({
-            error: `Failed to load URL: ${url}`,
-            details: gotoError.message,
-          });
+          .json({ error: `Failed to load URL: ${url}`, details: gotoError.message });
       }
 
       let rawText;
@@ -86,9 +84,7 @@ export default async function capturePageAsPdfAndText(
           printBackground: true,
         });
 
-        // Check if the buffer is valid
         if (!pdfBuffer || pdfBuffer.length < 1024) {
-          // Arbitrary size check for validation
           throw new Error("Generated PDF is empty or invalid");
         }
       } catch (error) {
@@ -102,9 +98,7 @@ export default async function capturePageAsPdfAndText(
           });
       }
 
-      const fileName = `${url
-        .replace(/https?:\/\//, "")
-        .replace(/[^\w]/g, "_")}.pdf`;
+      const fileName = `${url.replace(/https?:\/\//, "").replace(/[^\w]/g, "_")}.pdf`;
       const filePath = path.join("uploads", fileName);
       const fullFilePath = path.join(uploadDir, fileName);
       fs.writeFileSync(fullFilePath, pdfBuffer);
