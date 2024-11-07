@@ -21,7 +21,6 @@ export default async function capturePageAsPdfAndText(
 
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
