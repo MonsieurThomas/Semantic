@@ -16,27 +16,27 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
+  if (!email || !password) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: { email },
     });
 
     if (!user) {
       console.log("User not found");
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       console.log("Password does not match");
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
@@ -53,7 +53,15 @@ export default async function handler(
       })
     );
 
-    res.status(200).json({ token, id: user.id, username: user.username });
+    res
+      .status(200)
+      .json({
+        token,
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        remainingPages: user.remainingPages,
+      });
   } catch (error) {
     console.error("Internal server error:", error);
     res.status(500).json({ message: "Internal server error" });

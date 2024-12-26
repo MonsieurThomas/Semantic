@@ -12,7 +12,7 @@ function Header() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProfileHovered, setIsProfileHovered] = useState(false);
   const { username, logout } = useContext(UserContext);
-    useContext(UserContext);
+  useContext(UserContext);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +59,7 @@ function Header() {
 
   return (
     <div
-      className="flex mx-10 items-center py-6 z-50 h-[90px]"
+      className="flex mx-10 items-center py-6 z-50 h-[15vh]"
       style={{ userSelect: "none" }}
     >
       <Link href="/">

@@ -75,7 +75,7 @@ const MapCreate = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-90px)] overflow-hidden relative">
+    <div className="h-[80vh] overflow-hidden relative">
       <div className="absolute left-0 top-0 w-full h-full">
         <video
           className="w-full h-full object-cover object-top transform translate-y-[30px] translate-x-[-4px]"
@@ -115,14 +115,16 @@ const MapCreate = () => {
           {userId && (
             <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden">
               <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-                Maximum 100 pages / jour {" "}
+                Maximum 100 pages / jour{" "}
                 <a
                   href="#"
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    const subject = encodeURIComponent("Sales - Demande d'informations sur Lecteur Rapide");
+                    const subject = encodeURIComponent(
+                      "Sales - Demande d'informations sur Lecteur Rapide"
+                    );
                     const body = encodeURIComponent(
                       "Bonjour,\n\nJe souhaiterais en savoir plus sur Lecteur Rapide et comment il peut m'aider dans mon activité.\n\nMerci d'avance."
                     );

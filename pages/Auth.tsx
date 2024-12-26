@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { UserContext } from "../src/context/UserContext";
+import Link from "next/link";
 
 const Auth = () => {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -51,7 +52,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10">
+    <div className="flex flex-col h-[80vh] items-center justify-start pt-8 gap-6">
       <form onSubmit={handleSubmit} className="w-[520px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>
@@ -102,17 +103,25 @@ const Auth = () => {
       <div>
         <h3 className="text-[#C8C8C8] font-semibold">
           Veuillez lire attentivement les{" "}
-          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
+          <Link href={"CGU"} className="text-[#FCA310] underline font-semibold cursor-pointer">
             conditions d&apos;utilisation
-          </span>{" "}
+          </Link>{" "}
           et la{" "}
-          <span className="text-[#FCA310] underline font-semibold cursor-pointer">
+          <Link href={"PolitiqueConfidentialite"} className="text-[#FCA310] underline font-semibold cursor-pointer">
             politique de confidentialite.
-          </span>
+          </Link>
         </h3>
         <h3 className="text-[#C8C8C8] font-semibold text-center">
           En continuant, vous indiquez votre accord.
         </h3>
+      </div>
+      <div className="flex gap-[250px] font-semibold underline">
+        <Link href={"/ForgotPassword"} className="cursor-pointer">
+          Mot de passe oublié ?
+        </Link>
+        <Link href="/Login" className="cursor-pointer">
+          <h3>Se connecter</h3>
+        </Link>
       </div>
     </div>
   );
