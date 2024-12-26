@@ -10,22 +10,13 @@ function PolitiqueConfidentialite() {
         <strong>Dernière mise à jour : 02/02/2024</strong>
       </p>
       <p>
-        La société <strong>Semantic Groupe</strong> (ci-après "nous", "notre" ou
-        "nos") attache une importance particulière à la protection des données
-        personnelles de ses utilisateurs (ci-après "vous", "votre", "vos"). La
-        présente politique de confidentialité a pour objet de vous informer de
-        manière claire, transparente et précise sur la manière dont nous
-        collectons, utilisons, protégeons et partageons vos données personnelles
-        dans le cadre de l’utilisation de notre site internet{" "}
-        <a
-          href="https://semantic-epc8.onrender.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <strong>https://semantic-epc8.onrender.com</strong>
-        </a>{" "}
-        et des services associés (ci-après les "Services").
-      </p>
+        La société <strong>Semantic Groupe</strong> (ci-après &quot;nous&quot;, &quot;notre&quot; ou &quot;nos&quot;) attache une importance particulière à la protection des données personnelles de ses utilisateurs (ci-après &quot;vous&quot;, &quot;votre&quot;, &quot;vos&quot;).
+        <a href="https://semantic-epc8.onrender.com" target="_blank" rel="noopener noreferrer">
+            <strong>https://semantic-epc8.onrender.com</strong>
+        </a>
+        </p>
+
+
       <hr />
       <h4>
         <strong>1. Responsable du traitement</strong>
