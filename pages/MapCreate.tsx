@@ -75,7 +75,7 @@ const MapCreate = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-90px)] overflow-hidden relative">
+    <div className="h-[80vh] overflow-hidden relative">
       <div className="absolute left-0 top-0 w-full h-full">
         <video
           className="w-full h-full object-cover object-top transform translate-y-[30px] translate-x-[-4px]"

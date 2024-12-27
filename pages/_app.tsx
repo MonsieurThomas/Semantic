@@ -69,6 +69,7 @@ import Head from "next/head";
 import { UserContextProvider } from "../src/context/UserContext";
 import { WebSocketProvider } from "../src/context/WebSocketContext";
 import { PromptProvider } from "../src/context/PromptContext";
+import Footer from "../src/app/components/Footer";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -84,6 +85,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             </Head>
             <Header />
             <Component {...pageProps} />
+            <Footer />
           </PromptProvider>
         </WebSocketProvider>
       </UserContextProvider>
