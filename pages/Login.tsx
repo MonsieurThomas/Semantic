@@ -40,7 +40,11 @@ function Login() {
       }
 
       // Update the context with the logged-in user information
-      login(data.token, { id: data.id, username: data.username, remainingPages: data.remainingPages });
+      login(data.token, {
+        id: data.id,
+        username: data.username,
+        remainingPages: data.remainingPages,
+      });
       console.log("data.token = ", data.token);
       console.log("data.id = ", data.id);
       console.log("data.username = ", data.username);
@@ -52,7 +56,7 @@ function Login() {
   };
 
   return (
-    <div className="flex flex-col h-[85vh] items-center pt-20 gap-10 2xl:mt-[80px]">
+    <div className="flex flex-col h-[80vh] items-center pt-20 gap-10 2xl:mt-[80px]">
       <form onSubmit={handleSubmit} className="w-[520px] flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <h1 className="font-semibold">Votre nom d&apos;utilisateur</h1>

@@ -317,7 +317,7 @@ function AddFile() {
       // Ajouter les textes des PDF s'ils sont présents
       if (fileTextResponse?.data?.rawText) {
         combinedText += fileTextResponse.data.rawText;
-        docNumber = fileTextResponse.data.docNumber
+        docNumber = fileTextResponse.data.docNumber;
       }
       // console.log("combinedText après ajout des PDF = ", combinedText);
 
@@ -339,7 +339,7 @@ function AddFile() {
       // console.log("combinedText après ajout des URLs = ", combinedText);
 
       // Ajouter le contenu du textArea
-      if (textArea){
+      if (textArea) {
         const textAreaPages = calculatePages(textArea);
         combinedText += `\n Document ${docNumber}\n`;
         combinedText += `\n${textArea}`;
@@ -350,7 +350,9 @@ function AddFile() {
       console.log(
         `Voila tres exactement ce qui est envoyé a l'api de chatgpt:\n\n\n nb-pages=
         
-        \n ${prompt} \n\nnb-pages=${Math.ceil(totalCharacters / 3000)}\n \n\n ${combinedText}`
+        \n ${prompt} \n\nnb-pages=${Math.ceil(
+          totalCharacters / 3000
+        )}\n \n\n ${combinedText}`
       );
 
       const gptResponse = await axios.post(
@@ -439,7 +441,7 @@ function AddFile() {
         </div>
       )}
       {/* <p>Username: {username}</p> */}
-      <p>Remaining Pages: {remainingPages}</p>{" "}
+      {/* <p>Remaining Pages: {remainingPages}</p>{" "} */}
       <div className="border mx-[300px] mt-12 rounded-xl border-1 border-black">
         <div className="flex justify-between items-center">
           <h1 className="text-center text-3xl flex-1">Ajouter vos fichiers</h1>
@@ -527,57 +529,56 @@ function AddFile() {
               <h1>Copier/Coller vos URL</h1>
             </div>
             <div className="flex flex-col gap-4 justify-between rounded-2xl border-[#FCA310] border-dashed border-2 p-2 h-[250px]">
-  <div className="flex flex-col gap-2 flex-grow overflow-hidden">
-    <div className="overflow-y-auto max-h-[120px]"> {/* Zone défilable avec hauteur max pour les URLs */}
-      {urlList.map((item, index) => (
-        <div
-          key={index}
-          className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1 break-words" // Ajouter break-words
-        >
-          <a
-            href={item}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="break-all overflow-wrap" // Ajouter break-all ici
-          >
-            {item}
-          </a>
-          <button
-            onClick={() => handleRemoveUrl(index)} // Call the remove function
-            className="text-black text-xl ml-2"
-          >
-            <GoX />
-          </button>
-        </div>
-      ))}
-    </div>
-    <div className="flex justify-center items-center mt-2 lg:px-[50px]">
-      <input
-        type="text"
-        value={url}
-        onChange={handleUrlChange}
-        placeholder="Entrer un URL"
-        className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleAddUrl(); // Call the function to add the URL when Enter is pressed
-          }
-        }}
-      />
-      <button
-        onClick={handleAddUrl}
-        className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-  <div className="text-3xl flex justify-end mt-4 cursor-pointer">
-    <GrDocumentTxt onClick={handleIconClick} />
-  </div>
-
-
-
+              <div className="flex flex-col gap-2 flex-grow overflow-hidden">
+                <div className="overflow-y-auto max-h-[120px]">
+                  {" "}
+                  {/* Zone défilable avec hauteur max pour les URLs */}
+                  {urlList.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center text-sm text-blue-500 underline cursor-pointer px-1 break-words" // Ajouter break-words
+                    >
+                      <a
+                        href={item}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="break-all overflow-wrap" // Ajouter break-all ici
+                      >
+                        {item}
+                      </a>
+                      <button
+                        onClick={() => handleRemoveUrl(index)} // Call the remove function
+                        className="text-black text-xl ml-2"
+                      >
+                        <GoX />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center items-center mt-2 lg:px-[50px]">
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={handleUrlChange}
+                    placeholder="Entrer un URL"
+                    className="w-full border-2 px-4 py-1 border-black rounded-xl text-sm text-center font-extralight placeholder-black"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddUrl(); // Call the function to add the URL when Enter is pressed
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleAddUrl}
+                    className="ml-2 bg-[#FCA310] text-white p-2 font-semibold rounded-lg"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+              <div className="text-3xl flex justify-end mt-4 cursor-pointer">
+                <GrDocumentTxt onClick={handleIconClick} />
+              </div>
 
               {showTextArea && (
                 <div
