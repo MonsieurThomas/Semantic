@@ -1,7 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
-
 }
 
 datasource db {
@@ -10,14 +9,14 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique
-  email     String     @unique
-  password  String
-  remainingPages Int       @default(120)
-  verificationCode String?
+  id               Int        @id @default(autoincrement())
+  username         String     @unique
+  email            String     @unique
+  password         String
+  remainingPages   Int        @default(120)
   codeExpiresAt    DateTime?
-  documents Document[]
+  verificationCode String?
+  documents        Document[]
 }
 
 model Document {
@@ -37,12 +36,11 @@ model Document {
   openaiResponse Json?
   rawText        String?
   userId         Int
-  user           User     @relation(fields: [userId], references: [id])
   elements       Json?
   texts          String[]
-  fileData       Bytes @default("") // Providing a default empty value
+  fileData       Bytes    @default("")
+  user           User     @relation(fields: [userId], references: [id])
 }
-
 
 model File {
   id        Int      @id @default(autoincrement())
