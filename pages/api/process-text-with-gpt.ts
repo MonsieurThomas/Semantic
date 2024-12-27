@@ -177,7 +177,7 @@ export default async function processText(
     const newDocument = await prisma.document.create({
       data: {
         fileData: fileBuffer, // Save the binary data of the PDF
-        name: "Concatenated Text from URLs",
+        name: "Concatenated from URLs",
         mimeType: "text/plain",
         path: "",
         size: Buffer.byteLength(rawText, "utf8"),
