@@ -12,7 +12,7 @@ model User {
   username  String     @unique
   email     String     @unique
   password  String
-  remainingPages Int       @default(120)
+  remainingPages Int       @default(2200)
   verificationCode String?
   codeExpiresAt    DateTime?
   documents Document[] // Relation to documents

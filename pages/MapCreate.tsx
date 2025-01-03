@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useEffect } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { IoMdAddCircle } from "react-icons/io";
 import { UserContext } from "../src/context/UserContext";
@@ -8,14 +8,25 @@ import { motion } from "framer-motion";
 
 const MapCreate = () => {
   const fileInputRef = useRef<any>(null);
-  const { setMindMapData, id: userId } = useContext(UserContext);
+  const {
+    setMindMapData,
+    id: userId,
+    remainingPages,
+  } = useContext(UserContext);
   const router = useRouter();
+  const [localPages, setLocalPages] = useState<number | null>(2200);
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
+
+  useEffect(() => {
+    if (remainingPages)
+    setLocalPages(remainingPages);
+    console.log("Dans le useEffect de localpage");
+  }, [remainingPages]);
 
   const handleFileChange = async (event: any) => {
     const files = event.target.files;
@@ -114,15 +125,17 @@ const MapCreate = () => {
 
           {userId && (
             <div className="absolute top-[127px] 2xl:top-[167px] z-10 mt-1 text-center overflow-hidden">
-              <h4 className="text-[#C8C8C8] font-semibold w-[1000px] mx-auto">
-                Maximum 400 pages{" "}
+              <h4 className="text-[#C8C8C8 font-semibold w-[1000px] mx-auto">
+                {localPages} / 2200 pages disponibles{" "}
                 <a
                   href="#"
                   className="text-[#FCA311] underline font-semibold cursor-pointer"
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    const subject = encodeURIComponent("Sales - Demande d'informations sur Lecteur Rapide");
+                    const subject = encodeURIComponent(
+                      "Sales - Demande d'informations sur Lecteur Rapide"
+                    );
                     const body = encodeURIComponent(
                       "Bonjour,\n\nJe souhaiterais en savoir plus sur Lecteur Rapide et comment il peut m'aider dans mon activité.\n\nMerci d'avance."
                     );
