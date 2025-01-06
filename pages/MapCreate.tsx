@@ -24,8 +24,8 @@ const MapCreate = () => {
 
   useEffect(() => {
     if (remainingPages)
-    setLocalPages(remainingPages);
-    console.log("Dans le useEffect de localpage");
+      setLocalPages(remainingPages);
+    console.log("Dans le useEffect de localpage", remainingPages);
   }, [remainingPages]);
 
   const handleFileChange = async (event: any) => {

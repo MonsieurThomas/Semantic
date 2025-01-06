@@ -39,7 +39,17 @@ export default async function handler(
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+    const tokenPayload = {
+      userId: user.id,
+      username: user.username,
+      remainingPages: user.remainingPages, // Include remainingPages here
+    };
+
+    // Generate a signed token with expiration time
+    const token = jwt.sign(tokenPayload, JWT_SECRET);
+
+
+    // const token = jwt.sign({ userId: user.id, remainingPages: user.remainingPages, }, JWT_SECRET);
 
     console.log("Token generated:", token);
 
@@ -53,7 +63,7 @@ export default async function handler(
       })
     );
 
-    res.status(200).json({ token, id: user.id, username: user.username });
+    res.status(200).json({ token, id: user.id, username: user.username, remainingPages: user.remainingPages });
   } catch (error) {
     console.error("Internal server error:", error);
     res.status(500).json({ message: "Internal server error" });

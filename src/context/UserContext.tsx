@@ -15,6 +15,8 @@ interface UserContextType {
   logout: () => void;
 }
 
+
+
 export const UserContext = createContext<UserContextType>({
   username: null,
   setUsername: () => {},
