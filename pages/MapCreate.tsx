@@ -14,7 +14,7 @@ const MapCreate = () => {
     remainingPages,
   } = useContext(UserContext);
   const router = useRouter();
-  const [localPages, setLocalPages] = useState<number | null>(2200);
+  const [localPages, setLocalPages] = useState<number | null>(120);
 
   const handleCreateMap = async () => {
     if (fileInputRef.current) {
@@ -23,8 +23,7 @@ const MapCreate = () => {
   };
 
   useEffect(() => {
-    if (remainingPages)
-      setLocalPages(remainingPages);
+    if (remainingPages) setLocalPages(remainingPages);
     console.log("Dans le useEffect de localpage", remainingPages);
   }, [remainingPages]);
 
