@@ -112,9 +112,11 @@ function MapChoice() {
     fetchProfileAndDocuments();
   }, [setId, setUsername]);
 
-  const sortedDocuments = documents.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const sortedDocuments = Array.isArray(documents)
+  ? documents
+      .filter(doc => doc && doc.date) // Retire les documents undefined ou sans date
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  : [];
 
   let dateTmp = "";
 
@@ -169,7 +171,8 @@ function MapChoice() {
           </div>
         </div>
         <div className="pl-12 pt-10 overflow-auto no-scrollbar">
-          {sortedDocuments.map((obj, key) => {
+          {
+          sortedDocuments.map((obj, key) => {
             const currentDate = new Date(obj.date).toLocaleDateString("fr-FR", {
               year: "numeric",
               month: "long",
